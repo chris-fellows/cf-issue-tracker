@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Models
 {
+    /// <summary>
+    /// Issue
+    /// </summary>
     public class Issue
     {
         /// <summary>

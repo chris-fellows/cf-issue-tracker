@@ -21,6 +21,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<IRequestContextService, RequestContextService>();
 
 // Add data services
+//builder.Services.AddScoped<IAuditEventService, EFAuditEventService>();
+//builder.Services.AddScoped<IAuditEventTypeService, EFAuditEventTypeService>();
 builder.Services.AddScoped<IIssueService, EFIssueService>();
 builder.Services.AddScoped<IIssueStatusService, EFIssueStatusService>();
 builder.Services.AddScoped<IIssueTypeService, EFIssueTypeService>();

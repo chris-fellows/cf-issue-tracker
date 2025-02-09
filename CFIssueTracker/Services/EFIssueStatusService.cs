@@ -32,6 +32,16 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
+        public async Task<IssueStatus> UpdateAsync(IssueStatus issueStatus)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                context.IssueStatus.Update(issueStatus);
+                await context.SaveChangesAsync();
+                return issueStatus;
+            }
+        }
+
         public async Task<IssueStatus?> GetByIdAsync(string id)
         {
             using (var context = _dbFactory.CreateDbContext())

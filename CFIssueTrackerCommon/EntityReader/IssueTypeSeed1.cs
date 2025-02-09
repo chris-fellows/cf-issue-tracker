@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CFIssueTrackerCommon.SeedData
+namespace CFIssueTrackerCommon.EntityReader
 {
-    public class IssueTypeSeed1
+    /// <summary>
+    /// Issue type seed #1
+    /// </summary>
+    public class IssueTypeSeed1 : IEntityReader<IssueType>
     {
-        public void Load()
+        public IEnumerable<IssueType> Read()
         {
             var list = new List<IssueType>()
             {
@@ -29,6 +32,8 @@ namespace CFIssueTrackerCommon.SeedData
                     Name = "Unknown"
                 },
             };
+
+            return list;
         }
     }
 }

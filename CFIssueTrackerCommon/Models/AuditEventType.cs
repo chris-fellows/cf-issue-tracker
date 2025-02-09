@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
-    /// Project
+    /// Audit event type
     /// </summary>
-    public class Project
+    public class AuditEventType
     {
         public string Id { get; set; } = String.Empty;
 

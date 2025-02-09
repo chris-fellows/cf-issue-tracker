@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Models
 {
+    /// <summary>
+    /// Project component
+    /// </summary>
     public class ProjectComponent
     {
         public string Id { get; set; } = String.Empty;

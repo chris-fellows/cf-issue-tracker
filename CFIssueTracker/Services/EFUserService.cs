@@ -32,6 +32,16 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
+        public async Task<User> UpdateAsync(User user)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                context.User.Update(user);
+                await context.SaveChangesAsync();
+                return user;
+            }
+        }
+
         public async Task<User?> GetByIdAsync(string id)
         {
             using (var context = _dbFactory.CreateDbContext())

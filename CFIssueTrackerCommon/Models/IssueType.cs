@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Models
 {
+    /// <summary>
+    /// Issue type
+    /// </summary>
     public class IssueType
     {
         public string Id { get; set; } = String.Empty;

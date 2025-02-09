@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Interfaces
 {
-    public interface IIssueService : IEntityWithIdService<Issue, string>
+    public interface IAuditEventService : IEntityWithIdService<AuditEvent, string>
     {
-        Task<List<Issue>> GetByFilterAsync(IssueFilter issueFilter);
     }
 }

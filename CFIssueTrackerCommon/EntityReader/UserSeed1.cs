@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CFIssueTrackerCommon.SeedData
+namespace CFIssueTrackerCommon.EntityReader
 {
-    public class UserSeed1
+    /// <summary>
+    /// User seed #1
+    /// </summary>
+    public class UserSeed1 : IEntityReader<User>
     {
-        public void Load()
+        public IEnumerable<User> Read()
         {
             var list = new List<User>()
             {
@@ -41,6 +44,8 @@ namespace CFIssueTrackerCommon.SeedData
                     Active = true
                 },
             };
+
+            return list;
         }
     }
 }

@@ -10,50 +10,50 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EFIssueTypeService : IIssueTypeService
+    public class EFAuditEventTypeService : IAuditEventTypeService
     {
         private readonly IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> _dbFactory;
 
-        public EFIssueTypeService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
+        public EFAuditEventTypeService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
         {
             _dbFactory = dbFactory;
         }
 
-        public async Task<List<IssueType>> GetAllAsync()
+        public async Task<List<AuditEventType>> GetAllAsync()
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issueTypes = context.IssueType;
-                return await issueTypes.ToListAsync();
-            }                
-        }
-
-        public async Task<IssueType> AddAsync(IssueType issueType)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.IssueType.Add(issueType);
-                await context.SaveChangesAsync();
-                return issueType;
+                var auditEventTypes = context.AuditEventType;
+                return await auditEventTypes.ToListAsync();
             }
         }
 
-        public async Task<IssueType> UpdateAsync(IssueType issueType)
+        public async Task<AuditEventType> AddAsync(AuditEventType auditEventType)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                context.IssueType.Update(issueType);
+                context.AuditEventType.Add(auditEventType);
                 await context.SaveChangesAsync();
-                return issueType;
+                return auditEventType;
             }
         }
 
-        public async Task<IssueType?> GetByIdAsync(string id)
+        public async Task<AuditEventType> UpdateAsync(AuditEventType auditEventType)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issueType = await context.IssueType.FirstOrDefaultAsync(i => i.Id == id);
-                return issueType;
+                context.AuditEventType.Update(auditEventType);
+                await context.SaveChangesAsync();
+                return auditEventType;
+            }
+        }
+
+        public async Task<AuditEventType?> GetByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var auditEventType = await context.AuditEventType.FirstOrDefaultAsync(i => i.Id == id);
+                return auditEventType;
             }
         }
     }

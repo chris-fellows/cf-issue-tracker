@@ -21,5 +21,35 @@
 //                return await projectComponents.ToListAsync();
 //            }
 //        }
+
+//        public async Task<ProjectComponent> AddAsync(ProjectComponent projectComponent)
+//        {
+//            using (var context = _dbFactory.CreateDbContext())
+//            {
+//                context.ProjectComponent.Add(projectComponent);
+//                await context.SaveChangesAsync();
+//                return projectComponent;
+//            }
+//        }
+
+
+//        public async Task<ProjectComponent> UpdateAsync(ProjectComponent projectComponent)
+//        {
+//            using (var context = _dbFactory.CreateDbContext())
+//            {
+//                context.ProjectComponent.Update(projectComponent);
+//                await context.SaveChangesAsync();
+//                return projectComponent;
+//            }
+//        }
+
+//        public async Task<ProjectComponent?> GetByIdAsync(string id)
+//        {
+//            using (var context = _dbFactory.CreateDbContext())
+//            {
+//                var projectComponent = await context.ProjectComponent.FirstOrDefaultAsync(i => i.Id == id);
+//                return projectComponent;
+//            }
+//        }
 //    }
 //}
