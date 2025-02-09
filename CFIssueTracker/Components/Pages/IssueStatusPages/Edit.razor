@@ -1,0 +1,89 @@
+﻿@page "/issuestatuses/edit"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>IssueStatus</h2>
+<hr />
+@if (IssueStatus is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="IssueStatus" OnValidSubmit="UpdateIssueStatus" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="IssueStatus.Id" value="@IssueStatus.Id" />
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="IssueStatus.Name" class="form-control" />
+                    <ValidationMessage For="() => IssueStatus.Name" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/issuestatuses">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private IssueStatus? IssueStatus { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        IssueStatus ??= await context.IssueStatus.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (IssueStatus is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateIssueStatus()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(IssueStatus!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!IssueStatusExists(IssueStatus!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/issuestatuses");
+    }
+
+    private bool IssueStatusExists(string id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.IssueStatus.Any(e => e.Id == id);
+    }
+}

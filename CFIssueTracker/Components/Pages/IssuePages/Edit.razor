@@ -1,0 +1,119 @@
+﻿@page "/issues/edit"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Issue</h2>
+<hr />
+@if (Issue is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Issue" OnValidSubmit="UpdateIssue" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Issue.Id" value="@Issue.Id" />
+                <div class="mb-3">
+                    <label for="reference" class="form-label">Reference:</label>
+                    <InputText id="reference" @bind-Value="Issue.Reference" class="form-control" />
+                    <ValidationMessage For="() => Issue.Reference" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="projectid" class="form-label">ProjectId:</label>
+                    <InputText id="projectid" @bind-Value="Issue.ProjectId" class="form-control" />
+                    <ValidationMessage For="() => Issue.ProjectId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="projectcomponentid" class="form-label">ProjectComponentId:</label>
+                    <InputText id="projectcomponentid" @bind-Value="Issue.ProjectComponentId" class="form-control" />
+                    <ValidationMessage For="() => Issue.ProjectComponentId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="typeid" class="form-label">TypeId:</label>
+                    <InputText id="typeid" @bind-Value="Issue.TypeId" class="form-control" />
+                    <ValidationMessage For="() => Issue.TypeId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="statusid" class="form-label">StatusId:</label>
+                    <InputText id="statusid" @bind-Value="Issue.StatusId" class="form-control" />
+                    <ValidationMessage For="() => Issue.StatusId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="createduserid" class="form-label">CreatedUserId:</label>
+                    <InputText id="createduserid" @bind-Value="Issue.CreatedUserId" class="form-control" />
+                    <ValidationMessage For="() => Issue.CreatedUserId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="createddatetime" class="form-label">CreatedDateTime:</label>
+                    <InputDate id="createddatetime" @bind-Value="Issue.CreatedDateTime" class="form-control" />
+                    <ValidationMessage For="() => Issue.CreatedDateTime" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/issues">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Issue? Issue { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Issue ??= await context.Issue.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Issue is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateIssue()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Issue!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!IssueExists(Issue!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/issues");
+    }
+
+    private bool IssueExists(string id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Issue.Any(e => e.Id == id);
+    }
+}

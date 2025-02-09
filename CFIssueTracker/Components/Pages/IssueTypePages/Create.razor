@@ -1,0 +1,46 @@
+﻿@page "/issuetypes/create"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>IssueType</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="IssueType" OnValidSubmit="AddIssueType" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label> 
+                <InputText id="name" @bind-Value="IssueType.Name" class="form-control" /> 
+                <ValidationMessage For="() => IssueType.Name" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/issuetypes">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private IssueType IssueType { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddIssueType()
+    {
+        IssueType.Id = Guid.NewGuid().ToString();
+
+        using var context = DbFactory.CreateDbContext();
+        context.IssueType.Add(IssueType);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/issuetypes");
+    }
+}

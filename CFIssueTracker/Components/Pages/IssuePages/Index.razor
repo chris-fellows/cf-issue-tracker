@@ -1,0 +1,42 @@
+﻿@page "/issues"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Models
+@using CFIssueTracker.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="issues/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Issue">
+    <PropertyColumn Property="issue => issue.Reference" />
+    <PropertyColumn Property="issue => issue.ProjectId" />
+    <PropertyColumn Property="issue => issue.ProjectComponentId" />
+    <PropertyColumn Property="issue => issue.TypeId" />
+    <PropertyColumn Property="issue => issue.StatusId" />
+    <PropertyColumn Property="issue => issue.CreatedUserId" />
+    <PropertyColumn Property="issue => issue.CreatedDateTime" />
+
+    <TemplateColumn Context="issue">
+        <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
+        <a href="@($"issues/details?id={issue.Id}")">Details</a> |
+        <a href="@($"issues/delete?id={issue.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private CFIssueTrackerContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

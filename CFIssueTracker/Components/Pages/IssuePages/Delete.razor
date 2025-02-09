@@ -1,0 +1,79 @@
+﻿@page "/issues/delete"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>Issue</h2>
+    <hr />
+    @if (issue is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Reference</dt>
+            <dd class="col-sm-10">@issue.Reference</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ProjectId</dt>
+            <dd class="col-sm-10">@issue.ProjectId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ProjectComponentId</dt>
+            <dd class="col-sm-10">@issue.ProjectComponentId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">TypeId</dt>
+            <dd class="col-sm-10">@issue.TypeId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">StatusId</dt>
+            <dd class="col-sm-10">@issue.StatusId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CreatedUserId</dt>
+            <dd class="col-sm-10">@issue.CreatedUserId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">CreatedDateTime</dt>
+            <dd class="col-sm-10">@issue.CreatedDateTime</dd>
+        </dl>
+        <EditForm method="post" Model="issue" OnValidSubmit="DeleteIssue" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(issue is null)">Delete</button> |
+            <a href="/issues">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Issue? issue;
+
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        issue = await context.Issue.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (issue is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteIssue()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Issue.Remove(issue!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/issues");
+    }
+}

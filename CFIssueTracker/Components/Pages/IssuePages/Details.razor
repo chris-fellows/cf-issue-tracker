@@ -1,0 +1,58 @@
+﻿@page "/issues/details"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Issue</h2>
+    <hr />
+    @if (issue is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Reference</dt>
+            <dd class="col-sm-10">@issue.Reference</dd>
+            <dt class="col-sm-2">ProjectId</dt>
+            <dd class="col-sm-10">@issue.ProjectId</dd>
+            <dt class="col-sm-2">ProjectComponentId</dt>
+            <dd class="col-sm-10">@issue.ProjectComponentId</dd>
+            <dt class="col-sm-2">TypeId</dt>
+            <dd class="col-sm-10">@issue.TypeId</dd>
+            <dt class="col-sm-2">StatusId</dt>
+            <dd class="col-sm-10">@issue.StatusId</dd>
+            <dt class="col-sm-2">CreatedUserId</dt>
+            <dd class="col-sm-10">@issue.CreatedUserId</dd>
+            <dt class="col-sm-2">CreatedDateTime</dt>
+            <dd class="col-sm-10">@issue.CreatedDateTime</dd>
+        </dl>
+        <div>
+            <a href="@($"/issues/edit?id={issue.Id}")">Edit</a> |
+            <a href="@($"/issues")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Issue? issue;
+
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        issue = await context.Issue.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (issue is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

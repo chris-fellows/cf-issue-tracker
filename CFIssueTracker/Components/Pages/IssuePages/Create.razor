@@ -1,0 +1,87 @@
+﻿@page "/issues/create"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IIssueService IssueService
+@inject IIssueStatusService IssueStatusService
+@inject IIssueTypeService IssueTypeService
+@inject IUserService UserService
+@inject IRequestContextService RequestContextService
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>Issue</h2>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Issue" OnValidSubmit="AddIssue" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="reference" class="form-label">Reference:</label> 
+                <InputText id="reference" @bind-Value="Issue.Reference" class="form-control" /> 
+                <ValidationMessage For="() => Issue.Reference" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="projectid" class="form-label">ProjectId:</label> 
+                <InputText id="projectid" @bind-Value="Issue.ProjectId" class="form-control" /> 
+                <ValidationMessage For="() => Issue.ProjectId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="projectcomponentid" class="form-label">ProjectComponentId:</label> 
+                <InputText id="projectcomponentid" @bind-Value="Issue.ProjectComponentId" class="form-control" /> 
+                <ValidationMessage For="() => Issue.ProjectComponentId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="typeid" class="form-label">TypeId:</label> 
+                <InputText id="typeid" @bind-Value="Issue.TypeId" class="form-control" /> 
+                <ValidationMessage For="() => Issue.TypeId" class="text-danger" />                 
+            </div>                    
+            <div class="mb-3">
+                <label for="statusid" class="form-label">StatusId:</label> 
+                <InputText id="statusid" @bind-Value="Issue.StatusId" class="form-control" /> 
+                <ValidationMessage For="() => Issue.StatusId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createduserid" class="form-label">CreatedUserId:</label> 
+                <InputText id="createduserid" @bind-Value="Issue.CreatedUserId" class="form-control" /> 
+                <ValidationMessage For="() => Issue.CreatedUserId" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="createddatetime" class="form-label">CreatedDateTime:</label> 
+                <InputDate id="createddatetime" @bind-Value="Issue.CreatedDateTime" class="form-control" /> 
+                <ValidationMessage For="() => Issue.CreatedDateTime" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/issues">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Issue Issue { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddIssue()
+    {
+        //var issueStatuses = await IssueStatusService.GetAllAsync();
+        //var issueTypes = await IssueTypeService.GetAllAsync();
+
+        Issue.Id = Guid.NewGuid().ToString();
+        Issue.CreatedDateTime = DateTimeOffset.UtcNow;
+        Issue.CreatedUserId = RequestContextService.UserId;
+
+        using var context = DbFactory.CreateDbContext();
+        context.Issue.Add(Issue);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/issues");
+    }
+}
