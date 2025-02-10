@@ -17,6 +17,18 @@
 <QuickGrid Class="table" Items="context.User">
     <PropertyColumn Property="user => user.Name" />
     <PropertyColumn Property="user => user.Email" />
+
+    <TemplateColumn Title="Activeeee">
+        @if (context.Active)
+        {
+            <input type="checkbox" checked />
+        }
+        else
+        {
+            <input type="checkbox" />
+        }
+    </TemplateColumn>
+
     <PropertyColumn Property="user => user.Active" />
 
     <TemplateColumn Context="user">

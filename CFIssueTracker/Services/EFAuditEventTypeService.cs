@@ -22,9 +22,8 @@ namespace CFIssueTrackerCommon.Services
         public async Task<List<AuditEventType>> GetAllAsync()
         {
             using (var context = _dbFactory.CreateDbContext())
-            {
-                var auditEventTypes = context.AuditEventType;
-                return await auditEventTypes.ToListAsync();
+            {                
+                return await context.AuditEventType.ToListAsync();
             }
         }
 

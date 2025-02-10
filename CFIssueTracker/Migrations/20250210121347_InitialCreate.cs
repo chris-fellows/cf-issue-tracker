@@ -12,6 +12,31 @@ namespace CFIssueTracker.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AuditEvent",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TypeId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEvent", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditEventType",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEventType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Issue",
                 columns: table => new
                 {
@@ -22,7 +47,9 @@ namespace CFIssueTracker.Migrations
                     TypeId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StatusId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    AssignedUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AssignedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -66,6 +93,19 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProjectComponent",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProjectId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectComponent", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "User",
                 columns: table => new
                 {
@@ -84,6 +124,12 @@ namespace CFIssueTracker.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AuditEvent");
+
+            migrationBuilder.DropTable(
+                name: "AuditEventType");
+
+            migrationBuilder.DropTable(
                 name: "Issue");
 
             migrationBuilder.DropTable(
@@ -94,6 +140,9 @@ namespace CFIssueTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "Project");
+
+            migrationBuilder.DropTable(
+                name: "ProjectComponent");
 
             migrationBuilder.DropTable(
                 name: "User");

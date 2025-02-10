@@ -1,10 +1,16 @@
 ﻿@page "/issues"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
 @implements IAsyncDisposable
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IIssueStatusService IssueStatusService
+@inject IIssueTypeService IssueTypeService
+@inject IProjectComponentService ProjectComponentService
+@inject IProjectService ProjectService
+@inject IUserService UserService
 
 <PageTitle>Index</PageTitle>
 
@@ -16,12 +22,13 @@
 
 <QuickGrid Class="table" Items="context.Issue">
     <PropertyColumn Property="issue => issue.Reference" />
-    <PropertyColumn Property="issue => issue.ProjectId" />
-    <PropertyColumn Property="issue => issue.ProjectComponentId" />
-    <PropertyColumn Property="issue => issue.TypeId" />
-    <PropertyColumn Property="issue => issue.StatusId" />
-    <PropertyColumn Property="issue => issue.CreatedUserId" />
+    <PropertyColumn Title="Project" Property="issue => GetProjectName(issue)" />
+    <PropertyColumn Title="Component" Property="issue => GetProjectComponentName(issue)" />
+    <PropertyColumn Title="Type" Property="issue => GetIssueTypeName(issue)" />
+    <PropertyColumn Title="Status" Property="issue => GetIssueStatusName(issue)" />
+    <PropertyColumn Title="Created User" Property="issue => GetCreatedUserName(issue)" />
     <PropertyColumn Property="issue => issue.CreatedDateTime" />
+    <PropertyColumn Title="Assigned User" Property="issue => GetAssignedUserName(issue)" />
 
     <TemplateColumn Context="issue">
         <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
@@ -33,9 +40,56 @@
 @code {
     private CFIssueTrackerContext context = default!;
 
+    private List<IssueStatus> IssueStatuses = new();
+    private List<IssueType> IssueTypes = new();
+    private List<ProjectComponent> ProjectComponents = new();
+    private List<Project> Projects = new();
+    private List<User> Users = new();
+
+    protected override async Task OnParametersSetAsync()
+    {        
+        if (!IssueStatuses.Any()) IssueStatuses = await IssueStatusService.GetAllAsync();
+        if (!IssueTypes.Any()) IssueTypes = await IssueTypeService.GetAllAsync();
+        if (!ProjectComponents.Any()) ProjectComponents = await ProjectComponentService.GetAllAsync();
+        if (!Projects.Any()) Projects = await ProjectService.GetAllAsync();
+        if (!Users.Any()) Users = await UserService.GetAllAsync();
+
+        await base.OnParametersSetAsync();
+    }    
+
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
+    }
+
+    private string GetIssueStatusName(Issue issue)
+    {
+        return IssueStatuses.First(s => s.Id == issue.StatusId).Name;
+    }
+
+    private string GetIssueTypeName(Issue issue)
+    {
+        return IssueTypes.First(t => t.Id == issue.TypeId).Name;
+    }
+
+    private string GetProjectName(Issue issue)
+    {
+        return Projects.First(p => p.Id == issue.ProjectId).Name;
+    }
+
+    private string GetProjectComponentName(Issue issue)
+    {
+        return ProjectComponents.First(c => c.Id == issue.ProjectComponentId).Name;
+    }
+
+    private string GetCreatedUserName(Issue issue)
+    {
+        return Users.First(u => u.Id == issue.CreatedUserId).Name;
+    }
+
+    private string GetAssignedUserName(Issue issue)
+    {
+        return Users.First(u => u.Id == issue.AssignedUserId).Name;
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

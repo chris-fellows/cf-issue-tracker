@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFIssueTrackerCommon.Models
+﻿namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
     /// Issue
@@ -44,11 +38,21 @@ namespace CFIssueTrackerCommon.Models
         /// <summary>
         /// User who created issue
         /// </summary>
-        public string CreatedUserId { get; set; } = String.Empty;
+        public string CreatedUserId { get; set; } = String.Empty;        
 
         /// <summary>
         /// Time issue created
         /// </summary>
         public DateTimeOffset CreatedDateTime { get; set; } = DateTimeOffset.UtcNow;
+
+        /// <summary>
+        /// User who issue is currently assigned to
+        /// </summary>
+        public string AssignedUserId { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Time that issue was assigned to user
+        /// </summary>
+        public DateTimeOffset? AssignedDateTime { get; set; }
     }
 }

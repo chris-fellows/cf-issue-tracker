@@ -16,9 +16,8 @@ namespace CFIssueTrackerCommon.Services
         public async Task<List<User>> GetAllAsync()
         {
             using (var context = _dbFactory.CreateDbContext())
-            {
-                var users = context.User;
-                return await users.ToListAsync();
+            {                
+                return await context.User.ToListAsync();
             }
         }
 

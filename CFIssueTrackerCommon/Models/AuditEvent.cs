@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFIssueTrackerCommon.Models
+﻿namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
     /// Audit event
@@ -16,5 +10,7 @@ namespace CFIssueTrackerCommon.Models
         public string TypeId { get; set; } = String.Empty;
 
         public DateTimeOffset CreatedDateTime { get; set; }
+
+        //public List<AuditEventParameter> Parameters = new List<AuditEventParameter>();
     }
 }

@@ -45,6 +45,10 @@
             <dt class="col-sm-2">CreatedDateTime</dt>
             <dd class="col-sm-10">@issue.CreatedDateTime</dd>
         </dl>
+        <dl class="row">
+            <dt class="col-sm-2">AssignedUserId</dt>
+            <dd class="col-sm-10">@issue.AssignedUserId</dd>
+        </dl>
         <EditForm method="post" Model="issue" OnValidSubmit="DeleteIssue" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(issue is null)">Delete</button> |
             <a href="/issues">Back to List</a>

@@ -1,0 +1,37 @@
+﻿@page "/projectcomponents"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Models
+@using CFIssueTracker.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="projectcomponents/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="context.ProjectComponent">
+    <PropertyColumn Property="projectcomponent => projectcomponent.ProjectId" />
+    <PropertyColumn Property="projectcomponent => projectcomponent.Name" />
+
+    <TemplateColumn Context="projectcomponent">
+        <a href="@($"projectcomponents/edit?id={projectcomponent.Id}")">Edit</a> |
+        <a href="@($"projectcomponents/details?id={projectcomponent.Id}")">Details</a> |
+        <a href="@($"projectcomponents/delete?id={projectcomponent.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private CFIssueTrackerContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

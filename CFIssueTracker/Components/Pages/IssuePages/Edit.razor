@@ -1,8 +1,17 @@
 ﻿@page "/issues/edit"
 @using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
+
+@inject IIssueService IssueService
+@inject IIssueStatusService IssueStatusService
+@inject IIssueTypeService IssueTypeService
+@inject IProjectComponentService ProjectComponentService
+@inject IProjectService ProjectService
+@inject IUserService UserService
+@inject IRequestContextService RequestContextService
 
 <PageTitle>Edit</PageTitle>
 
@@ -31,31 +40,120 @@ else
                     <label for="projectid" class="form-label">ProjectId:</label>
                     <InputText id="projectid" @bind-Value="Issue.ProjectId" class="form-control" />
                     <ValidationMessage For="() => Issue.ProjectId" class="text-danger" />
+
+                    <InputSelect @bind-Value="Issue.ProjectId" class="form-control">
+                        @foreach (Project project in Projects)
+                        {
+                            @if (project.Id == Issue.ProjectId)
+                            {
+                                <option selected value="@project.Id">@project.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@project.Id">@project.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
                 <div class="mb-3">
                     <label for="projectcomponentid" class="form-label">ProjectComponentId:</label>
                     <InputText id="projectcomponentid" @bind-Value="Issue.ProjectComponentId" class="form-control" />
                     <ValidationMessage For="() => Issue.ProjectComponentId" class="text-danger" />
+
+                    <InputSelect @bind-Value="Issue.ProjectComponentId" class="form-control">
+                        @foreach (ProjectComponent projectComponent in ProjectComponents)
+                        {
+                            @if (projectComponent.Id == Issue.ProjectComponentId)
+                            {
+                                <option selected value="@projectComponent.Id">@projectComponent.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@projectComponent.Id">@projectComponent.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
                 <div class="mb-3">
                     <label for="typeid" class="form-label">TypeId:</label>
                     <InputText id="typeid" @bind-Value="Issue.TypeId" class="form-control" />
                     <ValidationMessage For="() => Issue.TypeId" class="text-danger" />
+
+                    <InputSelect @bind-Value="Issue.TypeId" class="form-control">
+                        @foreach (IssueType issueType in IssueTypes)
+                        {
+                            @if (issueType.Id == Issue.StatusId)
+                            {
+                                <option selected value="@issueType.Id">@issueType.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@issueType.Id">@issueType.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
                 <div class="mb-3">
                     <label for="statusid" class="form-label">StatusId:</label>
                     <InputText id="statusid" @bind-Value="Issue.StatusId" class="form-control" />
                     <ValidationMessage For="() => Issue.StatusId" class="text-danger" />
+
+                    <InputSelect @bind-Value="Issue.StatusId" class="form-control">
+                        @foreach (IssueStatus issueStatus in IssueStatuses)
+                        {
+                            @if (issueStatus.Id == Issue.StatusId)
+                            {
+                                <option selected value="@issueStatus.Id">@issueStatus.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@issueStatus.Id">@issueStatus.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
                 <div class="mb-3">
                     <label for="createduserid" class="form-label">CreatedUserId:</label>
                     <InputText id="createduserid" @bind-Value="Issue.CreatedUserId" class="form-control" />
                     <ValidationMessage For="() => Issue.CreatedUserId" class="text-danger" />
+
+                    <InputSelect @bind-Value="Issue.CreatedUserId" class="form-control">
+                        @foreach (User user in Users)
+                        {
+                            @if (user.Id == Issue.CreatedUserId)
+                            {
+                                <option selected value="@user.Id">@user.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@user.Id">@user.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
                 <div class="mb-3">
                     <label for="createddatetime" class="form-label">CreatedDateTime:</label>
                     <InputDate id="createddatetime" @bind-Value="Issue.CreatedDateTime" class="form-control" />
                     <ValidationMessage For="() => Issue.CreatedDateTime" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="assigneduserid" class="form-label">AssignedUserId:</label>
+                    <InputText id="assigneduserid" @bind-Value="Issue.AssignedUserId" class="form-control" />
+                    <ValidationMessage For="() => Issue.AssignedUserId" class="text-danger" />
+
+                    <InputSelect @bind-Value="Issue.AssignedUserId" class="form-control">
+                        @foreach (User user in Users)
+                        {
+                            @if (user.Id == Issue.AssignedUserId)
+                            {
+                                <option selected value="@user.Id">@user.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@user.Id">@user.Name</option>
+                            }
+                        }
+                    </InputSelect>
                 </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -73,6 +171,24 @@ else
 
     [SupplyParameterFromForm]
     private Issue? Issue { get; set; }
+
+    private List<IssueStatus> IssueStatuses = new();
+    private List<IssueType> IssueTypes = new();
+    private List<ProjectComponent> ProjectComponents = new();
+    private List<Project> Projects = new();
+    private List<User> Users = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Load data
+        IssueStatuses = await IssueStatusService.GetAllAsync();
+        IssueTypes = await IssueTypeService.GetAllAsync();
+        ProjectComponents = await ProjectComponentService.GetAllAsync();
+        Projects = await ProjectService.GetAllAsync();
+        Users = await UserService.GetAllAsync();
+
+        await base.OnParametersSetAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {

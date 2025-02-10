@@ -1,0 +1,94 @@
+﻿@page "/projectcomponents/edit"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>ProjectComponent</h2>
+<hr />
+@if (ProjectComponent is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="ProjectComponent" OnValidSubmit="UpdateProjectComponent" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="ProjectComponent.Id" value="@ProjectComponent.Id" />
+                <div class="mb-3">
+                    <label for="projectid" class="form-label">ProjectId:</label>
+                    <InputText id="projectid" @bind-Value="ProjectComponent.ProjectId" class="form-control" />
+                    <ValidationMessage For="() => ProjectComponent.ProjectId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="ProjectComponent.Name" class="form-control" />
+                    <ValidationMessage For="() => ProjectComponent.Name" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/projectcomponents">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private ProjectComponent? ProjectComponent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        ProjectComponent ??= await context.ProjectComponent.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (ProjectComponent is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateProjectComponent()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(ProjectComponent!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!ProjectComponentExists(ProjectComponent!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/projectcomponents");
+    }
+
+    private bool ProjectComponentExists(string id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.ProjectComponent.Any(e => e.Id == id);
+    }
+}
