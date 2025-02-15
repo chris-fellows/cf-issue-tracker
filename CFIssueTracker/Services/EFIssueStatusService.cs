@@ -33,6 +33,14 @@ namespace CFIssueTrackerCommon.Services
         //    return _context;
         //}
 
+        public List<IssueStatus> GetAll()
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                return context.IssueStatus.ToList();
+            }
+        }
+
         public async Task<List<IssueStatus>> GetAllAsync()
         {
             //var context = GetContext();

@@ -1,0 +1,40 @@
+﻿<style>
+    ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;        
+    }
+
+    li {
+    display: inline;
+    }
+
+</style>
+
+
+<nav>
+    <ul>        
+        <li><button type="button" @onclick="PageSelectClicked">First</button></li>
+        <li><a href="javascript: void(0)" @onclick="@(() => PageSelectClicked())">Next</a></li>
+        <li><a href="javascript: void(0)" @onclick="@(() => PageSelectClicked())">Previous</a></li>
+        <li><a href="javascript: void(0)" @onclick="@(() => PageSelectClicked())">Last</a></li>
+    </ul>
+</nav>
+
+@code {
+    [Parameter] public int PageCount { get; set; }
+
+    [Parameter] public int CurrentPage { get; set; }
+
+    //[Parameter] public Func<int, Task> OnPageSelected { get; set; } = null;
+    [Parameter] public Action<int> OnPageSelected { get; set; } = null;
+
+    // @rendermode InteractiveServer
+
+    public void PageSelectClicked()
+    {
+        var xxx = 1000;
+        //OnPageSelected?.Invoke(page);
+    }
+}

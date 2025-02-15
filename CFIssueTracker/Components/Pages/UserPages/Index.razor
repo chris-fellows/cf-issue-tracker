@@ -1,23 +1,44 @@
 ﻿@page "/users"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.EntityWriter
+@using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
+@using CFIssueTrackerCommon.Utilities
 @using CFIssueTracker.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IUserService UserService
+
+@using System.IO
+@inject IJSRuntime JS
+
+<script>
+    window.downloadFileFromStream = async (fileName, contentStreamReference) =>
+    {
+    const arrayBuffer = await contentStreamReference.arrayBuffer();
+    const blob = new Blob([arrayBuffer]);
+    const url = URL.createObjectURL(blob);
+    const anchorElement = document.createElement('a');
+    anchorElement.href = url;
+    anchorElement.download = fileName ?? '';
+    anchorElement.click();
+    anchorElement.remove();
+    URL.revokeObjectURL(url);
+    }
+</script>
 
 <PageTitle>Index</PageTitle>
 
-<h1>Index</h1>
+<h1>User List</h1>
 
 <p>
     <a href="users/create">Create New</a>
+    <button @onclick="DownloadCSVAsync">Download</button>
 </p>
 
-<QuickGrid Class="table" Items="context.User">
+<QuickGrid Class="table" Items="@UsersQueryable">
     <PropertyColumn Property="user => user.Name" />
     <PropertyColumn Property="user => user.Email" />
-
     <TemplateColumn Title="Activeeee">
         @if (context.Active)
         {
@@ -28,9 +49,7 @@
             <input type="checkbox" />
         }
     </TemplateColumn>
-
-    <PropertyColumn Property="user => user.Active" />
-
+    
     <TemplateColumn Context="user">
         <a href="@($"users/edit?id={user.Id}")">Edit</a> |
         <a href="@($"users/details?id={user.Id}")">Details</a> |
@@ -39,12 +58,38 @@
 </QuickGrid>
 
 @code {
-    private CFIssueTrackerContext context = default!;
+    //private CFIssueTrackerContext context = default!;
+
+    private IQueryable<User>? UsersQueryable;
 
     protected override void OnInitialized()
     {
-        context = DbFactory.CreateDbContext();
+        //context = DbFactory.CreateDbContext();
+
+        UsersQueryable = UserService.GetAll().AsQueryable();
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    private async Task DownloadCSVAsync()
+    {
+        using (var session = new DisposableSession())
+        {
+            // Get file stream
+            var tempFile = Path.GetTempFileName();
+            session.Add(() =>
+            {
+                if (File.Exists(tempFile)) File.Delete(tempFile);
+            });
+
+            var entityWriter = new CSVUserWriter(tempFile, (Char)9);
+            entityWriter.Write(UsersQueryable.ToList());
+            var fileStream = File.OpenRead(tempFile);
+
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", "Users.txt", streamRef);
+        }
+    }
+
+    //@implements IAsyncDisposable
+    //public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

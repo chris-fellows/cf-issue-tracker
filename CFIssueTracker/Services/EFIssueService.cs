@@ -19,6 +19,14 @@ namespace CFIssueTrackerCommon.Services
             _dbFactory = dbFactory;
         }
 
+        public List<Issue> GetAll()
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                return context.Issue.ToList();
+            }
+        }
+
         public async Task<List<Issue>> GetAllAsync()
         {
             using (var context = _dbFactory.CreateDbContext())

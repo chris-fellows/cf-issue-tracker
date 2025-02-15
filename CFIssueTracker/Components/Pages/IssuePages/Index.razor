@@ -1,44 +1,80 @@
 ﻿@page "/issues"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
-@using CFIssueTrackerCommon.Interfaces;
+@using CFIssueTrackerCommon.EntityWriter
+@using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
+@using CFIssueTrackerCommon.Utilities
 @using CFIssueTracker.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
 @inject IIssueTypeService IssueTypeService
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
 @inject IUserService UserService
 
+@using System.IO
+@inject IJSRuntime JS
+
+@rendermode InteractiveServer   // Added so that paginator works
+@attribute [StreamRendering]    // Added to display loading
+
+<script>
+    window.downloadFileFromStream = async (fileName, contentStreamReference) =>
+    {
+        const arrayBuffer = await contentStreamReference.arrayBuffer();
+        const blob = new Blob([arrayBuffer]);
+        const url = URL.createObjectURL(blob);
+        const anchorElement = document.createElement('a');
+        anchorElement.href = url;
+        anchorElement.download = fileName ?? '';
+        anchorElement.click();
+        anchorElement.remove();
+        URL.revokeObjectURL(url);
+    }
+</script>
+
 <PageTitle>Index</PageTitle>
 
-<h1>Index</h1>
+<h1>Issue List</h1>
 
 <p>
     <a href="issues/create">Create New</a>
+    <button @onclick="DownloadCSVAsync">Download</button>
 </p>
+@if (IssuesQueryable == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGrid Class="table" Items="@IssuesQueryable" Pagination="@Pagination">
+        <PropertyColumn Property="issue => issue.Reference" />
+        <PropertyColumn Title="Project" Property="issue => GetProjectName(issue)" />
+        <PropertyColumn Title="Component" Property="issue => GetProjectComponentName(issue)" />
+        <PropertyColumn Title="Type" Property="issue => GetIssueTypeName(issue)" />
+        <PropertyColumn Title="Status" Property="issue => GetIssueStatusName(issue)" />
+        <PropertyColumn Title="Created User" Property="issue => GetCreatedUserName(issue)" />
+        <PropertyColumn Property="issue => issue.CreatedDateTime" />
+        <PropertyColumn Title="Assigned User" Property="issue => GetAssignedUserName(issue)" />
 
-<QuickGrid Class="table" Items="context.Issue">
-    <PropertyColumn Property="issue => issue.Reference" />
-    <PropertyColumn Title="Project" Property="issue => GetProjectName(issue)" />
-    <PropertyColumn Title="Component" Property="issue => GetProjectComponentName(issue)" />
-    <PropertyColumn Title="Type" Property="issue => GetIssueTypeName(issue)" />
-    <PropertyColumn Title="Status" Property="issue => GetIssueStatusName(issue)" />
-    <PropertyColumn Title="Created User" Property="issue => GetCreatedUserName(issue)" />
-    <PropertyColumn Property="issue => issue.CreatedDateTime" />
-    <PropertyColumn Title="Assigned User" Property="issue => GetAssignedUserName(issue)" />
+        <TemplateColumn Context="issue">
+            <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
+            <a href="@($"issues/details?id={issue.Id}")">Details</a> |
+            <a href="@($"issues/delete?id={issue.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
 
-    <TemplateColumn Context="issue">
-        <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
-        <a href="@($"issues/details?id={issue.Id}")">Details</a> |
-        <a href="@($"issues/delete?id={issue.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+    <Paginator State="@Pagination" />
+}
 
 @code {
-    private CFIssueTrackerContext context = default!;
+    //private CFIssueTrackerContext context = default!;
+
+    private PaginationState Pagination = new PaginationState() { ItemsPerPage = 20 };
+
+    private IQueryable<Issue>? IssuesQueryable;
 
     private List<IssueStatus> IssueStatuses = new();
     private List<IssueType> IssueTypes = new();
@@ -46,21 +82,47 @@
     private List<Project> Projects = new();
     private List<User> Users = new();
 
-    protected override async Task OnParametersSetAsync()
-    {        
-        if (!IssueStatuses.Any()) IssueStatuses = await IssueStatusService.GetAllAsync();
-        if (!IssueTypes.Any()) IssueTypes = await IssueTypeService.GetAllAsync();
-        if (!ProjectComponents.Any()) ProjectComponents = await ProjectComponentService.GetAllAsync();
-        if (!Projects.Any()) Projects = await ProjectService.GetAllAsync();
-        if (!Users.Any()) Users = await UserService.GetAllAsync();
+    protected override async Task OnInitializedAsync()
+    {       
+        // Simulate asynchronous loading to demonstrate streaming rendering
+        //await Task.Delay(1000);      
 
-        await base.OnParametersSetAsync();
-    }    
+        IssueStatuses = IssueStatusService.GetAll();
+        IssueTypes = IssueTypeService.GetAll();
+        ProjectComponents = ProjectComponentService.GetAll();
+        Projects = ProjectService.GetAll();
+        Users = UserService.GetAll();
 
-    protected override void OnInitialized()
-    {
-        context = DbFactory.CreateDbContext();
+        //context = await DbFactory.CreateDbContextAsync();
+        //IssuesQueryable = context.Issue.AsQueryable();
+        IssuesQueryable = IssueService.GetAll().AsQueryable();
     }
+
+    // protected override void OnInitialized()
+    // {
+    //     context = DbFactory.CreateDbContext();
+
+    //     // Delay
+    //     var stopwatch = new System.Diagnostics.Stopwatch();
+    //     stopwatch.Start();
+    //     while (stopwatch.ElapsedMilliseconds < 2000)
+    //     {
+    //         Thread.Sleep(20);
+    //     }
+    //     stopwatch.Stop();
+
+    //     IssuesQueryable = context.Issue.AsQueryable();
+
+    //     IssueStatuses = IssueStatusService.GetAll();
+    //     IssueTypes = IssueTypeService.GetAll();
+    //     ProjectComponents = ProjectComponentService.GetAll();
+    //     Projects = ProjectService.GetAll();
+    //     Users = UserService.GetAll();
+
+    //     //CurrentPage = 1;
+    //     //PageCount = GetPageCount(context.Issue.Count(), PageSize);
+    //     //CurrentDataPage = GetDataPage(CurrentPage, PageSize);
+    // }    
 
     private string GetIssueStatusName(Issue issue)
     {
@@ -73,24 +135,50 @@
     }
 
     private string GetProjectName(Issue issue)
-    {
+    {            
         return Projects.First(p => p.Id == issue.ProjectId).Name;
     }
 
     private string GetProjectComponentName(Issue issue)
-    {
+    {        
         return ProjectComponents.First(c => c.Id == issue.ProjectComponentId).Name;
     }
 
     private string GetCreatedUserName(Issue issue)
-    {
+    {        
         return Users.First(u => u.Id == issue.CreatedUserId).Name;
     }
 
     private string GetAssignedUserName(Issue issue)
-    {
+    {     
         return Users.First(u => u.Id == issue.AssignedUserId).Name;
+    }  
+
+    private async Task DownloadCSVAsync()
+    {
+        using (var session = new DisposableSession())
+        {
+            // Get file stream
+            var tempFile = Path.GetTempFileName();
+            session.Add(() =>
+            {
+                if (File.Exists(tempFile)) File.Delete(tempFile);            
+            });
+
+            var entityWriter = new CSVIssueWriter(tempFile, (Char)9,
+                                IssueStatusService, IssueTypeService,
+                                ProjectComponentService, ProjectService, 
+                                UserService);          
+            entityWriter.Write(IssuesQueryable.ToList());
+            var fileStream = File.OpenRead(tempFile);
+         
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", "Issues.txt", streamRef);
+        }
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    // @implements IAsyncDisposable
+    //public async ValueTask DisposeAsync() => ();
+    //public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }

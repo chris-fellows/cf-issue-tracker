@@ -7,6 +7,8 @@
     /// <typeparam name="TEntityIdType"></typeparam>
     public interface IEntityWithIdService<TEntityType, TEntityIdType>
     {
+        List<TEntityType> GetAll();
+
         /// <summary>
         /// Gets all entities
         /// </summary>

@@ -1,22 +1,24 @@
 ﻿@page "/projectcomponents"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
-@implements IAsyncDisposable
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IProjectComponentService ProjectComponentService
+@inject IProjectService ProjectService
 
 <PageTitle>Index</PageTitle>
 
-<h1>Index</h1>
+<h1>Project Component List</h1>
 
 <p>
     <a href="projectcomponents/create">Create New</a>
 </p>
 
-<QuickGrid Class="table" Items="context.ProjectComponent">
-    <PropertyColumn Property="projectcomponent => projectcomponent.ProjectId" />
-    <PropertyColumn Property="projectcomponent => projectcomponent.Name" />
+<QuickGrid Class="table" Items="ProjectComponentsQueryable">
+    <PropertyColumn Title="Project" Property="projectcomponent => GetProjectName(projectcomponent)" />
+    <PropertyColumn Title="Name" Property="projectcomponent => projectcomponent.Name" />
 
     <TemplateColumn Context="projectcomponent">
         <a href="@($"projectcomponents/edit?id={projectcomponent.Id}")">Edit</a> |
@@ -26,12 +28,28 @@
 </QuickGrid>
 
 @code {
-    private CFIssueTrackerContext context = default!;
+    //private CFIssueTrackerContext context = default!;
+
+    private List<Project> Projects = new();
+
+    private IQueryable<ProjectComponent>? ProjectComponentsQueryable;
 
     protected override void OnInitialized()
     {
-        context = DbFactory.CreateDbContext();
+        //context = DbFactory.CreateDbContext();
+
+        Projects = ProjectService.GetAll();
+
+        ProjectComponentsQueryable = ProjectComponentService.GetAll().AsQueryable();
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    private string GetProjectName(ProjectComponent projectComponent)
+    {
+        var project = Projects.FirstOrDefault(p => p.Id == projectComponent.ProjectId);
+        if (project == null) return "";
+        return project.Name;
+    }
+
+    // @implements IAsyncDisposable
+    //public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
