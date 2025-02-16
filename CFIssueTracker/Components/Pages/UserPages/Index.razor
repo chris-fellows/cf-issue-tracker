@@ -4,8 +4,8 @@
 @using CFIssueTrackerCommon.EntityWriter
 @using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
-@using CFIssueTrackerCommon.Utilities
 @using CFIssueTracker.Data
+@using CFUtilities
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
 @inject IUserService UserService
 
@@ -71,16 +71,16 @@
 
     private async Task DownloadCSVAsync()
     {
-        using (var session = new DisposableSession())
+        using (var session = new DisposableActionsSession())
         {
             // Get file stream
             var tempFile = Path.GetTempFileName();
-            session.Add(() =>
+            session.AddAction(() =>
             {
                 if (File.Exists(tempFile)) File.Delete(tempFile);
             });
 
-            var entityWriter = new CSVUserWriter(tempFile, (Char)9);
+            var entityWriter = new CSVUserWriter(tempFile, (Char)9, System.Text.Encoding.UTF8);
             entityWriter.Write(UsersQueryable.ToList());
             var fileStream = File.OpenRead(tempFile);
 

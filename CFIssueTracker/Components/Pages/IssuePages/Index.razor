@@ -4,8 +4,9 @@
 @using CFIssueTrackerCommon.EntityWriter
 @using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
-@using CFIssueTrackerCommon.Utilities
 @using CFIssueTracker.Data
+@using CFIssueTracker.Utilities
+@using CFUtilities
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
@@ -17,8 +18,8 @@
 @using System.IO
 @inject IJSRuntime JS
 
-@rendermode InteractiveServer   // Added so that paginator works
-@attribute [StreamRendering]    // Added to display loading
+@rendermode InteractiveServer  
+@attribute [StreamRendering]   
 
 <script>
     window.downloadFileFromStream = async (fileName, contentStreamReference) =>
@@ -42,6 +43,54 @@
 <p>
     <a href="issues/create">Create New</a>
     <button @onclick="DownloadCSVAsync">Download</button>
+    <button @onclick="ResetFiltersAsync">Reset Filters</button>
+
+    <br/>
+    <div style="display: inline-block">
+
+        <label for="reference">Reference:</label>
+        <InputText @bind-Value="@FilterReference"/>        
+
+        <label for="projectid">Project:</label>
+        <InputSelect @bind-Value="@FilterProjectId">
+            @foreach (Project project in Projects)
+            {
+                <option value="@project.Id">@project.Name</option>
+            }
+        </InputSelect>
+
+        <label for="issuestatusid">Status:</label>
+        <InputSelect @bind-Value="@FilterIssueStatusId">
+            @foreach (IssueStatus issueStatus in IssueStatuses)
+            {
+                <option value="@issueStatus.Id">@issueStatus.Name</option>
+            }
+        </InputSelect>
+
+        <label for="issuetypeid">Type:</label>
+        <InputSelect @bind-Value="@FilterIssueTypeId">
+            @foreach (IssueType issueType in IssueTypes)
+            {            
+                <option value="@issueType.Id">@issueType.Name</option>            
+            }
+        </InputSelect>
+
+        <label for="createduserid">Created User:</label>
+        <InputSelect @bind-Value="@FilterCreatedUserId">
+            @foreach (User user in Users)
+            {
+                <option value="@user.Id">@user.Name</option>
+            }
+        </InputSelect>
+
+        <label for="assigneduserid">Assigned User:</label>
+        <InputSelect @bind-Value="@FilterAssignedUserId">
+            @foreach (User user in Users)
+            {
+                <option value="@user.Id">@user.Name</option>
+            }
+        </InputSelect>        
+    </div>
 </p>
 @if (IssuesQueryable == null)
 {
@@ -56,7 +105,7 @@ else
         <PropertyColumn Title="Type" Property="issue => GetIssueTypeName(issue)" />
         <PropertyColumn Title="Status" Property="issue => GetIssueStatusName(issue)" />
         <PropertyColumn Title="Created User" Property="issue => GetCreatedUserName(issue)" />
-        <PropertyColumn Property="issue => issue.CreatedDateTime" />
+        <PropertyColumn Title="Created Time" Property="issue => issue.CreatedDateTime" />
         <PropertyColumn Title="Assigned User" Property="issue => GetAssignedUserName(issue)" />
 
         <TemplateColumn Context="issue">
@@ -76,6 +125,111 @@ else
 
     private IQueryable<Issue>? IssuesQueryable;
 
+    private void RefreshIssues(bool notifyStateHasChanged)
+    {
+        IssuesQueryable = IssueService.GetAll()
+                      .Where(i => (String.IsNullOrEmpty(_filterReference) || i.Reference.Contains(_filterReference)) &&
+                                (_filterAssignedUserId == UIUtilities.AnyId || i.AssignedUserId == _filterAssignedUserId) &&
+                                (_filterCreatedUserId == UIUtilities.AnyId || i.CreatedUserId == _filterCreatedUserId) &&
+                                (_filterIssueStatusId == UIUtilities.AnyId || i.StatusId == _filterIssueStatusId) &&
+                                (_filterIssueTypeId == UIUtilities.AnyId || i.TypeId == _filterIssueTypeId) &&
+                                (_filterProjectId == UIUtilities.AnyId || i.ProjectId == _filterProjectId))
+                     .OrderBy(i => i.CreatedDateTime)                                
+                     .AsQueryable();
+
+        if (notifyStateHasChanged) StateHasChanged();
+    }
+
+    // Filter on reference
+    private string _filterReference = String.Empty;
+    public string FilterReference
+    {
+        get { return _filterReference; }
+        set
+        {
+            if (_filterReference != value)
+            {
+                _filterReference = value;
+                RefreshIssues(true);
+            }
+        }
+    }
+
+    // Filter on assigned user
+    private string _filterAssignedUserId = UIUtilities.AnyId;
+    public string FilterAssignedUserId
+    {
+        get { return _filterAssignedUserId; }
+        set
+        {
+            if (_filterAssignedUserId != value)
+            {
+                _filterAssignedUserId = value;
+                RefreshIssues(true);
+            }
+        }
+    }
+
+    // Filter on created user
+    private string _filterCreatedUserId = UIUtilities.AnyId;
+    public string FilterCreatedUserId
+    {
+        get { return _filterCreatedUserId; }
+        set
+        {
+            if (_filterCreatedUserId != value)
+            {
+                _filterCreatedUserId = value;
+                RefreshIssues(true);
+            }
+        }
+    }
+
+    // Filter on project
+    private string _filterProjectId = UIUtilities.AnyId;
+    public string FilterProjectId
+    {
+        get { return _filterProjectId; }
+        set
+        {
+            if (_filterProjectId != value)
+            {
+                _filterProjectId = value;
+                RefreshIssues(true);
+            }
+        }
+    }
+
+    // Filter on issue type
+    private string _filterIssueTypeId = UIUtilities.AnyId;
+    public string FilterIssueTypeId 
+    {
+        get { return _filterIssueTypeId; }
+        set
+        {
+            if (_filterIssueTypeId != value)
+            {
+                _filterIssueTypeId = value;
+                RefreshIssues(true);
+            }
+        }
+    }
+
+    // Filter on issue status
+    private string _filterIssueStatusId = UIUtilities.AnyId;
+    public string FilterIssueStatusId
+    {
+        get { return _filterIssueStatusId; }
+        set
+        {
+            if (_filterIssueStatusId != value)
+            {
+                _filterIssueStatusId = value;
+                RefreshIssues(true);
+            }
+        }
+    }
+
     private List<IssueStatus> IssueStatuses = new();
     private List<IssueType> IssueTypes = new();
     private List<ProjectComponent> ProjectComponents = new();
@@ -93,10 +247,19 @@ else
         Projects = ProjectService.GetAll();
         Users = UserService.GetAll();
 
+        // Add "Any" to filters
+        UIUtilities.AddAny(IssueStatuses);
+        UIUtilities.AddAny(IssueTypes);
+        UIUtilities.AddAny(ProjectComponents);
+        UIUtilities.AddAny(Projects);
+        UIUtilities.AddAny(Users);
+
         //context = await DbFactory.CreateDbContextAsync();
         //IssuesQueryable = context.Issue.AsQueryable();
-        IssuesQueryable = IssueService.GetAll().AsQueryable();
+        //IssuesQueryable = IssueService.GetAll().OrderBy(i => i.CreatedDateTime).AsQueryable();
+        RefreshIssues(false);
     }
+
 
     // protected override void OnInitialized()
     // {
@@ -156,26 +319,38 @@ else
 
     private async Task DownloadCSVAsync()
     {
-        using (var session = new DisposableSession())
+        using (var session = new DisposableActionsSession())
         {
             // Get file stream
             var tempFile = Path.GetTempFileName();
-            session.Add(() =>
+            session.AddAction(() =>
             {
                 if (File.Exists(tempFile)) File.Delete(tempFile);            
             });
 
-            var entityWriter = new CSVIssueWriter(tempFile, (Char)9,
+            var entityWriter = new CSVIssueWriter(tempFile, (Char)9, System.Text.Encoding.UTF8,
                                 IssueStatusService, IssueTypeService,
                                 ProjectComponentService, ProjectService, 
                                 UserService);          
             entityWriter.Write(IssuesQueryable.ToList());
             var fileStream = File.OpenRead(tempFile);
-         
+
             using var streamRef = new DotNetStreamReference(stream: fileStream);
 
             await JS.InvokeVoidAsync("downloadFileFromStream", "Issues.txt", streamRef);
         }
+    }
+
+    private async Task ResetFiltersAsync()
+    {
+        _filterReference = "";
+        _filterAssignedUserId = UIUtilities.AnyId;
+        _filterCreatedUserId = UIUtilities.AnyId;
+        _filterIssueStatusId = UIUtilities.AnyId;
+        _filterIssueTypeId = UIUtilities.AnyId;
+        _filterProjectId = UIUtilities.AnyId;
+
+        RefreshIssues(true);
     }
 
     // @implements IAsyncDisposable

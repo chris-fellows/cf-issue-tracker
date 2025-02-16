@@ -1,40 +1,28 @@
 ﻿using CFIssueTrackerCommon.Models;
+using CFUtilities.CSV;
 using System.Text;
 
 namespace CFIssueTrackerCommon.EntityWriter
 {
     public class CSVUserWriter : IEntityWriter<User>
-    {
-        private readonly string _file;
-        private readonly Char _delimiter;
+    {       
+        private readonly CSVWriter<User> _csvWriter = new CSVWriter<User>();
 
-        public CSVUserWriter(string file, Char delimiter)
+        public CSVUserWriter(string file, Char delimiter, Encoding encoding)
         {
-            _file = file;
-            _delimiter = delimiter;
+            _csvWriter.Delimiter = delimiter;
+            _csvWriter.Encoding = encoding;
+            _csvWriter.File = file;
         }
 
         public void Write(IEnumerable<User> users)
         {
-            if (File.Exists(_file))
-            {
-                File.Delete(_file);
-            }
+            _csvWriter.AddColumn<string>("Id", u => u.Id, value => value.ToString());
+            _csvWriter.AddColumn<string>("Name", u => u.Name, value => value.ToString());
+            _csvWriter.AddColumn<string>("Email", u => u.Email, value => value.ToString());
+            _csvWriter.AddColumn<bool>("Active", u => u.Active, value => value.ToString());
 
-            using (var streamWriter = new StreamWriter(_file, true, Encoding.UTF8))
-            {
-                streamWriter.WriteLine($"Id{_delimiter}Name{_delimiter}Email");
-
-                foreach (var user in users)
-                {
-                    Write(user, streamWriter);
-                }
-            }
-        }
-
-        private void Write(User user, StreamWriter streamWriter)
-        {
-            streamWriter.WriteLine($"{user.Id}{_delimiter}{user.Name}{_delimiter}{user.Email}");
+            _csvWriter.Write(users);
         }
     }
 }

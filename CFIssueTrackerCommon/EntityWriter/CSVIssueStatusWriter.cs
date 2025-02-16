@@ -1,20 +1,26 @@
 ﻿using CFIssueTrackerCommon.Models;
+using CFUtilities.CSV;
+using System.Text;
 
 namespace CFIssueTrackerCommon.EntityWriter
 {
     public class CSVIssueStatusWriter : IEntityWriter<IssueStatus>
     {
-        public void Write(IEnumerable<IssueStatus> issueStatuses)
+        private readonly CSVWriter<IssueStatus> _csvWriter = new CSVWriter<IssueStatus>();
+
+        public CSVIssueStatusWriter(string file, Char delimiter, Encoding encoding)
         {
-            foreach (var issueStatus in issueStatuses)
-            {
-                Write(issueStatus);
-            }
+            _csvWriter.Delimiter = delimiter;
+            _csvWriter.Encoding = encoding;
+            _csvWriter.File = file;
         }
 
-        private void Write(IssueStatus issueStatus)
+        public void Write(IEnumerable<IssueStatus> issueStatuses)
         {
+            _csvWriter.AddColumn<string>("Id", i => i.Id, value => value.ToString());
+            _csvWriter.AddColumn<string>("Name", i => i.Name, value => value.ToString());
 
+            _csvWriter.Write(issueStatuses);
         }
     }
 }

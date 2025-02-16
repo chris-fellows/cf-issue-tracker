@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using CFIssueTracker.Data;
 using CFIssueTrackerCommon.EntityReader;
 using CFIssueTrackerCommon.Models;
-using CFIssueTrackerCommon.EntityWriter;
+//using CFIssueTrackerCommon.EntityWriter;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<CFIssueTrackerContext>(options =>

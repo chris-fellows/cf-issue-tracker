@@ -1,4 +1,5 @@
 ﻿using CFIssueTrackerCommon.Models;
+using CFUtilities.CSV;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,17 +10,21 @@ namespace CFIssueTrackerCommon.EntityWriter
 {
     public class CSVProjectWriter : IEntityWriter<Project>
     {
-        public void Write(IEnumerable<Project> projects)
+        private readonly CSVWriter<Project> _csvWriter = new CSVWriter<Project>();
+
+        public CSVProjectWriter(string file, Char delimiter, Encoding encoding)
         {
-            foreach(var project in projects)
-            {
-                Write(project);
-            }
+            _csvWriter.Delimiter = delimiter;
+            _csvWriter.Encoding = encoding;
+            _csvWriter.File = file;
         }
 
-        private void Write(Project project)
+        public void Write(IEnumerable<Project> projects)
         {
+            _csvWriter.AddColumn<string>("Id", i => i.Id, value => value.ToString());
+            _csvWriter.AddColumn<string>("Name", i => i.Name, value => value.ToString());
 
+            _csvWriter.Write(projects);
         }
     }
 }

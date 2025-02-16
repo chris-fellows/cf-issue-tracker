@@ -1,20 +1,23 @@
 ﻿using CFIssueTrackerCommon.Models;
+using CFUtilities.CSV;
+using System.Text;
 
 namespace CFIssueTrackerCommon.EntityWriter
 {
     public class CSVAuditEventWriter : IEntityWriter<AuditEvent>
     {
-        public void Write(IEnumerable<AuditEvent> auditEvents)
+        private readonly CSVWriter<AuditEvent> _csvWriter = new CSVWriter<AuditEvent>();
+
+        public CSVAuditEventWriter(string file, Char delimiter, Encoding encoding)
         {
-            foreach (var auditEvent in auditEvents)
-            {
-                Write(auditEvent);
-            }
+            _csvWriter.Delimiter = delimiter;
+            _csvWriter.Encoding = encoding;
+            _csvWriter.File = file;
         }
 
-        private void Write(AuditEvent auditEvent)
+        public void Write(IEnumerable<AuditEvent> auditEvents)
         {
-
+            _csvWriter.Write(auditEvents);
         }
     }
 }
