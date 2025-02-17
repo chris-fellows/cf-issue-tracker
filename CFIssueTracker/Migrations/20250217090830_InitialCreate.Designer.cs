@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CFIssueTracker.Migrations
 {
     [DbContext(typeof(CFIssueTrackerContext))]
-    [Migration("20250210121347_InitialCreate")]
+    [Migration("20250217090830_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -126,6 +126,20 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("IssueType");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.MetricsType", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MetricsType");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Project", b =>

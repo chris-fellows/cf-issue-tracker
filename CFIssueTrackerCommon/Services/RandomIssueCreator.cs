@@ -57,8 +57,8 @@ namespace CFIssueTrackerCommon.Services
                     CreatedUserId = createdUser.Id, 
                     ProjectComponentId = projectComponent.Id,
                     ProjectId = project.Id,
-                    Reference = $"R{index}",
-                    StatusId = issueStatus.Id,
+                    Reference = $"R{index.ToString("00000000")}",
+                    StatusId = issueStatus.Id,                    
                     TypeId = issueType.Id                                       
                 };
 

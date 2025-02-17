@@ -125,6 +125,20 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("IssueType");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.MetricsType", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MetricsType");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Project", b =>
                 {
                     b.Property<string>("Id")

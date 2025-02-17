@@ -19,6 +19,8 @@ namespace CFIssueTracker.Data
         public DbSet<CFIssueTrackerCommon.Models.AuditEventType> AuditEventType { get; set; } = default!;
 
         public DbSet<CFIssueTrackerCommon.Models.Issue> Issue { get; set; } = default!;
+
+        public DbSet<CFIssueTrackerCommon.Models.MetricsType> MetricsType { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.Project> Project { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.ProjectComponent> ProjectComponent { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.IssueStatus> IssueStatus { get; set; } = default!;

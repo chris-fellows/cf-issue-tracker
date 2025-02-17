@@ -18,7 +18,7 @@ namespace CFIssueTrackerCommon.EntityReader
             {
                 new ProjectComponent()
                 {
-                    Id = Guid.NewGuid().ToString(),
+                    Id = Guid.NewGuid().ToString(),                    
                     Name = "Unknown"
                 }
             };

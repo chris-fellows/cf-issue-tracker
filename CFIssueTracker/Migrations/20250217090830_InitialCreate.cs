@@ -81,6 +81,18 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MetricsType",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MetricsType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Project",
                 columns: table => new
                 {
@@ -137,6 +149,9 @@ namespace CFIssueTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "IssueType");
+
+            migrationBuilder.DropTable(
+                name: "MetricsType");
 
             migrationBuilder.DropTable(
                 name: "Project");
