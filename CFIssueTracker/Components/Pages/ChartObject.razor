@@ -1,0 +1,119 @@
+﻿@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@inject IMetricService MetricService
+@inject IMetricsTypeService MetricsTypeService
+
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var myChartObject;
+
+    async function createBarChart(controlId, chartLabel, chartLabels, chartData, backgroundColors) {
+
+    // Clean up previous chart
+    if(myChartObject)
+    {
+        myChartObject.destroy();
+    }
+
+    const ctx = document.getElementById(controlId);
+
+    let barChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+    labels: chartLabels,        //  ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+    datasets: [{
+    label:  chartLabel,     // '# of Votes',
+    data: chartData,      // [12, 19, 3, 5, 2, 3],
+    backgroundColor: backgroundColors,
+    borderWidth: 1
+    }]
+    },
+    options: {
+    scales: {
+    y: {
+    beginAtZero: true
+    }
+    }
+    }
+    });
+
+    myChartObject = barChart;
+
+    return barChart;
+    }
+</script>
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+
+@code {
+    private string _metricsTypeId = String.Empty;
+
+    [Parameter]
+
+    public string MetricsTypeId
+    {
+        get { return _metricsTypeId; }
+        set
+        {
+            if (_metricsTypeId != value)
+            {
+                _metricsTypeId = value;
+
+                Task.Factory.StartNew(() => DisplayReportAsync(MetricsTypeId));
+            }
+        }
+    }
+
+    public List<MetricsType> MetricsTypes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        MetricsTypes = MetricsTypeService.GetAll();        
+    }
+
+    private async Task DisplayReportAsync(string metricsTypeId)
+    {
+        var metricsType = MetricsTypes.First(mt => mt.Id == metricsTypeId);
+
+        // TODO: Clean this up and make it generic
+        Metrics metrics = metricsType.Name switch
+        {
+            "Issues By Assigned User" => MetricService.GetIssueCountByAssignedUserMetrics(),
+            "Issues By Created User" => MetricService.GetIssueCountByCreatedUserMetrics(),
+            "Issues By Project" => MetricService.GetIssueCountByProjectMetrics(),
+            "Issues By Status" => MetricService.GetIssueCountByStatusMetrics(),
+            "Issues By Type" => MetricService.GetIssueCountByTypeMetrics(),
+            _ => new Metrics()
+        };
+
+        // Get chart colors
+        // TODO: Store color with entity in DB so that we can use consistent colors
+        var colors = GetDimensionColors();
+
+        // Display chart
+        await JS.InvokeVoidAsync("createBarChart",
+                        "myChart",
+                        metrics.Title,
+                        metrics.Items.Select(m => m.Dimensions[0]).ToArray(),
+                        metrics.Items.Select(m => m.Value).ToArray(),
+                        metrics.Items.Select(m => $"rgba({(colors[metrics.Items.IndexOf(m)].R)},{(colors[metrics.Items.IndexOf(m)].G)},{(colors[metrics.Items.IndexOf(m)].B)},{(colors[metrics.Items.IndexOf(m)].A)})").ToArray());
+    }
+
+    private static List<System.Drawing.Color> GetDimensionColors()
+    {
+        var colors = new List<System.Drawing.Color>();
+        var properties = typeof(System.Drawing.Color).GetProperties().Where(p =>
+                        p.PropertyType == typeof(System.Drawing.Color) &&
+                        p.ReflectedType == typeof(System.Drawing.Color)).ToList();
+        foreach (var property in properties)
+        {
+            var color = (System.Drawing.Color)property.GetValue(null);
+            if (color != System.Drawing.Color.Transparent) colors.Add(color);
+        }
+        return colors;
+    }
+}

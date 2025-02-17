@@ -54,7 +54,8 @@ namespace CFIssueTrackerCommon.Services
                     AssignedDateTime = DateTimeOffset.UtcNow,
                     AssignedUserId = assignedUser.Id,
                     CreatedDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(random.Next(0, 3600 * 24 * 7))),  // Random in last N days
-                    CreatedUserId = createdUser.Id, 
+                    CreatedUserId = createdUser.Id,
+                    Description = "This is the issue description. It can be quite long. Or it can be quite short. It it can be both.",
                     ProjectComponentId = projectComponent.Id,
                     ProjectId = project.Id,
                     Reference = $"R{index.ToString("00000000")}",

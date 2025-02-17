@@ -30,6 +30,11 @@
                 <ValidationMessage For="() => Issue.Reference" class="text-danger" /> 
             </div>        
             <div class="mb-3">
+                <label for="description" class="form-label">Description:</label>                
+                <InputText id="description" @bind-Value="Issue.Description" class="form-control" />
+                <ValidationMessage For="() => Issue.Description" class="text-danger" />
+            </div>
+            <div class="mb-3">
                 <label for="projectid" class="form-label">ProjectId:</label>                  
                 <ValidationMessage For="() => Issue.ProjectId" class="text-danger" />
 
@@ -48,7 +53,7 @@
                 </InputSelect>
             </div>        
             <div class="mb-3">
-                <label for="projectcomponentid" class="form-label">ProjectComponentId:</label>                
+                <label for="projectcomponentid" class="form-label">Component:</label>                
                 <ValidationMessage For="() => Issue.ProjectComponentId" class="text-danger" />
 
                 <InputSelect @bind-Value="Issue.ProjectComponentId" class="form-control">
@@ -66,7 +71,7 @@
                 </InputSelect>
             </div>        
             <div class="mb-3">
-                <label for="typeid" class="form-label">TypeId:</label>                 
+                <label for="typeid" class="form-label">Type:</label>                 
                 <ValidationMessage For="() => Issue.TypeId" class="text-danger" />
 
                 <InputSelect @bind-Value="Issue.TypeId" class="form-control">
@@ -84,7 +89,7 @@
                 </InputSelect>
             </div>                    
             <div class="mb-3">
-                <label for="statusid" class="form-label">StatusId:</label>                 
+                <label for="statusid" class="form-label">Status:</label>                 
                 <ValidationMessage For="() => Issue.StatusId" class="text-danger" /> 
 
                 <InputSelect @bind-Value="Issue.StatusId" class="form-control">
@@ -102,7 +107,7 @@
                 </InputSelect>
             </div>        
             <div class="mb-3">
-                <label for="createduserid" class="form-label">CreatedUserId:</label>                 
+                <label for="createduserid" class="form-label">Created User:</label>                 
                 <ValidationMessage For="() => Issue.CreatedUserId" class="text-danger" />
 
                 <InputSelect @bind-Value="Issue.CreatedUserId" class="form-control">
@@ -120,12 +125,12 @@
                 </InputSelect>
             </div>        
             <div class="mb-3">
-                <label for="createddatetime" class="form-label">CreatedDateTime:</label> 
+                <label for="createddatetime" class="form-label">Created Time:</label> 
                 <InputDate id="createddatetime" @bind-Value="Issue.CreatedDateTime" class="form-control" /> 
                 <ValidationMessage For="() => Issue.CreatedDateTime" class="text-danger" /> 
             </div>
             <div class="mb-3">
-                <label for="assigneduserid" class="form-label">AssignedUserId:</label>                
+                <label for="assigneduserid" class="form-label">Assigned User:</label>                
                 <ValidationMessage For="() => Issue.AssignedUserId" class="text-danger" />
 
                 <InputSelect @bind-Value="Issue.AssignedUserId" class="form-control">

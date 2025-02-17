@@ -1,4 +1,6 @@
-﻿namespace CFIssueTrackerCommon.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
     /// Issue status
@@ -7,6 +9,8 @@
     {
         public string Id { get; set; } = String.Empty;
 
+        [Required]
+        [MaxLength(100)]
         public string Name { get; set; } = String.Empty;
     }
 }

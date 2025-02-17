@@ -9,9 +9,11 @@ namespace CFIssueTrackerCommon.Models
     {
         public string Id { get; set; } = String.Empty;
 
-        //[Required]
+        [Required]
+        [MaxLength(100)]
         public string Name { get; set; } = String.Empty;
 
+        [MaxLength(100)]
         public string Email { get; set; } = String.Empty;
 
         public bool Active { get; set; } = true;

@@ -7,12 +7,17 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Models
 {
-    public class MetricsType
+    public class IssueComment
     {
         public string Id { get; set; } = String.Empty;
 
         [Required]
-        [MaxLength(100)]
-        public string Name { get; set; } = String.Empty;
+        public string Description { get; set; } = String.Empty;
+
+        [Required]
+        [MaxLength(50)]
+        public string IssueId { get; set; } = String.Empty;
+
+        public DateTimeOffset CreatedDateTime = DateTimeOffset.UtcNow;
     }
 }

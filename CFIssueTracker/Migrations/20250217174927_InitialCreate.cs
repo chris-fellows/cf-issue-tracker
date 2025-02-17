@@ -16,7 +16,7 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    TypeId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
@@ -29,7 +29,7 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -41,14 +41,15 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Reference = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProjectId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ProjectComponentId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TypeId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StatusId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Reference = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProjectId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ProjectComponentId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    StatusId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedUserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    AssignedUserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AssignedUserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     AssignedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
@@ -61,7 +62,7 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -73,7 +74,7 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -85,7 +86,7 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -97,7 +98,7 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -109,8 +110,8 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ProjectId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    ProjectId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -122,8 +123,8 @@ namespace CFIssueTracker.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Active = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>

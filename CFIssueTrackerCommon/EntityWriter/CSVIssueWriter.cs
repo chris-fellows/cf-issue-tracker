@@ -45,14 +45,13 @@ namespace CFIssueTrackerCommon.EntityWriter
             _csvWriter.AddColumn<string>("Id", i => i.Id, value => value.ToString());
             _csvWriter.AddColumn<DateTimeOffset>("CreatedDateTime", i => i.CreatedDateTime, value => value.ToString());
             _csvWriter.AddColumn<string>("CreatedUser", i => i.CreatedUserId, value => users.First(u => u.Id == value).Name);
+            _csvWriter.AddColumn<string>("Description", i => i.Description, value => value.ToString());
             _csvWriter.AddColumn<string>("Status", i => i.StatusId, value => issueStatuses.First(u => u.Id == value).Name);
             _csvWriter.AddColumn<string>("Type", i => i.TypeId, value => issueTypes.First(u => u.Id == value).Name);
-            //_csvWriter.AddColumn<string>("Project", i => i.ProjectId, value => projects.First(u => u.Id == value).Name);
-            //_csvWriter.AddColumn<string>("ProjectComponent", i => i.ProjectComponentId, value => projectComponents.First(u => u.Id == value).Name);
+            _csvWriter.AddColumn<string>("Project", i => i.ProjectId, value => projects.First(u => u.Id == value).Name);
+            _csvWriter.AddColumn<string>("ProjectComponent", i => i.ProjectComponentId, value => projectComponents.First(u => u.Id == value).Name);
 
             _csvWriter.Write(issues);
-
-            int xx = 1000;
         }
     }
 }

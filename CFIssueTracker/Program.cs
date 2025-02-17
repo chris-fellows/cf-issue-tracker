@@ -27,6 +27,7 @@ builder.Services.AddScoped<IRequestContextService, RequestContextService>();
 // Add data services
 builder.Services.AddScoped<IAuditEventService, EFAuditEventService>();
 builder.Services.AddScoped<IAuditEventTypeService, EFAuditEventTypeService>();
+builder.Services.AddScoped<IIssueCommentService, EFIssueCommentService>();
 builder.Services.AddScoped<IIssueService, EFIssueService>();
 builder.Services.AddScoped<IIssueStatusService, EFIssueStatusService>();
 builder.Services.AddScoped<IIssueTypeService, EFIssueTypeService>();
@@ -88,7 +89,7 @@ app.MapRazorComponents<App>()
 //    var projectComponentService = scope.ServiceProvider.GetRequiredService<IProjectComponentService>();
 //    var projectService = scope.ServiceProvider.GetRequiredService<IProjectService>();
 //    var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
-    
+
 //    // Get seed data services
 //    var auditEventTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<AuditEventType>>("AuditEventTypeSeed");
 //    var issueStatusSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<IssueStatus>>("IssueStatusSeed");
