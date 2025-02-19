@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Utilities\" />
+    <ProjectReference Include="..\..\cf-utilities-core\CFUtilities\CFUtilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\cf-utilities-core\CFUtilities\CFUtilities.csproj" />
+    <Folder Include="Utilities\" />
   </ItemGroup>
 
 </Project>

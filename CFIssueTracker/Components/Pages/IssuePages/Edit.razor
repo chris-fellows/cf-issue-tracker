@@ -5,6 +5,7 @@
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
 
+@inject IIssueCommentService IssueCommentService
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
 @inject IIssueTypeService IssueTypeService
@@ -153,9 +154,12 @@ else
                             }
                         }
                     </InputSelect>
-                </div>
+                </div>              
+
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
+
+            <IssueCommentsObject IssueId="@Id" IssueCommentList="@IssueCommentList"></IssueCommentsObject>
         </div>
     </div>
 }
@@ -177,8 +181,30 @@ else
     private List<Project> Projects = new();
     private List<User> Users = new();
 
+    //private List<IssueComment> IssueComments = new();
+    private IssueCommentList IssueCommentList = new();
+
     protected override async Task OnParametersSetAsync()
     {
+        IssueCommentList.List = await IssueCommentService.GetByIssueAsync(Issue.Id);
+        // if (!IssueComments.Any())
+        // {
+        //     IssueComments.Add(new IssueComment()
+        //         {
+        //             Id = Guid.NewGuid().ToString(),
+        //             CreatedDateTime = DateTimeOffset.UtcNow,
+        //             Description = "Comment #1",
+        //             IssueId = Issue.Id
+        //         });
+        //     IssueComments.Add(new IssueComment()
+        //         {
+        //             Id = Guid.NewGuid().ToString(),
+        //             CreatedDateTime = DateTimeOffset.UtcNow,
+        //             Description = "Comment #2",
+        //             IssueId = Issue.Id
+        //         });
+        // }
+
         // Load data
         IssueStatuses = await IssueStatusService.GetAllAsync();
         IssueTypes = await IssueTypeService.GetAllAsync();
@@ -203,7 +229,7 @@ else
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateIssue()
-    {
+    {        
         using var context = DbFactory.CreateDbContext();
         context.Attach(Issue!).State = EntityState.Modified;
 

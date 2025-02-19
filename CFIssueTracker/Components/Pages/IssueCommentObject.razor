@@ -1,0 +1,35 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-md-4">                               
+            <div class="mb-3">
+                <label for="issuecommentdescription" class="form-label">Description:</label>
+                <InputText id="issuecommentdescription" @bind-Value="IssueComment.Description" class="form-control" />                
+            </div>        
+    </div>
+</div>
+
+@code {
+    [Parameter] public IssueComment IssueComment { get; set; } = new();
+
+    /* <ValidationMessage For="() => IssueComment.Description" class="text-danger" />
+    *  <EditForm method="post" Model="IssueComment" OnValidSubmit="UpdateIssueComment" Enhance>
+           <DataAnnotationsValidator />
+           <ValidationSummary class="text-danger" role="alert" />
+
+               <div class="mb-3">
+               <label for="description" class="form-label">Description:</label>
+               <InputText id="description" @bind-Value="Issue.Description" class="form-control" />
+               <ValidationMessage For="() => Issue.Description" class="text-danger" />
+           </div>
+
+           <button type="submit" class="btn btn-primary">Create</button>
+       </EditForm>
+     */   
+}

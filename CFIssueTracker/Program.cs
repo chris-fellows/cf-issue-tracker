@@ -7,6 +7,8 @@ using CFIssueTracker.Data;
 using CFIssueTrackerCommon.EntityReader;
 using CFIssueTrackerCommon.Models;
 using CFIssueTracker.Services;
+using CFIssueTrackerCommon.SystemTask;
+using CFUtilities.Utilities;
 //using CFIssueTrackerCommon.EntityWriter;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +61,32 @@ builder.Services.AddKeyedScoped<IEntityReader<User>, UserSeed1>("UserSeed");
 
 builder.Services.AddSingleton<ICache, MemoryCache>();
 
+// Set system task list
+builder.Services.AddSingleton<ISystemTaskList>((scope) =>
+{
+    // Set system task configs
+    var systemTaskConfigs = new List<SystemTaskConfig>()
+    {
+        new SystemTaskConfig()
+        {
+            SystemTaskName = NotificationSystemTask.TaskName,
+            ExecuteFrequency = TimeSpan.FromMinutes(5)        
+        }
+    };
+    systemTaskConfigs.ForEach(stc => stc.NextExecuteTime = DateTimeUtilities.GetNextTaskExecuteTimeFromFrequency(stc.ExecuteFrequency));
+
+    // Set system tasks
+    var systemTasks = new List<ISystemTask>()
+    {
+        new NotificationSystemTask()
+    };
+
+    return new SystemTaskList(5, systemTasks, systemTaskConfigs);
+});
+
+// Add background service for system tasks
+builder.Services.AddHostedService<SystemTaskBackgroundService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -78,6 +106,47 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+//// Populate seed data
+//using (var scope = app.Services.CreateScope())
+//{
+//    // Get services    
+//    var issueCommentService =scope.ServiceProvider.GetRequiredService<IIssueCommentService>();
+//    var issueService = scope.ServiceProvider.GetRequiredService<IIssueService>();
+
+//    // Get all issues
+//    var issues = issueService.GetAll();
+
+//    // Add comments for each issue
+//    foreach(var issue in issues)
+//    {
+//        var issueComments = new List<IssueComment>()
+//        {
+//            new IssueComment()
+//            {
+//                Id = Guid.NewGuid().ToString(),
+//                CreatedDateTime = DateTimeOffset.UtcNow,
+//                Description= "Comment #1",
+//                IssueId = issue.Id
+//            },
+//            new IssueComment()
+//            {
+//                Id = Guid.NewGuid().ToString(),
+//                CreatedDateTime = DateTimeOffset.UtcNow,
+//                Description= "Comment #2",
+//                IssueId = issue.Id
+//            }
+//        };
+
+//        foreach(var issueComment in issueComments)
+//        {
+//            issueCommentService.AddAsync(issueComment).Wait();
+//        }
+//    }
+
+//    int xxx = 1000;
+//}
+
+// Populate seed data
 //using (var scope = app.Services.CreateScope())
 //{
 //    // Get services

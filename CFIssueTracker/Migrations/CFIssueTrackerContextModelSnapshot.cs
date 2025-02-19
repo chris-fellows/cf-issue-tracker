@@ -110,6 +110,25 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("Issue");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.IssueComment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IssueId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IssueComment");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.IssueStatus", b =>
                 {
                     b.Property<string>("Id")

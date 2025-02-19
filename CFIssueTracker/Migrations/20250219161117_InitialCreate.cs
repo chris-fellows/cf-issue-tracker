@@ -58,6 +58,19 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IssueComment",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IssueId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IssueComment", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IssueStatus",
                 columns: table => new
                 {
@@ -144,6 +157,9 @@ namespace CFIssueTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "Issue");
+
+            migrationBuilder.DropTable(
+                name: "IssueComment");
 
             migrationBuilder.DropTable(
                 name: "IssueStatus");
