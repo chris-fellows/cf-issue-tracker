@@ -13,6 +13,8 @@
 @inject IUserService UserService
 @inject IRequestContextService RequestContextService
 
+@attribute [Authorize(Roles = "Administrator,User")]
+
 <PageTitle>Create</PageTitle>
 
 <h1>Create</h1>

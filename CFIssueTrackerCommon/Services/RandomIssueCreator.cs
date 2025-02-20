@@ -5,6 +5,7 @@ namespace CFIssueTrackerCommon.Services
 {
     public class RandomIssueCreator
     {
+        private readonly IIssueCommentService _issueCommentService;
         private readonly IIssueService _issueService;
         private readonly IIssueStatusService _issueStatusService;
         private readonly IIssueTypeService _issueTypeService;
@@ -12,13 +13,15 @@ namespace CFIssueTrackerCommon.Services
         private readonly IProjectService _projectService;
         private readonly IUserService _userService;
 
-        public  RandomIssueCreator(IIssueService issueService,
+        public RandomIssueCreator(IIssueCommentService issueCommentService,
+            IIssueService issueService,
             IIssueStatusService issueStatusService,
             IIssueTypeService issueTypeService, 
             IProjectComponentService projectComponentService,
             IProjectService projectService,
             IUserService userService)
         {
+            _issueCommentService = issueCommentService;
             _issueService = issueService;
             _issueStatusService = issueStatusService;
             _issueTypeService = issueTypeService;
@@ -39,13 +42,23 @@ namespace CFIssueTrackerCommon.Services
 
             for (int index = 0; index < max; index++)
             {
-                // Set random data
-                var assignedUser = users[random.Next(0, users.Count - 1)];
-                var createdUser = users[random.Next(0, users.Count - 1)];
+                // Set random data                
                 var issueStatus = issueStatuses[random.Next(0, issueStatuses.Count - 1)];
                 var issueType = issueTypes[random.Next(0, issueTypes.Count - 1)];
                 var project = projects[random.Next(0, projects.Count - 1)];
                 var projectComponent = projectComponents[random.Next(0, projectComponents.Count - 1)];
+               
+                User? assignedUser = null;
+                do
+                {
+                    assignedUser = users[random.Next(0, users.Count - 1)];
+                } while (assignedUser.GetUserType() != Enums.UserTypes.Normal);
+
+                User? createdUser = null;
+                do
+                {
+                    createdUser = users[random.Next(0, users.Count - 1)];
+                } while (createdUser.GetUserType() != Enums.UserTypes.Normal);
 
                 // Create issue
                 var issue = new Issue()
@@ -64,6 +77,28 @@ namespace CFIssueTrackerCommon.Services
                 };
 
                 await _issueService.AddAsync(issue);
+
+                // Add random comment(s)
+                var issueCount = random.Next(0, 3);
+                for (int commentIndex = 0; commentIndex < issueCount; commentIndex++)
+                {
+                    User? commentCreatedUser = null;
+                    do
+                    {
+                        commentCreatedUser = users[random.Next(0, users.Count - 1)];
+                    } while (commentCreatedUser.GetUserType() != Enums.UserTypes.Normal);
+
+                    var issueComment = new IssueComment()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        CreatedUserId = commentCreatedUser.Id,
+                        CreatedDateTime = issue.CreatedDateTime.AddSeconds(random.Next(0, 3600 * 6)),
+                        Description = $"Comment #{commentIndex + 1}",
+                        IssueId = issue.Id                        
+                    };
+
+                    await _issueCommentService.AddAsync(issueComment);
+                }
             }
         }
     }

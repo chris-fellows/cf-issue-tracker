@@ -26,48 +26,75 @@
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="issues">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Issues
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Administrator,User">
+            <Authorized>
+                 <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="issues">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Issues
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="issuestatuses">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Issue Statuses
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Administrator">      
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="issuestatuses">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Issue Statuses
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="issuetypes">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Issue Types
-            </NavLink>
-        </div>
+         <AuthorizeView Roles="Administrator">      
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="issuetypes">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Issue Types
+                    </NavLink>
+                </div>
+        </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="projects">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Projects
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="Administrator">      
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="projects">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Projects
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
+        <AuthorizeView Roles="Administrator">      
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="projectcomponents">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Project Components
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+        
+        <AuthorizeView Roles="Administrator,User">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="reports">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Reports
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="projectcomponents">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Project Components
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="reports">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Reports
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="users">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Users
-            </NavLink>
-        </div>
+         <AuthorizeView Roles="Administrator">      
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="users">
+                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Users
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
 

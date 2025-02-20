@@ -14,6 +14,8 @@
 @inject IUserService UserService
 @inject IRequestContextService RequestContextService
 
+@attribute [Authorize(Roles = "Administrator,User")]
+
 <PageTitle>Edit</PageTitle>
 
 <h1>Edit</h1>

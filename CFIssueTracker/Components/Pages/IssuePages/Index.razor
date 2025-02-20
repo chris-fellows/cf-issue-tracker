@@ -20,6 +20,7 @@
 
 @rendermode InteractiveServer  
 @attribute [StreamRendering]   
+@attribute [Authorize(Roles = "Administrator,User")]
 
 <script>
     window.downloadFileFromStream = async (fileName, contentStreamReference) =>

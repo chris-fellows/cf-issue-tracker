@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Models;
+﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "System",
+                    Password = "123",
+                    Role = UserRoleNames.Administrator,
                     Active = true
                 },
                 new User()
@@ -27,6 +30,8 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = "Test User 1",
                     Email = "testuser1@domain.com",
+                    Password = "testuser1",
+                    Role = UserRoleNames.Administrator,
                     Active = true
                 },
                 new User()
@@ -34,6 +39,8 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = "Test User 2",
                     Email = "testuser2@domain.com",
+                    Password = "testuser2",
+                    Role = UserRoleNames.User,                    
                     Active = true
                 },
                 new User()
@@ -41,7 +48,9 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = "Test User 3",
                     Email = "testuser3@domain.com",
-                    Active = true
+                    Password = "testuser3",
+                    Role = UserRoleNames.User,
+                    Active = false
                 },
             };
 

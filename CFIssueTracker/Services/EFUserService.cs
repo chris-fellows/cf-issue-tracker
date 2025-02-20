@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Interfaces;
+﻿using CFIssueTrackerCommon.Enums;
+using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,6 +56,21 @@ namespace CFIssueTrackerCommon.Services
             {
                 var user = await context.User.FirstOrDefaultAsync(i => i.Id == id);
                 return user;
+            }
+        }
+
+        public async Task<User?> ValidateCredentialsAsync(string username, string password)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var user = await context.User.FirstOrDefaultAsync(i => i.Email == username);
+                if (user != null &&
+                    user.GetUserType() == UserTypes.Normal &&
+                    user.Password == password)
+                {
+                    return user;
+                }
+                return null;
             }
         }
     }

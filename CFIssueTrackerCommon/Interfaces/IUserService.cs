@@ -9,5 +9,6 @@ namespace CFIssueTrackerCommon.Interfaces
 {
     public interface IUserService : IEntityWithIdService<User, string>
     {
+        Task<User?> ValidateCredentialsAsync(string username, string password);
     }
 }

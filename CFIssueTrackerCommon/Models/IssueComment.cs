@@ -18,6 +18,10 @@ namespace CFIssueTrackerCommon.Models
         [MaxLength(50)]
         public string IssueId { get; set; } = String.Empty;
 
+        [Required]
+        [MaxLength(50)]
+        public string CreatedUserId { get; set; } = String.Empty;
+
         public DateTimeOffset CreatedDateTime = DateTimeOffset.UtcNow;
     }
 }

@@ -12,6 +12,8 @@
 @using System.IO
 @inject IJSRuntime JS
 
+@attribute [Authorize(Roles = "Administrator")]
+
 <script>
     window.downloadFileFromStream = async (fileName, contentStreamReference) =>
     {

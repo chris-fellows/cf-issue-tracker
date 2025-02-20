@@ -4,6 +4,8 @@
 @inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
 
+@attribute [Authorize(Roles = "Administrator,User")]
+
 <PageTitle>Delete</PageTitle>
 
 <h1>Delete</h1>

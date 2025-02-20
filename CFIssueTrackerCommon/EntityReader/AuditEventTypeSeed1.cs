@@ -31,7 +31,17 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issue updated"
                 },
-                  new AuditEventType()
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Issue comment created"
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Issue comment updated"
+                },
+                new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issue status created"
@@ -85,6 +95,11 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "User logged out"
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "User login failed"
                 },
                 new AuditEventType()
                 {
