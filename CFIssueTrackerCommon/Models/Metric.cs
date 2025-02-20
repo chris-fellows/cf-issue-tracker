@@ -1,15 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFIssueTrackerCommon.Models
+﻿namespace CFIssueTrackerCommon.Models
 {
+    /// <summary>
+    /// Single metric
+    /// </summary>
     public class Metric
     {
+        /// <summary>
+        /// Metric value
+        /// </summary>
         public double Value { get; set; }
 
-        public List<string> Dimensions = new List<string>();
+        /// <summary>
+        /// Dimensions for metric.
+        /// 
+        /// Dimension can be any of the following:
+        /// - Entity name (string). E.g. Issue status
+        /// - Time period (DateTimeOffset[]). E.g. Current year
+        /// </summary>
+        public List<object> Dimensions = new List<object>();        
     }
 }

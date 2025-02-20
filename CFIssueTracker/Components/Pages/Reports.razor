@@ -1,6 +1,7 @@
 ﻿@page "/reports"
 @using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
+@using CFUtilities.Utilities;
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
 @inject IIssueTypeService IssueTypeService
@@ -31,12 +32,63 @@
     }
 </InputSelect>
 
-<ChartObject MetricsTypeId="@MetricsTypeId"></ChartObject>
+<label for="periodtype">Period:</label>
+<InputSelect @bind-Value="@MetricsFilterId">
+    @foreach (MetricsFilter metricsFilter in MetricsFilters)
+    {
+        @if (metricsFilter.Id == MetricsFilterId)
+        {
+            <option selected value="@metricsFilter.Id">@metricsFilter.Name</option>
+        }
+        else
+        {
+            <option value="@metricsFilter.Id">@metricsFilter.Name</option>
+        }
+    }
+</InputSelect>
+
+<ChartObject MetricsTypeId="@MetricsTypeId" FromDateTime="@MetricsFilterFromDateTime"></ChartObject>
 
 @code {
-
-
     private List<MetricsType> MetricsTypes = new();
+    private List<MetricsFilter> MetricsFilters = new();
+    private DateTimeOffset MetricsFilterFromDateTime = DateTimeOffset.MinValue;
+
+    /// <summary>
+    /// Filter for metrics. E.g. All time, current month etc
+    /// </summary>
+    private class MetricsFilter
+    {
+        public string Id { get; internal set;  }
+
+        public string Name { get; internal set; }
+
+        public DateTimeOffset FromDateTime { get; internal set; }
+
+        public MetricsFilter(string id, string name, DateTimeOffset fromDateTime)
+        {
+            Id = id;
+            Name = name;
+            FromDateTime = fromDateTime;
+        }
+    }
+
+    /// <summary>
+    /// Selected metrics filter
+    /// </summary>
+    private string _metricsFilterId = String.Empty;
+    public string MetricsFilterId
+    {
+        get { return _metricsFilterId; }
+        set
+        {
+            if (_metricsFilterId != value)
+            {
+                _metricsFilterId = value;
+                MetricsFilterFromDateTime = MetricsFilters.First(p => p.Id == _metricsFilterId).FromDateTime;
+            }
+        }
+    }
 
     /// <summary>
     /// Selected metrics type
@@ -49,23 +101,28 @@
         {
             if (_metricsTypeId != null)
             {
-                _metricsTypeId = value;
-                //Task.Factory.StartNew(() => DisplayReportAsync(_metricsTypeId));
+                _metricsTypeId = value;       
             }
         }
     }
-   
-    protected override async Task OnInitializedAsync()
-    {
-        MetricsTypes = MetricsTypeService.GetAll();
 
+    protected override async Task OnInitializedAsync()
+    {        
+        MetricsTypes = MetricsTypeService.GetAll();
+     
+        MetricsFilters = new List<MetricsFilter>
+        {
+            new MetricsFilter("1", "All time", DateTimeOffset.MinValue),
+            new MetricsFilter("3", "Current month", DateTimeUtilities.GetMonthStart()),
+            new MetricsFilter("2", "Current year", DateTimeUtilities.GetYearStart())            
+        };
+
+        MetricsFilterId = MetricsFilters.First().Id;
         MetricsTypeId = MetricsTypes.First().Id;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-         //await DisplayReportAsync(MetricsTypeId);                    
-
          MetricsTypeId = MetricsTypes.First().Id;       
     }
 }

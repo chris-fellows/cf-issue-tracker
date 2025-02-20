@@ -15,7 +15,7 @@
     // Clean up previous chart
     if(myChartObject)
     {
-        myChartObject.destroy();
+    myChartObject.destroy();
     }
 
     const ctx = document.getElementById(controlId);
@@ -63,7 +63,24 @@
             {
                 _metricsTypeId = value;
 
-                Task.Factory.StartNew(() => DisplayReportAsync(MetricsTypeId));
+                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime));
+            }
+        }
+    }
+
+    private DateTimeOffset _fromDateTime = DateTimeOffset.MinValue;
+
+    [Parameter]
+    public DateTimeOffset FromDateTime
+    {
+        get { return _fromDateTime;  }
+        set
+        {
+            if (_fromDateTime != value)
+            {
+                _fromDateTime = value;
+
+                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime));
             }
         }
     }
@@ -75,45 +92,33 @@
         MetricsTypes = MetricsTypeService.GetAll();        
     }
 
-    private async Task DisplayReportAsync(string metricsTypeId)
+    private async Task DisplayChartAsync(string metricsTypeId, DateTimeOffset fromDateTime)
     {
         var metricsType = MetricsTypes.First(mt => mt.Id == metricsTypeId);
+
+        // Set issue filter
+        var issueFilter = fromDateTime == DateTimeOffset.MinValue ?
+                        new IssueFilter() :
+                        new IssueFilter() { CreatedDateTimeFrom = fromDateTime };
 
         // TODO: Clean this up and make it generic
         Metrics metrics = metricsType.Name switch
         {
-            "Issues By Assigned User" => MetricService.GetIssueCountByAssignedUserMetrics(),
-            "Issues By Created User" => MetricService.GetIssueCountByCreatedUserMetrics(),
-            "Issues By Project" => MetricService.GetIssueCountByProjectMetrics(),
-            "Issues By Status" => MetricService.GetIssueCountByStatusMetrics(),
-            "Issues By Type" => MetricService.GetIssueCountByTypeMetrics(),
+            "Issues By Assigned User" => await MetricService.GetIssueCountByAssignedUserMetricsAsync(issueFilter),
+            "Issues By Created User" => await MetricService.GetIssueCountByCreatedUserMetricsAsync(issueFilter),
+            "Issues By Project" => await MetricService.GetIssueCountByProjectMetricsAsync(issueFilter),
+            "Issues By Status" => await MetricService.GetIssueCountByStatusMetricsAsync(issueFilter),
+            "Issues By Type" => await MetricService.GetIssueCountByTypeMetricsAsync(issueFilter),
             _ => new Metrics()
         };
 
-        // Get chart colors
-        // TODO: Store color with entity in DB so that we can use consistent colors
-        var colors = GetDimensionColors();
-
         // Display chart
+        // TODO: Handle time period dimension (DateTimeOffset[])
         await JS.InvokeVoidAsync("createBarChart",
-                        "myChart",
-                        metrics.Title,
-                        metrics.Items.Select(m => m.Dimensions[0]).ToArray(),
-                        metrics.Items.Select(m => m.Value).ToArray(),
-                        metrics.Items.Select(m => $"rgba({(colors[metrics.Items.IndexOf(m)].R)},{(colors[metrics.Items.IndexOf(m)].G)},{(colors[metrics.Items.IndexOf(m)].B)},{(colors[metrics.Items.IndexOf(m)].A)})").ToArray());
-    }
-
-    private static List<System.Drawing.Color> GetDimensionColors()
-    {
-        var colors = new List<System.Drawing.Color>();
-        var properties = typeof(System.Drawing.Color).GetProperties().Where(p =>
-                        p.PropertyType == typeof(System.Drawing.Color) &&
-                        p.ReflectedType == typeof(System.Drawing.Color)).ToList();
-        foreach (var property in properties)
-        {
-            var color = (System.Drawing.Color)property.GetValue(null);
-            if (color != System.Drawing.Color.Transparent) colors.Add(color);
-        }
-        return colors;
+                      "myChart",
+                      metrics.Title,
+                      metrics.Items.Select(m => m.Dimensions[0]).ToArray(),
+                      metrics.Items.Select(m => m.Value).ToArray(),
+                      metrics.Items.Select(m => $"rgba({metrics.DimensionColors[(string)m.Dimensions[0]]})").ToArray());
     }
 }

@@ -1,20 +1,15 @@
-﻿using CFIssueTracker.Data;
+﻿using CFIssueTrackerCommon.Data;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Services
 {    
     public class EFIssueService : IIssueService
     {
-        private readonly IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> _dbFactory;
+        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
 
-        public EFIssueService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
+        public EFIssueService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
         {
             _dbFactory = dbFactory;
         }

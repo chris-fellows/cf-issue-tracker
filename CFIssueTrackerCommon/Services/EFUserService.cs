@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Enums;
+﻿using CFIssueTrackerCommon.Data;
+using CFIssueTrackerCommon.Enums;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +8,9 @@ namespace CFIssueTrackerCommon.Services
 {
     public class EFUserService : IUserService
     {
-        private readonly IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> _dbFactory;
+        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
 
-        public EFUserService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
+        public EFUserService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
         {
             _dbFactory = dbFactory;
         }
@@ -71,6 +72,15 @@ namespace CFIssueTrackerCommon.Services
                     return user;
                 }
                 return null;
+            }
+        }
+
+        public User? GetById(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var user = context.User.FirstOrDefault(i => i.Id == id);
+                return user;
             }
         }
     }

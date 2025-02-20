@@ -24,13 +24,37 @@ namespace CFIssueTrackerCommon.Services
             _userService = userService;
         }
 
-        public Metrics GetIssueCountByProjectMetrics()
+        /// <summary>
+        /// Returns colors for dimensions
+        /// 
+        /// TODO: Store color in DB so that we can configure color for specific entities
+        /// </summary>
+        /// <returns></returns>
+        private static List<System.Drawing.Color> GetDimensionColors()
         {
-            var issues = _issueService.GetAll();
-            var projects = _projectService.GetAll();
+            var colors = new List<System.Drawing.Color>();
+            var properties = typeof(System.Drawing.Color).GetProperties().Where(p =>
+                            p.PropertyType == typeof(System.Drawing.Color) &&
+                            p.ReflectedType == typeof(System.Drawing.Color)).ToList();
+            foreach (var property in properties)
+            {
+                var color = (System.Drawing.Color)property.GetValue(null);
+                if (color != System.Drawing.Color.Transparent) colors.Add(color);
+            }
+            return colors;
+        }
+
+        public async Task<Metrics> GetIssueCountByProjectMetricsAsync(IssueFilter issueFilter)
+        {
+            var issues = await _issueService.GetByFilterAsync(issueFilter);
+            var projects = await _projectService.GetAllAsync();
+
+            // Get dimension colors
+            var dimensionColors = GetDimensionColors();
+            int colorIndex = -1;
 
             var metrics = new Metrics() { Title = "Issues By Project" };
-
+            
             foreach (var project in projects.OrderBy(p => p.Name))
             {
                 var issuesFound = issues.Where(i => i.ProjectId == project.Id);
@@ -38,21 +62,31 @@ namespace CFIssueTrackerCommon.Services
                 var metric = new Metric()
                 {
                     Value = issuesFound.Count(),
-                    Dimensions = new List<string>()
+                    Dimensions = new List<object>()
                     {
                         project.Name
-                    }
+                    }                    
                 };
                 metrics.Items.Add(metric);
-            }
+
+                if (!metrics.DimensionColors.ContainsKey(project.Name))
+                {
+                    var color = dimensionColors[++colorIndex];
+                    metrics.DimensionColors.Add(project.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                }
+            }            
 
             return metrics;
         }
 
-        public Metrics GetIssueCountByStatusMetrics()
+        public async Task<Metrics> GetIssueCountByStatusMetricsAsync(IssueFilter issueFilter)
         {
-            var issues = _issueService.GetAll();
-            var issueStatuses = _issueStatusService.GetAll();
+            var issues = await _issueService.GetByFilterAsync(issueFilter);
+            var issueStatuses = await _issueStatusService.GetAllAsync();
+
+            // Get dimension colors
+            var dimensionColors = GetDimensionColors();
+            int colorIndex = -1;
 
             var metrics = new Metrics() { Title = "Issues By Status" };
 
@@ -63,21 +97,31 @@ namespace CFIssueTrackerCommon.Services
                 var metric = new Metric()
                 {
                     Value = issuesFound.Count(),
-                    Dimensions = new List<string>()
+                    Dimensions = new List<object>()
                     {
                         issueStatus.Name
                     }
                 };
                 metrics.Items.Add(metric);
+
+                if (!metrics.DimensionColors.ContainsKey(issueStatus.Name))
+                {
+                    var color = dimensionColors[++colorIndex];
+                    metrics.DimensionColors.Add(issueStatus.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                }
             }
 
             return metrics;
         }
 
-        public Metrics GetIssueCountByTypeMetrics()
+        public async Task<Metrics> GetIssueCountByTypeMetricsAsync(IssueFilter issueFilter)
         {
-            var issues = _issueService.GetAll();
-            var issueTypes = _issueTypeService.GetAll();
+            var issues = await _issueService.GetByFilterAsync(issueFilter);
+            var issueTypes = await _issueTypeService.GetAllAsync();
+
+            // Get dimension colors
+            var dimensionColors = GetDimensionColors();
+            int colorIndex = -1;
 
             var metrics = new Metrics() { Title = "Issues By Type" };
 
@@ -88,21 +132,31 @@ namespace CFIssueTrackerCommon.Services
                 var metric = new Metric()
                 {
                     Value = issuesFound.Count(),
-                    Dimensions = new List<string>()
+                    Dimensions = new List<object>()
                     {
                         issueType.Name
                     }
                 };
                 metrics.Items.Add(metric);
+
+                if (!metrics.DimensionColors.ContainsKey(issueType.Name))
+                {
+                    var color = dimensionColors[++colorIndex];
+                    metrics.DimensionColors.Add(issueType.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                }
             }
 
             return metrics;
         }
 
-        public Metrics GetIssueCountByCreatedUserMetrics()
+        public async Task<Metrics> GetIssueCountByCreatedUserMetricsAsync(IssueFilter issueFilter)
         {
-            var issues = _issueService.GetAll();
-            var users = _userService.GetAll();
+            var issues = await _issueService.GetByFilterAsync(issueFilter);
+            var users = await _userService.GetAllAsync();
+
+            // Get dimension colors
+            var dimensionColors = GetDimensionColors();
+            int colorIndex = -1;
 
             var metrics = new Metrics() { Title = "Issues By Created User" };
 
@@ -113,21 +167,31 @@ namespace CFIssueTrackerCommon.Services
                 var metric = new Metric()
                 {
                     Value = issuesFound.Count(),
-                    Dimensions = new List<string>()
+                    Dimensions = new List<object>()
                     {
                         user.Name
                     }
                 };
                 metrics.Items.Add(metric);
+
+                if (!metrics.DimensionColors.ContainsKey(user.Name))
+                {
+                    var color = dimensionColors[++colorIndex];
+                    metrics.DimensionColors.Add(user.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                }
             }
 
             return metrics;
         }
 
-        public Metrics GetIssueCountByAssignedUserMetrics()
+        public async Task<Metrics> GetIssueCountByAssignedUserMetricsAsync(IssueFilter issueFilter)
         {
-            var issues = _issueService.GetAll();
-            var users = _userService.GetAll();
+            var issues = await _issueService.GetByFilterAsync(issueFilter);
+            var users = await _userService.GetAllAsync();
+
+            // Get dimension colors
+            var dimensionColors = GetDimensionColors();
+            int colorIndex = -1;
 
             var metrics = new Metrics() { Title = "Issues By Assigned User" };
 
@@ -138,12 +202,18 @@ namespace CFIssueTrackerCommon.Services
                 var metric = new Metric()
                 {
                     Value = issuesFound.Count(),
-                    Dimensions = new List<string>()
+                    Dimensions = new List<object>()
                     {
                         user.Name
                     }
                 };
                 metrics.Items.Add(metric);
+
+                if (!metrics.DimensionColors.ContainsKey(user.Name))
+                {
+                    var color = dimensionColors[++colorIndex];
+                    metrics.DimensionColors.Add(user.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                }
             }
 
             return metrics;

@@ -1,10 +1,12 @@
 ﻿@page "/projects"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
 @implements IAsyncDisposable
-@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+
+@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 
 @attribute [Authorize(Roles = "Administrator")]
 

@@ -4,17 +4,19 @@ namespace CFIssueTrackerCommon.Interfaces
 {
     /// <summary>
     /// Interface for metrics
+    /// 
+    /// TODO: Support time period dimensions
     /// </summary>
     public interface IMetricService
     {
-        Metrics GetIssueCountByProjectMetrics();
+        Task<Metrics> GetIssueCountByProjectMetricsAsync(IssueFilter issueFilter);
 
-        Metrics GetIssueCountByStatusMetrics();
+        Task<Metrics> GetIssueCountByStatusMetricsAsync(IssueFilter issueFilter);
 
-        Metrics GetIssueCountByTypeMetrics();
+        Task<Metrics> GetIssueCountByTypeMetricsAsync(IssueFilter issueFilter);
 
-        Metrics GetIssueCountByAssignedUserMetrics();
+        Task<Metrics> GetIssueCountByAssignedUserMetricsAsync(IssueFilter issueFilter);
 
-        Metrics GetIssueCountByCreatedUserMetrics();
+        Task<Metrics> GetIssueCountByCreatedUserMetricsAsync(IssueFilter issueFilter);
     }
 }

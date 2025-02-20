@@ -1,13 +1,14 @@
 ﻿@page "/issues"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.EntityWriter
 @using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
 @using CFIssueTracker.Utilities
 @using CFUtilities
-@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
 @inject IIssueTypeService IssueTypeService

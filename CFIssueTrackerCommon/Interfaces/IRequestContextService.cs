@@ -1,19 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CFIssueTrackerCommon.Models;
 
 namespace CFIssueTrackerCommon.Interfaces
 {
     /// <summary>
-    /// Request context
+    /// Request context for current request. Enables us to pass the HTTP request context in to a
+    /// service.    
     /// </summary>
     public interface IRequestContextService
     {
         /// <summary>
-        /// User Id for current request user
+        /// User Id
         /// </summary>
         public string? UserId { get; }
+
+        /// <summary>
+        /// User
+        /// </summary>
+        public User? User { get; }
     }
 }

@@ -11,6 +11,13 @@ namespace CFIssueTracker.Data
     /// </summary>
     public class SeedLoader
     {
+        /// <summary>
+        /// Loads seed data. Throws exception if any data exists.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="randomIssuesToCreate"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async Task LoadAsync(IServiceScope scope, int randomIssuesToCreate)
         {
             // Get services
@@ -40,36 +47,42 @@ namespace CFIssueTracker.Data
                 throw new ArgumentException("Cannot load seed data because data already exists");
             }
 
+            // Add audit event types
             var auditEventTypesNew = auditEventTypeSeed.Read();
             foreach (var auditEventType in auditEventTypesNew)
             {
                 await auditEventTypeService.AddAsync(auditEventType);
             }
 
+            // Add issue statuses
             var issueStatusesNew = issueStatusSeed.Read();
             foreach (var issueStatus in issueStatusesNew)
             {
                 await issueStatusService.AddAsync(issueStatus);
             }
 
+            // Add issue types
             var issueTypesNew = issueTypeSeed.Read();
             foreach (var issueType in issueTypesNew)
             {
                 await issueTypeService.AddAsync(issueType);
             }
 
+            // Add metric types
             var metricsTypes = metricsTypeSeed.Read();
             foreach (var metricsType in metricsTypes)
             {
                 await metricsTypeService.AddAsync(metricsType);
             }
 
+            // Add projects
             var projectsNew = projectSeed.Read();
             foreach (var project in projectsNew)
             {
                 await projectService.AddAsync(project);
             }
 
+            // Add project components
             var projectComponentsNew = projectComponentSeed.Read();
             foreach (var projectComponent in projectComponentsNew)
             {
@@ -77,13 +90,14 @@ namespace CFIssueTracker.Data
                 await projectComponentService.AddAsync(projectComponent);
             }
 
+            // Add users
             var usersNew = userSeed.Read();
             foreach (var user in usersNew)
             {
                 await userService.AddAsync(user);
             }
 
-            // Create random issues
+            // Add random issues so that we have some data
             if (randomIssuesToCreate > 0)
             {                
                 var issueCreator = new RandomIssueCreator(issueCommentService, issueService,

@@ -1,22 +1,49 @@
 ﻿@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
-@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject IUserService UserService
 
 @rendermode InteractiveServer
 
 <div class="row">
     <div class="col-md-4">                               
-            <div class="mb-3">
-                <label for="issuecommentdescription" class="form-label">Description:</label>
-                <InputText id="issuecommentdescription" @bind-Value="IssueComment.Description" class="form-control" />                
-            </div>        
+        <div class="mb-3">
+            <label for="issuecommentdescription" class="form-label">Description:</label>
+            <InputText id="issuecommentdescription" @bind-Value="IssueComment.Description" class="form-control" />                
+        </div>
+        <div class="mb-3">
+            <label for="createduserid" class="form-label">Created User:</label>
+            <ValidationMessage For="() => IssueComment.CreatedUserId" class="text-danger" />
+
+            <InputSelect @bind-Value="IssueComment.CreatedUserId" class="form-control">
+                @foreach (User user in Users)
+                {
+                    @if (user.Id == IssueComment.CreatedUserId)
+                    {
+                        <option selected value="@user.Id">@user.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@user.Id">@user.Name</option>
+                    }
+                }
+            </InputSelect>
+        </div>
     </div>
 </div>
 
 @code {
     [Parameter] public IssueComment IssueComment { get; set; } = new();
+
+    private List<User> Users = new();
+
+    protected override async Task OnInitializedAsync()
+    {     
+        Users = UserService.GetAll();     
+    }
 
     /* <ValidationMessage For="() => IssueComment.Description" class="text-danger" />
     *  <EditForm method="post" Model="IssueComment" OnValidSubmit="UpdateIssueComment" Enhance>

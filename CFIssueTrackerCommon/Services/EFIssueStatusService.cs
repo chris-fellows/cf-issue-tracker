@@ -1,37 +1,18 @@
-﻿using CFIssueTracker.Data;
+﻿using CFIssueTrackerCommon.Data;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EFIssueStatusService : IIssueStatusService //, IDisposable
+    public class EFIssueStatusService : IIssueStatusService
     {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
-        //private CFIssueTrackerContext? _context;
+        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;        
 
-        public EFIssueStatusService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
+        public EFIssueStatusService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
         {
             _dbFactory = dbFactory;            
-        }
-
-        //public void Dispose()
-        //{
-        //    if (_context != null)
-        //    {
-        //        _context.Dispose();
-        //        _context = null;
-        //    }
-        //}
-
-        //private CFIssueTrackerContext GetContext()
-        //{
-        //    if (_context == null)
-        //    {
-        //        _context = _dbFactory.CreateDbContext();
-        //    }
-        //    return _context;
-        //}
+        }    
 
         public List<IssueStatus> GetAll()
         {

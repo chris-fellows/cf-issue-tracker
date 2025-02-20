@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Interfaces;
+﻿using CFIssueTrackerCommon.Data;
+using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +7,9 @@ namespace CFIssueTrackerCommon.Services
 {
     public class EFProjectService : IProjectService
     {
-        private readonly IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> _dbFactory;
+        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
 
-        public EFProjectService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
+        public EFProjectService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
         {
             _dbFactory = dbFactory;
         }

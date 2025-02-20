@@ -1,12 +1,13 @@
 ﻿@page "/users"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.EntityWriter
 @using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
 @using CFUtilities
-@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IUserService UserService
 
 @using System.IO

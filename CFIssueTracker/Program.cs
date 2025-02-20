@@ -1,17 +1,18 @@
 ﻿using CFIssueTracker.Components;
+using CFIssueTrackerCommon.Data;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Services;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using CFIssueTracker.Data;
 using CFIssueTrackerCommon.EntityReader;
 using CFIssueTrackerCommon.Models;
 using CFIssueTracker.Services;
 using CFIssueTrackerCommon.SystemTask;
 using CFUtilities.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 const bool registerSeedDataLoad = true;
+const bool registerRequestInfoService = true;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<CFIssueTrackerContext>(options =>
@@ -33,12 +34,14 @@ builder.Services.AddQuickGridEntityFrameworkAdapter();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+if (registerRequestInfoService) builder.Services.AddHttpContextAccessor();  // Added for IRequestContextService
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add request context service for current request
-builder.Services.AddScoped<IRequestContextService, RequestContextService>();
+if (registerRequestInfoService) builder.Services.AddScoped<IRequestContextService, RequestContextService>();
 
 // Add data services
 builder.Services.AddScoped<IAuditEventService, EFAuditEventService>();
@@ -52,6 +55,7 @@ builder.Services.AddScoped<IProjectComponentService, EFProjectComponentService>(
 builder.Services.AddScoped<IProjectService, EFProjectService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
+// Add metric service for reports
 builder.Services.AddScoped<IMetricService, MetricService>();
 
 // Add seed data

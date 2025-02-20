@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using CFIssueTrackerCommon.Models;
 
-namespace CFIssueTracker.Data
+namespace CFIssueTrackerCommon.Data
 {
     public class CFIssueTrackerContext : DbContext
     {
-        public CFIssueTrackerContext (DbContextOptions<CFIssueTrackerContext> options)
+        public CFIssueTrackerContext(DbContextOptions<CFIssueTrackerContext> options)
             : base(options)
         {
         }

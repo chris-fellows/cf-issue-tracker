@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Interfaces;
+﻿using CFIssueTrackerCommon.Data;
+using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,9 +7,9 @@ namespace CFIssueTracker.Services
 {
     public class EFIssueCommentService : IIssueCommentService
     {
-        private readonly IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> _dbFactory;
+        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
 
-        public EFIssueCommentService(IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> dbFactory)
+        public EFIssueCommentService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
         {
             _dbFactory = dbFactory;
         }

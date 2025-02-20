@@ -1,7 +1,8 @@
 ﻿@page "/issues/details"
 @using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.Models
-@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
 
 @attribute [Authorize(Roles = "Administrator,User")]

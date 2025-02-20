@@ -33,6 +33,6 @@
         /// <summary>
         /// Issue Type Ids
         /// </summary>
-        public List<string>? IssueTypeIds { get; set; }
+        public List<string>? IssueTypeIds { get; set; }    
     }
 }

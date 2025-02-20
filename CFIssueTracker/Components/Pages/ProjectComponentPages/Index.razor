@@ -1,10 +1,11 @@
 ﻿@page "/projectcomponents"
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
-@inject IDbContextFactory<CFIssueTracker.Data.CFIssueTrackerContext> DbFactory
+@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
 
