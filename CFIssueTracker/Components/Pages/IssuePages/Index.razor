@@ -129,6 +129,7 @@ else
 
     private void RefreshIssues(bool notifyStateHasChanged)
     {
+        // TODO: Use IssueFilter
         IssuesQueryable = IssueService.GetAll()
                       .Where(i => (String.IsNullOrEmpty(_filterReference) || i.Reference.Contains(_filterReference)) &&
                                 (_filterAssignedUserId == UIUtilities.AnyId || i.AssignedUserId == _filterAssignedUserId) &&

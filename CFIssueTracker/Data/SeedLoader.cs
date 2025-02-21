@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.EntityReader;
+﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.EntityReader;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using CFIssueTrackerCommon.Services;
@@ -21,7 +22,8 @@ namespace CFIssueTracker.Data
         public async Task LoadAsync(IServiceScope scope, int randomIssuesToCreate)
         {
             // Get services
-            var auditEventTypeService = scope.ServiceProvider.GetService<IAuditEventTypeService>();
+            var auditEventService = scope.ServiceProvider.GetRequiredService<IAuditEventService>();
+            var auditEventTypeService = scope.ServiceProvider.GetRequiredService<IAuditEventTypeService>();
             var issueCommentService = scope.ServiceProvider.GetRequiredService<IIssueCommentService>();
             var issueService = scope.ServiceProvider.GetRequiredService<IIssueService>();
             var issueStatusService = scope.ServiceProvider.GetRequiredService<IIssueStatusService>();
@@ -29,6 +31,7 @@ namespace CFIssueTracker.Data
             var metricsTypeService = scope.ServiceProvider.GetRequiredService<IMetricsTypeService>();            
             var projectComponentService = scope.ServiceProvider.GetRequiredService<IProjectComponentService>();
             var projectService = scope.ServiceProvider.GetRequiredService<IProjectService>();
+            var systemValueTypeService = scope.ServiceProvider.GetRequiredService<ISystemValueTypeService>();
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
             // Get seed data services
@@ -38,6 +41,7 @@ namespace CFIssueTracker.Data
             var metricsTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<MetricsType>>("MetricsTypeSeed");
             var projectComponentSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<ProjectComponent>>("ProjectComponentSeed");
             var projectSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<Project>>("ProjectSeed");
+            var systemValueTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemValueType>>("SystemValueTypeSeed");
             var userSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<User>>("UserSeed");
 
             // Check that no data exists
@@ -47,6 +51,13 @@ namespace CFIssueTracker.Data
                 throw new ArgumentException("Cannot load seed data because data already exists");
             }
 
+            // Add system value types
+            var systemValueTypesNew = systemValueTypeSeed.Read();
+            foreach (var systemValueType in systemValueTypesNew)
+            {
+                await systemValueTypeService.AddAsync(systemValueType);
+            }            
+
             // Add audit event types
             var auditEventTypesNew = auditEventTypeSeed.Read();
             foreach (var auditEventType in auditEventTypesNew)
@@ -54,18 +65,56 @@ namespace CFIssueTracker.Data
                 await auditEventTypeService.AddAsync(auditEventType);
             }
 
+            // Get audit event types & system value types
+            var auditEventTypes = await auditEventTypeService.GetAllAsync();
+            var systemValueTypes = await systemValueTypeService.GetAllAsync();
+            
             // Add issue statuses
             var issueStatusesNew = issueStatusSeed.Read();
             foreach (var issueStatus in issueStatusesNew)
             {
-                await issueStatusService.AddAsync(issueStatus);
+                var issueStatusResult = await issueStatusService.AddAsync(issueStatus);
+
+                var auditEvent = new AuditEvent()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.IssueStatusCreated).Id,
+                    Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueStatusId).Id,
+                            Value = issueStatusResult.Id
+                        }
+                    }
+                };
+                await auditEventService.AddAsync(auditEvent);               
             }
 
             // Add issue types
             var issueTypesNew = issueTypeSeed.Read();
             foreach (var issueType in issueTypesNew)
             {
-                await issueTypeService.AddAsync(issueType);
+                var issueTypeResult = await issueTypeService.AddAsync(issueType);
+
+                var auditEvent = new AuditEvent()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.IssueTypeCreated).Id,
+                    Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueTypeId).Id,
+                            Value = issueTypeResult.Id
+                        }
+                    }
+                };
+                await auditEventService.AddAsync(auditEvent);
             }
 
             // Add metric types
@@ -73,13 +122,46 @@ namespace CFIssueTracker.Data
             foreach (var metricsType in metricsTypes)
             {
                 await metricsTypeService.AddAsync(metricsType);
+
+                //var auditEvent = new AuditEvent()
+                //{
+                //    Id = Guid.NewGuid().ToString(),
+                //    CreatedDateTime = DateTimeOffset.UtcNow,
+                //    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.M).Id,
+                //    Parameters = new List<AuditEventParameter>()
+                //    {
+                //        new AuditEventParameter()
+                //        {
+                //            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueTypeId).Id,
+                //            Value = issueTypeResult.Id
+                //        }
+                //    }
+                //};
+                //await auditEventService.AddAsync(auditEvent);
             }
 
             // Add projects
             var projectsNew = projectSeed.Read();
             foreach (var project in projectsNew)
             {
-                await projectService.AddAsync(project);
+                var projectResult =  await projectService.AddAsync(project);
+
+                var auditEvent = new AuditEvent()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.ProjectCreated).Id,
+                    Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.ProjectId).Id,
+                            Value = projectResult.Id
+                        }
+                    }
+                };
+                await auditEventService.AddAsync(auditEvent);
             }
 
             // Add project components
@@ -87,22 +169,58 @@ namespace CFIssueTracker.Data
             foreach (var projectComponent in projectComponentsNew)
             {
                 projectComponent.ProjectId = projectsNew.ToList()[0].Id;
-                await projectComponentService.AddAsync(projectComponent);
+                var projectComponentResult = await projectComponentService.AddAsync(projectComponent);
+
+                var auditEvent = new AuditEvent()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.ProjectComponentCreated).Id,
+                    Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.ProjectComponentId).Id,
+                            Value = projectComponentResult.Id
+                        }
+                    }
+                };
+                await auditEventService.AddAsync(auditEvent);
             }
 
             // Add users
             var usersNew = userSeed.Read();
             foreach (var user in usersNew)
             {
-                await userService.AddAsync(user);
+                var userResult = await userService.AddAsync(user);
+
+                var auditEvent = new AuditEvent()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.UserCreated).Id,
+                    Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId).Id,
+                            Value = userResult.Id
+                        }
+                    }
+                };
+                await auditEventService.AddAsync(auditEvent);
             }
 
             // Add random issues so that we have some data
             if (randomIssuesToCreate > 0)
             {                
-                var issueCreator = new RandomIssueCreator(issueCommentService, issueService,
+                var issueCreator = new RandomIssueCreator(auditEventService, auditEventTypeService,
+                    issueCommentService, issueService,
                     issueStatusService, issueTypeService,
-                    projectComponentService, projectService, userService);
+                    projectComponentService, projectService,
+                    systemValueTypeService, userService);
 
                 await issueCreator.CreateIssuesAsync(randomIssuesToCreate);
             }

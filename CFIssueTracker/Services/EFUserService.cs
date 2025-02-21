@@ -19,15 +19,15 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return context.User.ToList();
+                return context.User.OrderBy(u => u.Name).ToList();
             }
         }
 
         public async Task<List<User>> GetAllAsync()
         {
             using (var context = _dbFactory.CreateDbContext())
-            {                
-                return await context.User.ToListAsync();
+            {
+                return (await context.User.ToListAsync()).OrderBy(u => u.Name).ToList();
             }
         }
 
@@ -57,6 +57,14 @@ namespace CFIssueTrackerCommon.Services
             {
                 var user = await context.User.FirstOrDefaultAsync(i => i.Id == id);
                 return user;
+            }
+        }
+
+        public async Task<List<User>> GetByIdsAsync(List<string> ids)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                return await context.User.Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
 

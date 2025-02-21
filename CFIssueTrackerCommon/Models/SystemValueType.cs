@@ -3,9 +3,9 @@
 namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
-    /// Issue status
+    /// System value type
     /// </summary>
-    public class IssueStatus
+    public class SystemValueType
     {
         [MaxLength(50)]
         public string Id { get; set; } = String.Empty;

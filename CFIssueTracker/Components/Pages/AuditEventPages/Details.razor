@@ -1,0 +1,50 @@
+﻿@page "/auditevents/details"
+@using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@inject IDbContextFactory<CFIssueTrackerCommon.Data.CFIssueTrackerContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject IAuditEventService AuditEventService
+@inject IAuditEventTypeService AuditEventTypeService
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>AuditEvent</h2>
+    <hr />
+    @if (auditevent is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">TypeId</dt>
+            <dd class="col-sm-10">@auditevent.TypeId</dd>
+            <dt class="col-sm-2">CreatedDateTime</dt>
+            <dd class="col-sm-10">@auditevent.CreatedDateTime</dd>
+        </dl>
+        <div>            
+            <a href="@($"/auditevents")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private AuditEvent? auditevent;
+
+    [SupplyParameterFromQuery]
+    private string Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        auditevent = await context.AuditEvent.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (auditevent is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

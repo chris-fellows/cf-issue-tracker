@@ -10,6 +10,7 @@ namespace CFIssueTrackerCommon.Models
         /// <summary>
         /// Unique Id
         /// </summary>
+        [MaxLength(50)]
         public string Id { get; set; } = String.Empty;
 
         /// <summary>

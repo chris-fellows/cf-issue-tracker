@@ -18,7 +18,7 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return context.MetricsType.ToList();
+                return context.MetricsType.OrderBy(m => m.Name).ToList();
             }
         }
 
@@ -26,7 +26,7 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return await context.MetricsType.ToListAsync();
+                return (await context.MetricsType.ToListAsync()).OrderBy(m => m.Name).ToList();
             }
         }
 
@@ -56,6 +56,14 @@ namespace CFIssueTracker.Services
             {
                 var metricsType = await context.MetricsType.FirstOrDefaultAsync(i => i.Id == id);
                 return metricsType;
+            }
+        }
+
+        public async Task<List<MetricsType>> GetByIdsAsync(List<string> ids)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                return await context.MetricsType.Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
     }

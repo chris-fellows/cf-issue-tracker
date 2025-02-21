@@ -1,0 +1,291 @@
+﻿@page "/auditevents"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Constants
+@using CFIssueTrackerCommon.EntityWriter
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@using CFIssueTrackerCommon.Data
+@using CFIssueTracker.Utilities
+@using CFUtilities
+@inject IDbContextFactory<CFIssueTrackerCommon.Data.CFIssueTrackerContext> DbFactory
+@inject IAuditEventService AuditEventService
+@inject IAuditEventTypeService AuditEventTypeService
+@inject IIssueCommentService IssueCommentService
+@inject IIssueService IssueService
+@inject IProjectComponentService ProjectComponentService
+@inject IProjectService ProjectService
+@inject ISystemValueTypeService SystemValueTypeService
+@inject IUserService UserService
+
+@using System.IO
+@inject IJSRuntime JS
+
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+@attribute [Authorize(Roles = "Administrator,User")]
+
+<script>
+    window.downloadFileFromStream = async (fileName, contentStreamReference) =>
+    {
+        const arrayBuffer = await contentStreamReference.arrayBuffer();
+        const blob = new Blob([arrayBuffer]);
+        const url = URL.createObjectURL(blob);
+        const anchorElement = document.createElement('a');
+        anchorElement.href = url;
+        anchorElement.download = fileName ?? '';
+        anchorElement.click();
+        anchorElement.remove();
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+<PageTitle>Index</PageTitle>
+
+<h1>Audit Event List</h1>
+
+<p>
+    <a href="auditevents/create">Create New</a>
+    <button @onclick="DownloadCSVAsync">Download</button>
+    <button @onclick="ResetFiltersAsync">Reset Filters</button>
+
+    <br />
+    <div style="display: inline-block">       
+        <label for="auditeventtypeid">Type:</label>
+        <InputSelect @bind-Value="@FilterAuditEventTypeId">
+            @foreach (AuditEventType auditEventType in AuditEventTypes)
+            {
+                <option value="@auditEventType.Id">@auditEventType.Name</option>
+            }
+        </InputSelect>
+    </div>
+</p>
+
+<QuickGrid Class="table" Items="@AuditEventsQueryable">
+    <PropertyColumn Title="Created Time" Property="auditevent => auditevent.CreatedDateTime" />
+    <PropertyColumn Title="Type" Property="auditevent => GetAuditEventTypeName(auditevent)" />
+    <TemplateColumn Title="Issue" Context="auditevent">
+        <a href="@($"issues/details?id={GetIssueId(auditevent)}")">@($"{GetIssueReference(auditevent)}")</a>
+    </TemplateColumn>    
+    <PropertyColumn Title="User" Property="auditevent => GetUserName(auditevent)" />
+
+    <TemplateColumn Context="auditevent">        
+        <a href="@($"auditevents/details?id={auditevent.Id}")">Details</a>        
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    //private CFIssueTrackerContext context = default!;
+
+    private List<AuditEventType> AuditEventTypes = new();
+    private List<ProjectComponent> ProjectComponents = new();
+    private List<Project> Projects = new();
+    private List<SystemValueType> SystemValueTypes = new();
+    private List<User> Users = new();
+
+    private PaginationState Pagination = new PaginationState() { ItemsPerPage = 20 };
+
+    private IQueryable<AuditEvent>? AuditEventsQueryable;
+
+    private Dictionary<string, string> IssueReferenceById = new();
+    private Dictionary<string, string> UserNameById = new();
+
+    // Filter on issue status
+    private string _filterAuditEventTypeId = UIUtilities.AnyId;
+    public string FilterAuditEventTypeId
+    {
+        get { return _filterAuditEventTypeId; }
+        set
+        {
+            if (_filterAuditEventTypeId != value)
+            {
+                _filterAuditEventTypeId = value;
+
+                Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));                
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //context = DbFactory.CreateDbContext();
+
+        AuditEventTypes = AuditEventTypeService.GetAll();
+        ProjectComponents = ProjectComponentService.GetAll();
+        Projects = ProjectService.GetAll();
+        SystemValueTypes = SystemValueTypeService.GetAll();
+        Users = UserService.GetAll();
+
+        // Add Any option
+        UIUtilities.AddAny(AuditEventTypes);
+
+        await RefreshAuditEventsAsync(false);
+    }
+
+    private string GetAuditEventTypeName(AuditEvent auditEvent)
+    {
+        return AuditEventTypes.First(t => t.Id == auditEvent.TypeId).Name;
+    }
+
+    /// <summary>
+    /// Gets issue reference for audit event 
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
+    private string GetIssueReference(AuditEvent auditEvent)
+    {
+        var issueId = GetIssueId(auditEvent);
+
+        if (IssueReferenceById.ContainsKey(issueId)) return IssueReferenceById[issueId];        
+        return "";
+    }
+
+    // private string GetIssueDetailsLink(AuditEvent auditEvent)
+    // {
+    //     var issueIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueId);
+    //     //var issueCommentIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueCommentId);
+
+    //     // Check if audit event contains parameters indicating issue
+    //     var issueIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueIdSystemValueType.Id);
+    //     //var issueCommentIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueCommentIdSystemValueType.Id);
+
+    //     if (issueIdParameter != null)
+    //     {
+    //         return $"issues/details?id={issueIdParameter.Value}";
+    //     }
+
+    //     return "";
+    // }
+
+    private string GetIssueId(AuditEvent auditEvent)
+    {
+        var issueIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueId);
+        //var issueCommentIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueCommentId);
+
+        // Check if audit event contains parameters indicating issue
+        var issueIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueIdSystemValueType.Id);
+        //var issueCommentIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueCommentIdSystemValueType.Id);
+
+        if (issueIdParameter != null) return issueIdParameter.Value;
+
+        return "";
+    }
+
+    /// <summary>
+    /// Gets user name for audit event. E.g. User that logged in/logged out
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
+    private string GetUserName(AuditEvent auditEvent)
+    {
+        var userId = GetUserId(auditEvent);
+
+        if (UserNameById.ContainsKey(userId)) return UserNameById[userId];
+        return "";
+    }
+
+    private string GetUserId(AuditEvent auditEvent)
+    {
+        var userIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId);
+
+        // Check if audit event contains parameter indicating user
+        var userIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == userIdSystemValueType.Id);
+
+        if (userIdParameter != null) return userIdParameter.Value;
+        return "";
+    }
+
+    private async Task RefreshAuditEventsAsync(bool notifyStateHasChanged)
+    {
+        // Get audit events
+        AuditEventsQueryable = (await AuditEventService.GetByFilterAsync(GetAuditEventFilter()))
+                    .OrderBy(e => e.CreatedDateTime)
+                    .AsQueryable();
+
+        // Get Ids to load for displaying details for (E.g. Issue, user etc)
+        var issueIds = new HashSet<string>();
+        var userIds = new HashSet<string>();
+        foreach(AuditEvent auditEvent in AuditEventsQueryable)
+        {
+            var issueId = GetIssueId(auditEvent);
+            if (!String.IsNullOrEmpty(issueId) &&
+                !issueIds.Contains(issueId))
+            {
+                issueIds.Add(issueId);
+            }
+
+            var userId = GetUserId(auditEvent);
+            if (!String.IsNullOrEmpty(userId) &&
+                !userIds.Contains(userId))
+            {
+                userIds.Add(userId);
+            }
+        }
+
+        // Load issue reference
+        IssueReferenceById.Clear();
+        if (issueIds.Any())
+        {
+            var issues = await IssueService.GetByIdsAsync(issueIds.ToList());
+            foreach(var issue in issues)
+            {
+                IssueReferenceById.Add(issue.Id, issue.Reference);
+            }
+        }
+
+        // Load user name
+        UserNameById.Clear();
+        if (userIds.Any())
+        {
+            var users = await UserService.GetByIdsAsync(userIds.ToList());
+            foreach (var user in users)
+            {
+                UserNameById.Add(user.Id, user.Name);
+            }
+        }
+
+        if (notifyStateHasChanged) StateHasChanged();
+    }
+
+    private AuditEventFilter GetAuditEventFilter()
+    {
+        // Set filter
+        var auditEventFilter = new AuditEventFilter()
+            {
+                AuditEventTypeIds = (FilterAuditEventTypeId == UIUtilities.AnyId ? null : new() { FilterAuditEventTypeId })
+            };
+        return auditEventFilter;
+    }
+
+    private async Task DownloadCSVAsync()
+    {
+        using (var session = new DisposableActionsSession())
+        {
+            // Get file stream
+            var tempFile = Path.GetTempFileName();
+            session.AddAction(() =>
+            {
+                if (File.Exists(tempFile)) File.Delete(tempFile);
+            });
+
+            var entityWriter = new CSVAuditEventWriter(tempFile, (Char)9, System.Text.Encoding.UTF8, 
+                                                    AuditEventTypeService);
+
+            entityWriter.Write(AuditEventsQueryable.ToList());
+            var fileStream = File.OpenRead(tempFile);
+
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+            await JS.InvokeVoidAsync("downloadFileFromStream", "AuditEvents.txt", streamRef);
+        }
+    }
+
+    private async Task ResetFiltersAsync()
+    {
+        _filterAuditEventTypeId = UIUtilities.AnyId;
+
+        await RefreshAuditEventsAsync(true);
+    }
+
+    //public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

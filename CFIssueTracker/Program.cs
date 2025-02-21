@@ -1,4 +1,5 @@
 ﻿using CFIssueTracker.Components;
+using CFIssueTracker.Data;
 using CFIssueTrackerCommon.Data;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Services;
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IIssueTypeService, EFIssueTypeService>();
 builder.Services.AddScoped<IMetricsTypeService, EFMetricsTypeService>();
 builder.Services.AddScoped<IProjectComponentService, EFProjectComponentService>();
 builder.Services.AddScoped<IProjectService, EFProjectService>();
+builder.Services.AddScoped<ISystemValueTypeService, EFSystemValueTypeService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
 // Add metric service for reports
@@ -67,6 +69,7 @@ if (registerSeedDataLoad)
     builder.Services.AddKeyedScoped<IEntityReader<MetricsType>, MetricsTypeSeed1>("MetricsTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<ProjectComponent>, ProjectComponentSeed1>("ProjectComponentSeed");
     builder.Services.AddKeyedScoped<IEntityReader<Project>, ProjectSeed1>("ProjectSeed");
+    builder.Services.AddKeyedScoped<IEntityReader<SystemValueType>, SystemValueTypeSeed1>("SystemValueTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<User>, UserSeed1>("UserSeed");
 }
 

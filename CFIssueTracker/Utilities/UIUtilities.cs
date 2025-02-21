@@ -15,6 +15,15 @@ namespace CFIssueTracker.Utilities
 
         private const string _anyText = "Any";
 
+        public static void AddAny(List<AuditEventType> auditEventTypes)
+        {
+            auditEventTypes.Insert(0, new AuditEventType()
+            {
+                Id = AnyId,
+                Name = _anyText
+            });
+        }
+
         public static void AddAny(List<IssueType> issueTypes)
         {
             issueTypes.Insert(0, new IssueType()

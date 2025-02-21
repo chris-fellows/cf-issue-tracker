@@ -7,6 +7,7 @@ namespace CFIssueTrackerCommon.Models
     /// </summary>
     public class AuditEvent
     {
+        [MaxLength(50)]
         public string Id { get; set; } = String.Empty;
 
         [Required]
@@ -15,6 +16,6 @@ namespace CFIssueTrackerCommon.Models
 
         public DateTimeOffset CreatedDateTime { get; set; }
 
-        //public List<AuditEventParameter> Parameters = new List<AuditEventParameter>();
+        public ICollection<AuditEventParameter> Parameters { get; set; }
     }
 }

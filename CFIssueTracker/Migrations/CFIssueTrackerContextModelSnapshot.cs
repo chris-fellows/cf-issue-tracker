@@ -25,7 +25,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEvent", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTimeOffset>("CreatedDateTime")
                         .HasColumnType("datetimeoffset");
@@ -40,10 +41,37 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("AuditEvent");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEventParameter", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AuditEventId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SystemValueTypeId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuditEventId");
+
+                    b.ToTable("AuditEventParameter");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEventType", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -58,7 +86,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTimeOffset?>("AssignedDateTime")
                         .HasColumnType("datetimeoffset");
@@ -113,7 +142,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.IssueComment", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("CreatedUserId")
                         .IsRequired()
@@ -137,7 +167,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.IssueStatus", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -152,7 +183,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.IssueType", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -167,7 +199,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.MetricsType", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -182,7 +215,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Project", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -197,7 +231,8 @@ namespace CFIssueTracker.Migrations
             modelBuilder.Entity("CFIssueTrackerCommon.Models.ProjectComponent", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -214,10 +249,27 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("ProjectComponent");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemValueType", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemValueType");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.User", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
@@ -245,6 +297,18 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("User");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEventParameter", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.AuditEvent", null)
+                        .WithMany("Parameters")
+                        .HasForeignKey("AuditEventId");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEvent", b =>
+                {
+                    b.Navigation("Parameters");
                 });
 #pragma warning restore 612, 618
         }

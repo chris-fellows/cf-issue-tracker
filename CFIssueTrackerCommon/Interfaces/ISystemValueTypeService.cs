@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Interfaces
 {
-    public interface IAuditEventService : IEntityWithIdService<AuditEvent, string>
+    public interface ISystemValueTypeService : IEntityWithIdService<SystemValueType, string>
     {
-        Task<List<AuditEvent>> GetByFilterAsync(AuditEventFilter auditEventFilter);
     }
 }

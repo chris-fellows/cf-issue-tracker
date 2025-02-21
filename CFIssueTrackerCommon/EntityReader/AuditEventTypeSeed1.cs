@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Models;
+﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,92 +20,92 @@ namespace CFIssueTrackerCommon.EntityReader
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Error"
+                    Name = AuditEventTypeNames.Error
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue created"                    
+                    Name = AuditEventTypeNames.IssueCreated                    
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue updated"
+                    Name = AuditEventTypeNames.IssueUpdated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue comment created"
+                    Name = AuditEventTypeNames.IssuseCommentCreated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue comment updated"
+                    Name = AuditEventTypeNames.IssuseCommentUpdated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue status created"
+                    Name = AuditEventTypeNames.IssueStatusCreated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue status updated"
+                    Name = AuditEventTypeNames.IssueStatusUpdated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue type created"
+                    Name = AuditEventTypeNames.IssueTypeCreated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issue type updated"
+                    Name = AuditEventTypeNames.IssueTypeUpdated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Project created"
+                    Name = AuditEventTypeNames.ProjectCreated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Project updated"
+                    Name = AuditEventTypeNames.ProjectUpdated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Project component created"
+                    Name = AuditEventTypeNames.ProjectComponentCreated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Project component updated"
+                    Name = AuditEventTypeNames.ProjectComponentUpdated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User created"
+                    Name = AuditEventTypeNames.UserCreated
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User logged in"
+                    Name = AuditEventTypeNames.UserLogInSuccess
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User logged out"
+                    Name = AuditEventTypeNames.UserLogOut
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User login failed"
+                    Name = AuditEventTypeNames.UserLogInError
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "User updated"
+                    Name = AuditEventTypeNames.UserUpdated
                 }
             };
 

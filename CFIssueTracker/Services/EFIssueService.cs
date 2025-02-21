@@ -59,6 +59,14 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
+        public async Task<List<Issue>> GetByIdsAsync(List<string> ids)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                return await context.Issue.Where(i => ids.Contains(i.Id)).ToListAsync();
+            }
+        }
+
         public async Task<List<Issue>> GetByFilterAsync(IssueFilter issueFilter)
         {
             using (var context = _dbFactory.CreateDbContext())

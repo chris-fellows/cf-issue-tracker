@@ -27,6 +27,7 @@ namespace CFIssueTrackerCommon.Data
         public DbSet<CFIssueTrackerCommon.Models.ProjectComponent> ProjectComponent { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.IssueStatus> IssueStatus { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.IssueType> IssueType { get; set; } = default!;
+        public DbSet<CFIssueTrackerCommon.Models.SystemValueType> SystemValueType { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.User> User { get; set; } = default!;        
     }
 }

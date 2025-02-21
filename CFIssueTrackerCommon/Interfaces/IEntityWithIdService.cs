@@ -35,6 +35,13 @@
         /// <param name="id"></param>
         /// <returns></returns>
         Task<TEntityType?> GetByIdAsync(TEntityIdType id);
+
+        /// <summary>
+        /// Gets entities by Ids
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<TEntityType>> GetByIdsAsync(List<TEntityIdType> ids);
     }
 }
 

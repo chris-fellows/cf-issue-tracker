@@ -18,15 +18,15 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return context.Project.ToList();
+                return context.Project.OrderBy(p => p.Name).ToList();
             }
         }
 
         public async Task<List<Project>> GetAllAsync()
         {
             using (var context = _dbFactory.CreateDbContext())
-            {                
-                return await context.Project.ToListAsync();
+            {
+                return (await context.Project.ToListAsync()).OrderBy(p => p.Name).ToList();
             }
         }
 
@@ -56,6 +56,14 @@ namespace CFIssueTrackerCommon.Services
             {
                 var project = await context.Project.FirstOrDefaultAsync(i => i.Id == id);
                 return project;
+            }
+        }
+
+        public async Task<List<Project>> GetByIdsAsync(List<string> ids)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                return await context.Project.Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
     }
