@@ -67,38 +67,51 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
-        public async Task<List<Issue>> GetByFilterAsync(IssueFilter issueFilter)
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var issue = await context.Issue.FirstOrDefaultAsync(i => i.Id == id);
+                if (issue != null)
+                {
+                    context.Issue.Remove(issue);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<List<Issue>> GetByFilterAsync(IssueFilter filter)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
                 var issues = await context.Issue.Where(i =>
                             (
-                                issueFilter.CreatedDateTimeFrom == null ||
-                                i.CreatedDateTime >= issueFilter.CreatedDateTimeFrom
+                                filter.CreatedDateTimeFrom == null ||
+                                i.CreatedDateTime >= filter.CreatedDateTimeFrom
                             ) &&
                             (
-                                issueFilter.CreatedDateTimeTo == null ||
-                                i.CreatedDateTime <= issueFilter.CreatedDateTimeTo
+                                filter.CreatedDateTimeTo == null ||
+                                i.CreatedDateTime <= filter.CreatedDateTimeTo
                             ) &&
                             (
-                                issueFilter.CreatedUserIds == null ||
-                                !issueFilter.CreatedUserIds.Any() ||
-                                issueFilter.CreatedUserIds.Contains(i.CreatedUserId)
+                                filter.CreatedUserIds == null ||
+                                !filter.CreatedUserIds.Any() ||
+                                filter.CreatedUserIds.Contains(i.CreatedUserId)
                             ) &&
                             (
-                                issueFilter.ProjectIds == null ||
-                                !issueFilter.ProjectIds.Any() ||
-                                issueFilter.ProjectIds.Contains(i.ProjectId)
+                                filter.ProjectIds == null ||
+                                !filter.ProjectIds.Any() ||
+                                filter.ProjectIds.Contains(i.ProjectId)
                             ) &&
                             (
-                                issueFilter.IssueStatusIds == null ||
-                                !issueFilter.IssueStatusIds.Any() ||
-                                issueFilter.IssueStatusIds.Contains(i.TypeId)
+                                filter.IssueStatusIds == null ||
+                                !filter.IssueStatusIds.Any() ||
+                                filter.IssueStatusIds.Contains(i.StatusId)
                             ) &&
                             (
-                                issueFilter.IssueTypeIds == null ||
-                                !issueFilter.IssueTypeIds.Any() ||
-                                issueFilter.IssueTypeIds.Contains(i.TypeId)
+                                filter.IssueTypeIds == null ||
+                                !filter.IssueTypeIds.Any() ||
+                                filter.IssueTypeIds.Contains(i.TypeId)
                             )
                         ).ToListAsync();
                 return issues;

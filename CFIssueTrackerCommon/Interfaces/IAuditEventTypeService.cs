@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Interfaces
 {
-    public interface IAuditEventTypeService : IEntityWithIdService<AuditEventType, string>
+    public interface IAuditEventTypeService : IEntityWithIdNameService<AuditEventType, string>
     {
     }
 }

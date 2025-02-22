@@ -2,7 +2,7 @@
 
 namespace CFIssueTrackerCommon.Interfaces
 {
-    public interface IMetricsTypeService : IEntityWithIdService<MetricsType, string>
+    public interface IMetricsTypeService : IEntityWithIdNameService<MetricsType, string>
     {
     }
 }

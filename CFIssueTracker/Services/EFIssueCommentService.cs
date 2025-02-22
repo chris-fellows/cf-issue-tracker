@@ -67,6 +67,19 @@ namespace CFIssueTracker.Services
             }
         }
 
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var issueComment = await context.IssueComment.FirstOrDefaultAsync(i => i.Id == id);
+                if (issueComment != null)
+                {
+                    context.IssueComment.Remove(issueComment);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
         public async Task<List<IssueComment>> GetByIssueAsync(string issueId)
         {
             using (var context = _dbFactory.CreateDbContext())

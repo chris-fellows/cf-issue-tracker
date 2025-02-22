@@ -1,7 +1,15 @@
 ﻿@page "/logout"
 @using Microsoft.AspNetCore.Authentication
+@using CFIssueTrackerCommon.Constants
+@using CFIssueTrackerCommon.Models
+@using CFIssueTrackerCommon.Interfaces
 
 @inject NavigationManager NavigationManager
+@inject IAuditEventService AuditEventService
+@inject IAuditEventTypeService AuditEventTypeService
+@inject IRequestContextService RequestContextService
+@inject ISystemValueTypeService SystemValueTypeService
+@inject IUserService UserService
 
 <div class="row">
     <div class="col-12">
@@ -28,8 +36,33 @@
 
         if (HttpContext.User.Identity.IsAuthenticated)
         {
+            await AddAuditEventLogOut(RequestContextService.UserId);
+
             await HttpContext.SignOutAsync();
             NavigationManager.NavigateTo("/logout", true);
         }
+    }
+
+    private async Task AddAuditEventLogOut(string userId)
+    {
+        var auditEventTypes = await AuditEventTypeService.GetAllAsync();
+        var systemValueTypes = await SystemValueTypeService.GetAllAsync();
+
+        var auditEvent = new AuditEvent()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.UserLogOut).Id,
+                Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId).Id,
+                            Value = userId
+                        }
+                    }
+            };
+        await AuditEventService.AddAsync(auditEvent);
     }
 }

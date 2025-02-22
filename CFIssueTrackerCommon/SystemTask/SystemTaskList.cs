@@ -12,23 +12,21 @@ namespace CFIssueTrackerCommon.SystemTask
     public class SystemTaskList : ISystemTaskList
     {
         private readonly int _maxConcurrentTasks;
-        private readonly List<ISystemTask> _systemTasks;
+        //private readonly List<ISystemTask> _systemTasks;
         private readonly List<SystemTaskConfig> _systemTaskConfigs;
         private readonly List<SystemTaskActive> _systemTaskActives = new List<SystemTaskActive>();
         private readonly List<SystemTaskRequest> _systemTaskRequests = new List<SystemTaskRequest>();
 
-        public SystemTaskList(int maxConcurrentTasks,
-                    List<ISystemTask> systemTasks,
+        public SystemTaskList(int maxConcurrentTasks,                    
                     List<SystemTaskConfig> systemTaskConfigs)
         {
-            _maxConcurrentTasks = maxConcurrentTasks;
-            _systemTasks = systemTasks;
+            _maxConcurrentTasks = maxConcurrentTasks;            
             _systemTaskConfigs = systemTaskConfigs;
         }
 
         public int MaxConcurrentTasks => _maxConcurrentTasks;
 
-        public IReadOnlyList<ISystemTask> SystemTasks => _systemTasks;
+        //public IReadOnlyList<ISystemTask> SystemTasks => _systemTasks;
 
         public IReadOnlyList<SystemTaskActive> SystemTaskActives => _systemTaskActives;
 

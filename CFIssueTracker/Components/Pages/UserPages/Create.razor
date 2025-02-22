@@ -1,9 +1,13 @@
 ﻿@page "/users/create"
 @using Microsoft.EntityFrameworkCore
+@using CFIssueTrackerCommon.Constants
 @using CFIssueTrackerCommon.Data
+@using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject IEmailRequestService EmailRequestService
+@inject ISystemValueTypeService SystemValueTypeService
 
 @attribute [Authorize(Roles = "Administrator")]
 
@@ -54,6 +58,10 @@
         using var context = DbFactory.CreateDbContext();
         context.User.Add(User);
         await context.SaveChangesAsync();
+
+        // Send email
+        await EmailRequestService.AddNewUser(User);
+
         NavigationManager.NavigateTo("/users");
-    }
+    } 
 }

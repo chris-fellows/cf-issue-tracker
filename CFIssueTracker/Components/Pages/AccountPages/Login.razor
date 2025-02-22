@@ -1,4 +1,5 @@
 ﻿@page "/login"
+@using CFIssueTrackerCommon.Constants
 @using CFIssueTrackerCommon.Models
 @using CFIssueTrackerCommon.Interfaces
 @using Microsoft.AspNetCore.Authentication
@@ -6,6 +7,10 @@
 @using System.Security.Claims
 
 @inject NavigationManager NavigationManager
+@inject IAuditEventService AuditEventService
+@inject IAuditEventTypeService AuditEventTypeService
+@inject IPasswordResetService PasswordResetService
+@inject ISystemValueTypeService SystemValueTypeService
 @inject IUserService UserService
 
 <div clsss="row">
@@ -13,7 +18,7 @@
         <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
             <DataAnnotationsValidator />
             <div class="mb-3 text-center flex-column">
-                <img src="/images/avatar.png" style="max-hight:5rem;"/>
+                <img src="/images/avatar.png" style="max-height:5rem;"/>
                 <h3>Login</h3>
             </div>
             <div class="mb-3">
@@ -31,7 +36,8 @@
             </div>
             <div class="mb-3 d-grid gap-2">
                 <button type="submit" class="btn btn-primary">Log in</button>
-            </div>            
+            </div>
+            <a href="/forgotpassword">Forgot Password</a>
         </EditForm>
     </div>
 </div>
@@ -50,23 +56,87 @@
         var user = await UserService.ValidateCredentialsAsync(Model.Username, Model.Password);
         if (user == null)
         {
+            // Add audit event
+            await AddAuditEventLogInError(Model.Username);
+
             ErrorMessage = "Invalid username or password";
         }
         else
         {
-            // Create claims identity & principal
-            var claims = new List<Claim>()
+            // If there's a password reset active then prevent login
+            var passwordReset = await PasswordResetService.GetByUserIdAsync(user.Id);
+            if (passwordReset == null)
             {
-                new Claim(ClaimTypes.Name, user.Email),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+                // Add audit event
+                await AddAuditEventLogInSuccess(user.Id);
 
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
+                // Create claims identity & principal
+                var claims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name, user.Email),
+                    new Claim(ClaimTypes.Role, user.Role)
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
 
-            // Log in
-            await HttpContext.SignInAsync(principal);
-            NavigationManager.NavigateTo("/");
+                // Log in
+                await HttpContext.SignInAsync(principal);
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                ErrorMessage = "A request to reset the password has been made. Please reset the password from the email.";
+            }
         }
+    }
+
+    private async Task AddAuditEventLogInSuccess(string userId)
+    {
+        var auditEventTypes = await AuditEventTypeService.GetAllAsync();
+        var systemValueTypes = await SystemValueTypeService.GetAllAsync();
+
+        var auditEvent = new AuditEvent()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.UserLogInSuccess).Id,
+                Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId).Id,
+                            Value = userId
+                        }
+                    }
+            };
+        await AuditEventService.AddAsync(auditEvent);
+    }
+
+    private async Task AddAuditEventLogInError(string username)
+    {
+        var auditEventTypes = await AuditEventTypeService.GetAllAsync();
+        var systemValueTypes = await SystemValueTypeService.GetAllAsync();
+        var users = await UserService.GetAllAsync();
+
+        var user = users.FirstOrDefault(u => u.Email == username);
+
+        var auditEvent = new AuditEvent()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.UserLogInError).Id,
+                Parameters = user == null ? new List<AuditEventParameter>() :                
+                    new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId).Id,
+                            Value = user.Id
+                        }
+                    }                
+            };
+        await AuditEventService.AddAsync(auditEvent);
     }
 }

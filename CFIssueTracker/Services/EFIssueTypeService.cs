@@ -66,5 +66,27 @@ namespace CFIssueTrackerCommon.Services
                 return await context.IssueType.Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
+
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var issueType = await context.IssueType.FirstOrDefaultAsync(i => i.Id == id);
+                if (issueType != null)
+                {
+                    context.IssueType.Remove(issueType);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<IssueType?> GetByNameAsync(string name)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var issueType = await context.IssueType.FirstOrDefaultAsync(i => i.Name == name);
+                return issueType;
+            }
+        }
     }
 }

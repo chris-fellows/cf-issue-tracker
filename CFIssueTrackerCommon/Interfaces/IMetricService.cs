@@ -9,14 +9,14 @@ namespace CFIssueTrackerCommon.Interfaces
     /// </summary>
     public interface IMetricService
     {
-        Task<Metrics> GetIssueCountByProjectMetricsAsync(IssueFilter issueFilter);
+        Task<Metrics> GetIssueCountByProjectMetricsAsync(IssueFilter filter);
 
-        Task<Metrics> GetIssueCountByStatusMetricsAsync(IssueFilter issueFilter);
+        Task<Metrics> GetIssueCountByStatusMetricsAsync(IssueFilter filter);
 
-        Task<Metrics> GetIssueCountByTypeMetricsAsync(IssueFilter issueFilter);
+        Task<Metrics> GetIssueCountByTypeMetricsAsync(IssueFilter filter);
 
-        Task<Metrics> GetIssueCountByAssignedUserMetricsAsync(IssueFilter issueFilter);
+        Task<Metrics> GetIssueCountByAssignedUserMetricsAsync(IssueFilter filter);
 
-        Task<Metrics> GetIssueCountByCreatedUserMetricsAsync(IssueFilter issueFilter);
+        Task<Metrics> GetIssueCountByCreatedUserMetricsAsync(IssueFilter filter);
     }
 }

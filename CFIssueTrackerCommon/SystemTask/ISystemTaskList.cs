@@ -14,10 +14,10 @@ namespace CFIssueTrackerCommon.SystemTask
         /// </summary>
         int MaxConcurrentTasks { get; }
 
-        /// <summary>
-        /// System tasks available
-        /// </summary>
-        IReadOnlyList<ISystemTask> SystemTasks { get; }
+        ///// <summary>
+        ///// System tasks available
+        ///// </summary>
+        //IReadOnlyList<ISystemTask> SystemTasks { get; }
 
         /// <summary>
         /// Active system tasks

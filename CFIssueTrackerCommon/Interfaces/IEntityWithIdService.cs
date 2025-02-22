@@ -1,7 +1,9 @@
 ﻿namespace CFIssueTrackerCommon.Interfaces
 {
     /// <summary>
-    /// Service for managing entity that has an Id property
+    /// Service for managing entity that has an Id property.
+    /// 
+    /// It ensures that we keep consistent interfaces for entities
     /// </summary>
     /// <typeparam name="TEntityType"></typeparam>
     /// <typeparam name="TEntityIdType"></typeparam>
@@ -42,6 +44,8 @@
         /// <param name="ids"></param>
         /// <returns></returns>
         Task<List<TEntityType>> GetByIdsAsync(List<TEntityIdType> ids);
+
+        Task DeleteByIdAsync(TEntityIdType id);
     }
 }
 

@@ -23,10 +23,14 @@ namespace CFIssueTrackerCommon.Data
         public DbSet<CFIssueTrackerCommon.Models.IssueComment> IssueComment { get; set; } = default!;
 
         public DbSet<CFIssueTrackerCommon.Models.MetricsType> MetricsType { get; set; } = default!;
+        public DbSet<CFIssueTrackerCommon.Models.PasswordReset> PasswordReset { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.Project> Project { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.ProjectComponent> ProjectComponent { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.IssueStatus> IssueStatus { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.IssueType> IssueType { get; set; } = default!;
+        public DbSet<CFIssueTrackerCommon.Models.SystemTaskJob> SystemTaskJob { get; set; } = default!;
+        public DbSet<CFIssueTrackerCommon.Models.SystemTaskStatus> SystemTaskStatus { get; set; } = default!;
+        public DbSet<CFIssueTrackerCommon.Models.SystemTaskType> SystemTaskType { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.SystemValueType> SystemValueType { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.User> User { get; set; } = default!;        
     }

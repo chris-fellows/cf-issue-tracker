@@ -1,0 +1,38 @@
+﻿@page "/auditeventtypes"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@using CFIssueTrackerCommon.Data
+@inject IAuditEventTypeService AuditEventTypeService
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="auditeventtypes/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="@AuditEventTypes">
+    <PropertyColumn Property="auditeventtype => auditeventtype.Name" />
+
+    <TemplateColumn Context="auditeventtype">
+        <a href="@($"auditeventtypes/edit?id={auditeventtype.Id}")">Edit</a> |
+        <a href="@($"auditeventtypes/details?id={auditeventtype.Id}")">Details</a> |
+        <a href="@($"auditeventtypes/delete?id={auditeventtype.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {    
+    private IQueryable<AuditEventType>? AuditEventTypes;
+
+    protected override void OnInitialized()
+    {
+        //context = DbFactory.CreateDbContext();
+
+        AuditEventTypes = AuditEventTypeService.GetAll().AsQueryable();
+    }
+
+    //public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

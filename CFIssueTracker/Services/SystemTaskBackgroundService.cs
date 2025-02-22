@@ -56,10 +56,9 @@ namespace CFIssueTracker.Services
         {
             var systemTaskConfig = _systemTaskList.GetNextRegularOverdue();
             if (systemTaskConfig != null)
-            {               
-                // Start system task
-                var systemTask = _systemTaskList.SystemTasks.First(st => st.Name == systemTaskConfig.SystemTaskName);
-                StartExecuteSystemTask(systemTask, new Dictionary<string, object>());
+            {                              
+                // Start system task                
+                StartExecuteSystemTask(systemTaskConfig.SystemTaskName, new Dictionary<string, object>());
 
                 // Set next execute time
                 do
@@ -76,9 +75,8 @@ namespace CFIssueTracker.Services
         {
             var systemTaskRequest = _systemTaskList.GetNextRequestedOverdue();
             if (systemTaskRequest != null)
-            {
-                var systemTask = _systemTaskList.SystemTasks.First(st => st.Name == systemTaskRequest.SystemTaskName);
-                StartExecuteSystemTask(systemTask, systemTaskRequest.Parameters);
+            {              
+                StartExecuteSystemTask(systemTaskRequest.SystemTaskName, systemTaskRequest.Parameters);
             }
         }
 
@@ -88,19 +86,31 @@ namespace CFIssueTracker.Services
         /// <param name="systemTask"></param>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        private Task StartExecuteSystemTask(ISystemTask systemTask, Dictionary<string, object> parameters)
+        private Task StartExecuteSystemTask(string systemTaskName, Dictionary<string, object> parameters)
         {
+            ISystemTask? systemTask = null;
+
             // Start task
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             var task = Task.Factory.StartNew(() =>
             {
-                System.Diagnostics.Debug.WriteLine($"Executing system task {systemTask.Name}");
-
                 using (var scope = _serviceProvider.CreateScope())
                 {
+                    systemTask = scope.ServiceProvider.GetServices<ISystemTask>().First(st => st.Name == systemTaskName);                    
+
+                    System.Diagnostics.Debug.WriteLine($"Executing system task {systemTask.Name}");
+                    
                     systemTask.ExecuteAsync(parameters, scope.ServiceProvider, cancellationTokenSource.Token).Wait();
+
+                    System.Diagnostics.Debug.WriteLine($"Executed system task {systemTask.Name}");
                 }
             });
+
+            // Wait for ISystemTask to be initialized
+            while (systemTask == null)
+            {
+                System.Threading.Thread.Sleep(100);
+            }
 
             // Set active
             _systemTaskList.SetActive(systemTask, task, cancellationTokenSource);

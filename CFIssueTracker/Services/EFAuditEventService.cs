@@ -58,7 +58,9 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var auditEvent = await context.AuditEvent.FirstOrDefaultAsync(i => i.Id == id);
+                var auditEvent = await context.AuditEvent
+                            .Include(i => i.Parameters)
+                            .FirstOrDefaultAsync(i => i.Id == id);
                 return auditEvent;
             }
         }
@@ -67,7 +69,22 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return await context.AuditEvent.Where(i => ids.Contains(i.Id)).ToListAsync();                
+                return await context.AuditEvent
+                            .Include(i => i.Parameters)
+                            .Where(i => ids.Contains(i.Id)).ToListAsync();                
+            }
+        }
+
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var auditEvent = await context.AuditEvent.FirstOrDefaultAsync(i => i.Id == id);
+                if (auditEvent != null)
+                {
+                    context.AuditEvent.Remove(auditEvent);
+                    await context.SaveChangesAsync();
+                }
             }
         }
 

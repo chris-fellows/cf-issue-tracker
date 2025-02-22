@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Interfaces
 {
-    public interface IProjectComponentService : IEntityWithIdService<ProjectComponent, string>
+    public interface IProjectComponentService : IEntityWithIdNameService<ProjectComponent, string>
     {
     }
 }

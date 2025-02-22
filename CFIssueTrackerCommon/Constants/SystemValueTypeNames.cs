@@ -9,6 +9,7 @@
         public static string IssueStatusId = "Issue Status Id";
         public static string IssueTypeId = "Issue Type Id";        
         public static string MetricsTypeId = "Metrics Type Id";
+        public static string PasswordResetId = "Password Reset Id";
         public static string ProjectComponentId = "Project Component Id";
         public static string ProjectId = "Project Id";
         public static string SystemValueTypeId = "System Value Type Id";

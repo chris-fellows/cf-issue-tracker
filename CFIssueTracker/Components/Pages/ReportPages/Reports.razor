@@ -53,7 +53,7 @@
     private List<MetricsType> MetricsTypes = new();
     private List<MetricsFilter> MetricsFilters = new();
     private DateTimeOffset MetricsFilterFromDateTime = DateTimeOffset.MinValue;
-
+    
     /// <summary>
     /// Filter for metrics. E.g. All time, current month etc
     /// </summary>
@@ -113,8 +113,8 @@
         MetricsFilters = new List<MetricsFilter>
         {
             new MetricsFilter("1", "All time", DateTimeOffset.MinValue),
-            new MetricsFilter("3", "Current month", DateTimeUtilities.GetMonthStart()),
-            new MetricsFilter("2", "Current year", DateTimeUtilities.GetYearStart())            
+            new MetricsFilter("2", "Current month", DateTimeUtilities.GetMonthStart()),
+            new MetricsFilter("3", "Current year", DateTimeUtilities.GetYearStart())            
         };
 
         MetricsFilterId = MetricsFilters.First().Id;

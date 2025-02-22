@@ -68,6 +68,19 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var user = await context.User.FirstOrDefaultAsync(i => i.Id == id);
+                if (user != null)
+                {
+                    context.User.Remove(user);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
         public async Task<User?> ValidateCredentialsAsync(string username, string password)
         {
             using (var context = _dbFactory.CreateDbContext())

@@ -6,6 +6,7 @@
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
 
+@inject IEmailRequestService EmailRequestService
 @inject IIssueCommentService IssueCommentService
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
@@ -189,24 +190,7 @@ else
 
     protected override async Task OnParametersSetAsync()
     {
-        IssueCommentList.List = await IssueCommentService.GetByIssueAsync(Issue.Id);
-        // if (!IssueComments.Any())
-        // {
-        //     IssueComments.Add(new IssueComment()
-        //         {
-        //             Id = Guid.NewGuid().ToString(),
-        //             CreatedDateTime = DateTimeOffset.UtcNow,
-        //             Description = "Comment #1",
-        //             IssueId = Issue.Id
-        //         });
-        //     IssueComments.Add(new IssueComment()
-        //         {
-        //             Id = Guid.NewGuid().ToString(),
-        //             CreatedDateTime = DateTimeOffset.UtcNow,
-        //             Description = "Comment #2",
-        //             IssueId = Issue.Id
-        //         });
-        // }
+        IssueCommentList.List = await IssueCommentService.GetByIssueAsync(Issue.Id);    
 
         // Load data
         IssueStatuses = await IssueStatusService.GetAllAsync();
@@ -239,6 +223,12 @@ else
         try
         {
             await context.SaveChangesAsync();
+
+            // Send Issue Assigned email
+            if (!String.IsNullOrEmpty(Issue.AssignedUserId))
+            {
+                EmailRequestService.AddIssueAssigned(Issue);   
+            }
         }
         catch (DbUpdateConcurrencyException)
         {

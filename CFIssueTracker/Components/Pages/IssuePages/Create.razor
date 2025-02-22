@@ -6,6 +6,7 @@
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
 
+@inject IEmailRequestService EmailRequestService
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
 @inject IIssueTypeService IssueTypeService
@@ -170,8 +171,12 @@
     private List<Project> Projects = new();
     private List<User> Users = new();
 
+    private string _oldAssignedUserId = String.Empty;
+
     protected override async Task OnParametersSetAsync()
     {
+        _oldAssignedUserId = Issue.AssignedUserId;
+
         // Load data
         IssueStatuses = await IssueStatusService.GetAllAsync();
         IssueTypes = await IssueTypeService.GetAllAsync();
@@ -200,6 +205,14 @@
         using var context = DbFactory.CreateDbContext();
         context.Issue.Add(Issue);
         await context.SaveChangesAsync();
+
+        // Send Issue Assigned email if assigned user changed  
+        if (!String.IsNullOrEmpty(Issue.AssignedUserId) &&
+           Issue.AssignedUserId != _oldAssignedUserId)
+        {
+            await EmailRequestService.AddIssueAssigned(Issue);
+        }
+
         NavigationManager.NavigateTo("/issues");
     }
 }

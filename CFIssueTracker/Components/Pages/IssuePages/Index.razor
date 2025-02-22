@@ -8,6 +8,7 @@
 @using CFIssueTracker.Data
 @using CFIssueTracker.Utilities
 @using CFUtilities
+@using CFUtilities.Utilities
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
@@ -91,7 +92,15 @@
             {
                 <option value="@user.Id">@user.Name</option>
             }
-        </InputSelect>        
+        </InputSelect>
+
+        <label for="createdate">Created Time:</label>
+        <InputSelect @bind-Value="@FilterCreatedDateRangeId">
+            @foreach (DateRangeFilter dateRangeFilter in CreatedDateRangeFilters)
+            {
+                <option value="@dateRangeFilter.Id">@dateRangeFilter.Name</option>
+            }
+        </InputSelect>
     </div>
 </p>
 @if (IssuesQueryable == null)
@@ -127,6 +136,8 @@ else
 
     private IQueryable<Issue>? IssuesQueryable;
 
+    private List<DateRangeFilter> CreatedDateRangeFilters = new();
+
     private void RefreshIssues(bool notifyStateHasChanged)
     {
         // TODO: Use IssueFilter
@@ -141,6 +152,21 @@ else
                      .AsQueryable();
 
         if (notifyStateHasChanged) StateHasChanged();
+    }
+
+    // Filter on created
+    private string _filterCreatedDateRangeId = String.Empty;
+    public string FilterCreatedDateRangeId
+    {
+        get { return _filterCreatedDateRangeId; }
+        set
+        {
+            if (_filterCreatedDateRangeId != value)
+            {
+                _filterCreatedDateRangeId = value;
+                RefreshIssues(true);
+            }
+        }
     }
 
     // Filter on reference
@@ -240,15 +266,15 @@ else
     private List<User> Users = new();
 
     protected override async Task OnInitializedAsync()
-    {       
-        // Simulate asynchronous loading to demonstrate streaming rendering
-        //await Task.Delay(1000);      
+    {         
+        IssueStatuses = await IssueStatusService.GetAllAsync();
+        IssueTypes = await IssueTypeService.GetAllAsync();
+        ProjectComponents = await ProjectComponentService.GetAllAsync();
+        Projects = await ProjectService.GetAllAsync();
+        Users = await UserService.GetAllAsync();
 
-        IssueStatuses = IssueStatusService.GetAll();
-        IssueTypes = IssueTypeService.GetAll();
-        ProjectComponents = ProjectComponentService.GetAll();
-        Projects = ProjectService.GetAll();
-        Users = UserService.GetAll();
+        CreatedDateRangeFilters = GetDateRangeFilters();
+        _filterIssueStatusId = CreatedDateRangeFilters.First().Id;
 
         // Add "Any" to filters
         UIUtilities.AddAny(IssueStatuses);
@@ -257,10 +283,31 @@ else
         UIUtilities.AddAny(Projects);
         UIUtilities.AddAny(Users);
 
-        //context = await DbFactory.CreateDbContextAsync();
-        //IssuesQueryable = context.Issue.AsQueryable();
-        //IssuesQueryable = IssueService.GetAll().OrderBy(i => i.CreatedDateTime).AsQueryable();
         RefreshIssues(false);
+    }
+
+    private List<DateRangeFilter> GetDateRangeFilters()
+    {
+        return new List<DateRangeFilter>()
+        {
+            new DateRangeFilter()
+            {
+                Id = "1",
+                Name = "All time"                
+            },
+            new DateRangeFilter()
+            {
+                Id = "2",
+                Name = "Current month",
+                FromDate = DateTimeUtilities.GetMonthStart()
+            },
+            new DateRangeFilter()
+            {
+                Id = "2",
+                Name = "Current year",
+                FromDate = DateTimeUtilities.GetYearStart()
+            }
+        };
     }
 
 
@@ -346,6 +393,7 @@ else
 
     private async Task ResetFiltersAsync()
     {
+        _filterCreatedDateRangeId = CreatedDateRangeFilters.First().Id;
         _filterReference = "";
         _filterAssignedUserId = UIUtilities.AnyId;
         _filterCreatedUserId = UIUtilities.AnyId;

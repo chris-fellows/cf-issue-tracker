@@ -4,6 +4,7 @@ using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using CFIssueTrackerCommon.Services;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Net;
 
 namespace CFIssueTracker.Data
 {
@@ -31,6 +32,8 @@ namespace CFIssueTracker.Data
             var metricsTypeService = scope.ServiceProvider.GetRequiredService<IMetricsTypeService>();            
             var projectComponentService = scope.ServiceProvider.GetRequiredService<IProjectComponentService>();
             var projectService = scope.ServiceProvider.GetRequiredService<IProjectService>();
+            var systemTaskStatusService = scope.ServiceProvider.GetRequiredService<ISystemTaskStatusService>();
+            var systemTaskTypeService = scope.ServiceProvider.GetRequiredService<ISystemTaskTypeService>();
             var systemValueTypeService = scope.ServiceProvider.GetRequiredService<ISystemValueTypeService>();
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
@@ -41,6 +44,8 @@ namespace CFIssueTracker.Data
             var metricsTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<MetricsType>>("MetricsTypeSeed");
             var projectComponentSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<ProjectComponent>>("ProjectComponentSeed");
             var projectSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<Project>>("ProjectSeed");
+            var systemTaskStatusSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemTaskStatus>>("SystemTaskStatusSeed");
+            var systemTaskTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemTaskType>>("SystemTaskTypeSeed");
             var systemValueTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemValueType>>("SystemValueTypeSeed");
             var userSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<User>>("UserSeed");
 
@@ -189,6 +194,20 @@ namespace CFIssueTracker.Data
                 await auditEventService.AddAsync(auditEvent);
             }
 
+            // Add system task statuses
+            var systemTaskStatusNew = systemTaskStatusSeed.Read();
+            foreach (var systemTaskStatus in systemTaskStatusNew)
+            {
+                var systemTaskStatusResult = await systemTaskStatusService.AddAsync(systemTaskStatus);
+            }
+
+            // Add system task types
+            var systemTaskTypesNew = systemTaskTypeSeed.Read();
+            foreach (var systemTaskType in systemTaskTypesNew)
+            {                
+                var systemTaskTypeResult = await systemTaskTypeService.AddAsync(systemTaskType);             
+            }
+
             // Add users
             var usersNew = userSeed.Read();
             foreach (var user in usersNew)
@@ -224,6 +243,6 @@ namespace CFIssueTracker.Data
 
                 await issueCreator.CreateIssuesAsync(randomIssuesToCreate);
             }
-        }
+        }     
     }
 }

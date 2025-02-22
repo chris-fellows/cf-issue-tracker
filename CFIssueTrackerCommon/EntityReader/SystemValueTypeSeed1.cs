@@ -47,6 +47,11 @@ namespace CFIssueTrackerCommon.EntityReader
                 new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.PasswordResetId
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.ProjectId
                 },
                 new SystemValueType()

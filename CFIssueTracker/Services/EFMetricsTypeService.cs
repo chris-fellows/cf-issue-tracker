@@ -66,5 +66,27 @@ namespace CFIssueTracker.Services
                 return await context.MetricsType.Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
+
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var metricsType = await context.MetricsType.FirstOrDefaultAsync(i => i.Id == id);
+                if (metricsType != null)
+                {
+                    context.MetricsType.Remove(metricsType);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<MetricsType?> GetByNameAsync(string name)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var metricsType = await context.MetricsType.FirstOrDefaultAsync(i => i.Name == name);
+                return metricsType;
+            }
+        }
     }
 }

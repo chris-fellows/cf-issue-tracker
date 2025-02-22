@@ -65,6 +65,16 @@ namespace CFIssueTrackerCommon.EntityReader
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.PasswordResetCreated
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.PasswordUpdated
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = AuditEventTypeNames.ProjectCreated
                 },
                 new AuditEventType()

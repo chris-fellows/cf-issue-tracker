@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFIssueTrackerCommon.Constants
+﻿namespace CFIssueTrackerCommon.Constants
 {
     public static class AuditEventTypeNames
     {
@@ -17,6 +11,8 @@ namespace CFIssueTrackerCommon.Constants
         public static string IssueStatusUpdated = "Issue status updated";
         public static string IssueTypeCreated = "Issue type created";
         public static string IssueTypeUpdated = "Issue type updated";
+        public static string PasswordResetCreated = "Password reset created";
+        public static string PasswordUpdated = "Password updated";
         public static string ProjectCreated = "Project created";
         public static string ProjectUpdated = "Project updated";
         public static string ProjectComponentCreated = "Project component created";

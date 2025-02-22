@@ -73,11 +73,33 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
+        public async Task DeleteByIdAsync(string id)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var systemValueType = await context.SystemValueType.FirstOrDefaultAsync(i => i.Id == id);
+                if (systemValueType != null)
+                {
+                    context.SystemValueType.Remove(systemValueType);
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
         public SystemValueType? GetById(string id)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
                 var systemValueType = context.SystemValueType.FirstOrDefault(i => i.Id == id);
+                return systemValueType;
+            }
+        }
+
+        public async Task<SystemValueType?> GetByNameAsync(string name)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var systemValueType = await context.SystemValueType.FirstOrDefaultAsync(i => i.Name == name);
                 return systemValueType;
             }
         }

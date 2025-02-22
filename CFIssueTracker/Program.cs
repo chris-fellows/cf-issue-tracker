@@ -1,5 +1,6 @@
 ﻿using CFIssueTracker.Components;
 using CFIssueTracker.Data;
+using CFIssueTracker.Extensions;
 using CFIssueTrackerCommon.Data;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Services;
@@ -52,13 +53,24 @@ builder.Services.AddScoped<IIssueService, EFIssueService>();
 builder.Services.AddScoped<IIssueStatusService, EFIssueStatusService>();
 builder.Services.AddScoped<IIssueTypeService, EFIssueTypeService>();
 builder.Services.AddScoped<IMetricsTypeService, EFMetricsTypeService>();
+builder.Services.AddScoped<IPasswordResetService, EFPasswordResetService>();
 builder.Services.AddScoped<IProjectComponentService, EFProjectComponentService>();
 builder.Services.AddScoped<IProjectService, EFProjectService>();
+builder.Services.AddScoped<ISystemTaskJobService, EFSystemTaskJobService>();
+builder.Services.AddScoped<ISystemTaskStatusService, EFSystemTaskStatusService>();
+builder.Services.AddScoped<ISystemTaskTypeService, EFSystemTaskTypeService>();
 builder.Services.AddScoped<ISystemValueTypeService, EFSystemValueTypeService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
+// Add email services
+builder.Services.AddScoped<IEmailRequestService, EmailRequestService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Add metric service for reports
 builder.Services.AddScoped<IMetricService, MetricService>();
+
+// Register system tasks
+builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(ISystemTask).Assembly });
 
 // Add seed data
 if (registerSeedDataLoad)
@@ -93,19 +105,38 @@ builder.Services.AddSingleton<ISystemTaskList>((scope) =>
     {
         new SystemTaskConfig()
         {
+            SystemTaskName = ManagePasswordResetsSystemTask.TaskName,
+            ExecuteFrequency = TimeSpan.FromMinutes(30)
+        },
+        new SystemTaskConfig()
+        {
+            SystemTaskName = ManageSystemTaskJobsSystemTask.TaskName,
+            ExecuteFrequency = TimeSpan.FromHours(12),
+        },
+        new SystemTaskConfig()
+        {
             SystemTaskName = NotificationSystemTask.TaskName,
-            ExecuteFrequency = TimeSpan.FromMinutes(5)        
+            ExecuteFrequency = TimeSpan.FromMinutes(5)
+        },
+        new SystemTaskConfig()
+        {
+            SystemTaskName = SendIssueAssignedEmailSystemTask.TaskName,
+            ExecuteFrequency = TimeSpan.FromMinutes(1)
+        },
+        new SystemTaskConfig()
+        {
+            SystemTaskName = SendNewUserEmailSystemTask.TaskName,
+            ExecuteFrequency = TimeSpan.FromMinutes(1)
+        },
+        new SystemTaskConfig()
+        {
+            SystemTaskName = SendResetPasswordEmailSystemTask.TaskName,
+            ExecuteFrequency = TimeSpan.FromMinutes(1)
         }
     };
     systemTaskConfigs.ForEach(stc => stc.NextExecuteTime = DateTimeUtilities.GetNextTaskExecuteTimeFromFrequency(stc.ExecuteFrequency));
 
-    // Set system tasks
-    var systemTasks = new List<ISystemTask>()
-    {
-        new NotificationSystemTask()
-    };
-
-    return new SystemTaskList(5, systemTasks, systemTaskConfigs);
+    return new SystemTaskList(5, systemTaskConfigs);
 });
 
 // Add background service for system tasks
