@@ -60,7 +60,7 @@
         await context.SaveChangesAsync();
 
         // Send email
-        await EmailRequestService.AddNewUser(User);
+        await EmailRequestService.AddNewUserAsync(User);
 
         NavigationManager.NavigateTo("/users");
     } 

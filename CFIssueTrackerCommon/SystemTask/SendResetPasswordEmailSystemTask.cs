@@ -122,7 +122,7 @@ namespace CFIssueTrackerCommon.SystemTask
 
                     // Send email
                     await emailService.SendAsync(new List<string>() { user.Email }, new(),
-                                               "Forgot Password", body);
+                                               body, "Forgot Password");
 
                     // Set job status Completed Succcess
                     systemTaskJob.StatusId = systemTaskStatusCompletedSuccess.Id;

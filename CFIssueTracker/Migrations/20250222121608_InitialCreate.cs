@@ -108,6 +108,22 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PasswordReset",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ValidationId = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    ExpiresDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordReset", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Project",
                 columns: table => new
                 {
@@ -130,6 +146,45 @@ namespace CFIssueTracker.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ProjectComponent", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SystemTaskJob",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    StatusId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Error = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemTaskJob", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SystemTaskStatus",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemTaskStatus", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SystemTaskType",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemTaskType", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -179,10 +234,34 @@ namespace CFIssueTracker.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "SystemTaskParameter",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SystemValueTypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    SystemTaskJobId = table.Column<string>(type: "nvarchar(50)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemTaskParameter", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SystemTaskParameter_SystemTaskJob_SystemTaskJobId",
+                        column: x => x.SystemTaskJobId,
+                        principalTable: "SystemTaskJob",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AuditEventParameter_AuditEventId",
                 table: "AuditEventParameter",
                 column: "AuditEventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SystemTaskParameter_SystemTaskJobId",
+                table: "SystemTaskParameter",
+                column: "SystemTaskJobId");
         }
 
         /// <inheritdoc />
@@ -210,10 +289,22 @@ namespace CFIssueTracker.Migrations
                 name: "MetricsType");
 
             migrationBuilder.DropTable(
+                name: "PasswordReset");
+
+            migrationBuilder.DropTable(
                 name: "Project");
 
             migrationBuilder.DropTable(
                 name: "ProjectComponent");
+
+            migrationBuilder.DropTable(
+                name: "SystemTaskParameter");
+
+            migrationBuilder.DropTable(
+                name: "SystemTaskStatus");
+
+            migrationBuilder.DropTable(
+                name: "SystemTaskType");
 
             migrationBuilder.DropTable(
                 name: "SystemValueType");
@@ -223,6 +314,9 @@ namespace CFIssueTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "AuditEvent");
+
+            migrationBuilder.DropTable(
+                name: "SystemTaskJob");
         }
     }
 }

@@ -12,6 +12,7 @@ using CFUtilities.Utilities;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Options;
 
 const bool registerSeedDataLoad = true;
 const bool registerRequestInfoService = true;
@@ -42,6 +43,10 @@ if (registerRequestInfoService) builder.Services.AddHttpContextAccessor();  // A
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Add email config from appsettings.json
+builder.Services.Configure<EmailConfig>(builder.Configuration.GetSection(nameof(EmailConfig)));
+builder.Services.AddSingleton<IEmailConfig>(sp => sp.GetRequiredService<IOptions<EmailConfig>>().Value);
+
 // Add request context service for current request
 if (registerRequestInfoService) builder.Services.AddScoped<IRequestContextService, RequestContextService>();
 
@@ -63,14 +68,15 @@ builder.Services.AddScoped<ISystemValueTypeService, EFSystemValueTypeService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
 // Add email services
-builder.Services.AddScoped<IEmailRequestService, EmailRequestService>();
+builder.Services.AddScoped<IEmailRequestService, SystemTaskJobEmailRequestService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.RegisterAllTypes<IEmailContent>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssieCommon assemblies
 
 // Add metric service for reports
 builder.Services.AddScoped<IMetricService, MetricService>();
 
 // Register system tasks
-builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(ISystemTask).Assembly });
+builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });   // This & CFTrackerIssieCommon assemblies
 
 // Add seed data
 if (registerSeedDataLoad)
@@ -81,6 +87,8 @@ if (registerSeedDataLoad)
     builder.Services.AddKeyedScoped<IEntityReader<MetricsType>, MetricsTypeSeed1>("MetricsTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<ProjectComponent>, ProjectComponentSeed1>("ProjectComponentSeed");
     builder.Services.AddKeyedScoped<IEntityReader<Project>, ProjectSeed1>("ProjectSeed");
+    builder.Services.AddKeyedScoped<IEntityReader<SystemTaskStatus>, SystemTaskStatusSeed1>("SystemTaskStatusSeed");
+    builder.Services.AddKeyedScoped<IEntityReader<SystemTaskType>, SystemTaskTypeSeed1>("SystemTaskTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<SystemValueType>, SystemValueTypeSeed1>("SystemValueTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<User>, UserSeed1>("UserSeed");
 }
@@ -167,6 +175,7 @@ app.MapRazorComponents<App>()
 // Populate seed data
 using (var scope = app.Services.CreateScope())
 {
+    //new SeedLoader().DeleteAsync(scope).Wait();
     new SeedLoader().LoadAsync(scope, 200).Wait();
 }
 */

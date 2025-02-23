@@ -20,7 +20,7 @@ namespace CFIssueTrackerCommon.SystemTask
             var passwordResets = (await passwordResetService.GetAllAsync()).Where(pr => pr.ExpiresDateTime <= DateTimeOffset.UtcNow).ToList();
 
             // Delete
-            while (passwordResets.Any())
+            while (passwordResets.Any() && !cancellationToken.IsCancellationRequested)
             {
                 var passwordReset = passwordResets.First();
                 passwordResets.Remove(passwordReset);

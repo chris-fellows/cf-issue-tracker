@@ -105,7 +105,7 @@ namespace CFIssueTrackerCommon.SystemTask
 
             // Send email
             await emailService.SendAsync(new List<string>() { user.Email }, new(),
-                                       "Welcome to CF Issue Tracker", body);
+                                       body, "Welcome to CF Issue Tracker");
 
             // Set job status Completed Succcess
             systemTaskJob.StatusId = systemTaskStatusCompletedSuccess.Id;

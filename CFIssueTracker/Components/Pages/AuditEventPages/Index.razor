@@ -87,8 +87,11 @@
 
     private IQueryable<AuditEvent>? AuditEventsQueryable;
 
+    // Cache data for UI performance otherwise it's slow to load per issue
     private Dictionary<string, string> IssueReferenceById = new();
     private Dictionary<string, string> UserNameById = new();
+    private Dictionary<string, string> IssueIdByIssueCommentId = new();
+    //private Dictionary<string, string> CreatedUserIdByIssueCommentId = new();
 
     // Filter on issue status
     private string _filterAuditEventTypeId = UIUtilities.AnyId;
@@ -134,41 +137,54 @@
     /// <returns></returns>
     private string GetIssueReference(AuditEvent auditEvent)
     {
-        var issueId = GetIssueId(auditEvent);
+        var issueId = GetIssueId(auditEvent);        
+        if (String.IsNullOrEmpty(issueId))   
+        {
+            // Check if we can get by issue comment
+            var issueCommentId = GetIssueCommentId(auditEvent);
+            if (IssueIdByIssueCommentId.ContainsKey(issueCommentId)) issueId = IssueIdByIssueCommentId[issueCommentId];
+        }        
 
-        if (IssueReferenceById.ContainsKey(issueId)) return IssueReferenceById[issueId];        
         return "";
     }
 
-    // private string GetIssueDetailsLink(AuditEvent auditEvent)
-    // {
-    //     var issueIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueId);
-    //     //var issueCommentIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueCommentId);
-
-    //     // Check if audit event contains parameters indicating issue
-    //     var issueIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueIdSystemValueType.Id);
-    //     //var issueCommentIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueCommentIdSystemValueType.Id);
-
-    //     if (issueIdParameter != null)
-    //     {
-    //         return $"issues/details?id={issueIdParameter.Value}";
-    //     }
-
-    //     return "";
-    // }
-
+    /// <summary>
+    /// Gets IssueId (if any) from audit event
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
     private string GetIssueId(AuditEvent auditEvent)
     {
-        var issueIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueId);
-        //var issueCommentIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueCommentId);
-
-        // Check if audit event contains parameters indicating issue
+        var issueIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueId);             
         var issueIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueIdSystemValueType.Id);
-        //var issueCommentIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueCommentIdSystemValueType.Id);
 
-        if (issueIdParameter != null) return issueIdParameter.Value;
+        return issueIdParameter == null ? "" : issueIdParameter.Value;        
+    }
 
-        return "";
+    /// <summary>
+    /// Gets IssueCommentId (if any) from audit event
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
+    private string GetIssueCommentId(AuditEvent auditEvent)
+    {        
+        var issueCommentIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.IssueCommentId);        
+        var issueCommentIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == issueCommentIdSystemValueType.Id);
+
+        return issueCommentIdParameter == null ? "" : issueCommentIdParameter.Value;        
+    }
+
+    /// <summary>
+    /// Gets UserId (if any) from audit event
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
+    private string GetUserId(AuditEvent auditEvent)
+    {
+        var userIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId);
+        var userIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == userIdSystemValueType.Id);
+
+        return userIdParameter == null ? "" : userIdParameter.Value;
     }
 
     /// <summary>
@@ -179,19 +195,14 @@
     private string GetUserName(AuditEvent auditEvent)
     {
         var userId = GetUserId(auditEvent);
+        // if (String.IsNullOrEmpty(userId))
+        // {
+        //     // Check if we can get by issue comment
+        //     var issueCommentId = GetIssueCommentId(auditEvent);
+        //     if (CreatedUserIdByIssueCommentId.ContainsKey(issueCommentId)) userId = CreatedUserIdByIssueCommentId[issueCommentId];
+        // }
 
         if (UserNameById.ContainsKey(userId)) return UserNameById[userId];
-        return "";
-    }
-
-    private string GetUserId(AuditEvent auditEvent)
-    {
-        var userIdSystemValueType = SystemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId);
-
-        // Check if audit event contains parameter indicating user
-        var userIdParameter = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == userIdSystemValueType.Id);
-
-        if (userIdParameter != null) return userIdParameter.Value;
         return "";
     }
 
@@ -204,6 +215,7 @@
 
         // Get Ids to load for displaying details for (E.g. Issue, user etc)
         var issueIds = new HashSet<string>();
+        var issueCommentIds = new HashSet<string>();
         var userIds = new HashSet<string>();
         foreach(AuditEvent auditEvent in AuditEventsQueryable)
         {
@@ -212,6 +224,13 @@
                 !issueIds.Contains(issueId))
             {
                 issueIds.Add(issueId);
+            }
+
+            var issueCommentId = GetIssueCommentId(auditEvent);
+            if (!String.IsNullOrEmpty(issueCommentId) &&
+                !issueCommentIds.Contains(issueCommentId))
+            {
+                issueCommentIds.Add(issueCommentId);
             }
 
             var userId = GetUserId(auditEvent);
@@ -224,12 +243,39 @@
 
         // Load issue reference
         IssueReferenceById.Clear();
+        var issues = new List<Issue>();        
         if (issueIds.Any())
         {
-            var issues = await IssueService.GetByIdsAsync(issueIds.ToList());
+            issues = await IssueService.GetByIdsAsync(issueIds.ToList());
             foreach(var issue in issues)
             {
                 IssueReferenceById.Add(issue.Id, issue.Reference);
+            }
+        }
+
+        // Load issue reference by issue comment
+        IssueIdByIssueCommentId.Clear();
+        //CreatedUserIdByIssueCommentId.Clear();
+        if (issueCommentIds.Any())
+        {
+            // Load issue comments to get issues to load
+            var issueComments = await IssueCommentService.GetByIdsAsync(issueCommentIds.ToList());            
+
+            if (issueComments.Any())
+            {                
+                // Load issues not loaded above
+                var issueIdsToLoad = issueComments.Select(c => c.IssueId).Distinct().Except(issueIds).ToList();
+                issues.AddRange(issueIdsToLoad.Any() ? await IssueService.GetByIdsAsync(issueIdsToLoad) : new());
+
+                // Add link between issue & issue comment
+                foreach (var issueComment in issueComments)
+                {
+                    IssueIdByIssueCommentId.Add(issueComment.Id, issueComment.IssueId);
+                    //CreatedUserIdByIssueCommentId.Add(issueComment.Id, issueComment.CreatedUserId);
+
+                    var issue = issues.First(i => i.Id == issueComment.IssueId);
+                    if (!IssueReferenceById.ContainsKey(issue.Id)) IssueReferenceById.Add(issue.Id, issue.Reference);                    
+                }                   
             }
         }
 

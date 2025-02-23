@@ -227,7 +227,7 @@ else
             // Send Issue Assigned email
             if (!String.IsNullOrEmpty(Issue.AssignedUserId))
             {
-                EmailRequestService.AddIssueAssigned(Issue);   
+                EmailRequestService.AddIssueAssignedAsync(Issue);   
             }
         }
         catch (DbUpdateConcurrencyException)

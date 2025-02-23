@@ -125,7 +125,7 @@ namespace CFIssueTrackerCommon.SystemTask
                 var ccEmails = assignedUser.Id == createdUser.Id ? new List<string>() : new List<string>() { createdUser.Email };               
 
                 await emailService.SendAsync(recipientEmails, ccEmails,
-                                           "Issue Assigned", body);
+                                           body, "Issue Assigned");
 
                 // Set job status Completed Succcess
                 systemTaskJob.StatusId = systemTaskStatusCompletedSuccess.Id;

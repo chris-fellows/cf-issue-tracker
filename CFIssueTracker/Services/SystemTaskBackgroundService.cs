@@ -106,7 +106,8 @@ namespace CFIssueTracker.Services
                 }
             });
 
-            // Wait for ISystemTask to be initialized
+            // Wait for ISystemTask to be initialized because we need it below. 
+            // This code is messy
             while (systemTask == null)
             {
                 System.Threading.Thread.Sleep(100);

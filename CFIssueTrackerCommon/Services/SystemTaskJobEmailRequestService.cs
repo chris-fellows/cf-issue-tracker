@@ -4,14 +4,17 @@ using CFIssueTrackerCommon.Models;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EmailRequestService : IEmailRequestService
+    /// <summary>
+    /// Handles requests to send emails via system task job
+    /// </summary>
+    public class SystemTaskJobEmailRequestService : IEmailRequestService
     {
         private readonly ISystemTaskJobService _systemTaskJobService;
         private readonly ISystemTaskStatusService _systemTaskStatusService;
         private readonly ISystemTaskTypeService _systemTaskTypeService;
         private readonly ISystemValueTypeService _systemValueTypeService;
 
-        public EmailRequestService(ISystemTaskJobService systemTaskJobService,
+        public SystemTaskJobEmailRequestService(ISystemTaskJobService systemTaskJobService,
                     ISystemTaskStatusService systemTaskStatusService,
                     ISystemTaskTypeService systemTaskTypeService,
                     ISystemValueTypeService systemValueTypeService)
@@ -22,7 +25,7 @@ namespace CFIssueTrackerCommon.Services
             _systemValueTypeService = systemValueTypeService;
         }
 
-        public async Task AddIssueAssigned(Issue issue)
+        public async Task AddIssueAssignedAsync(Issue issue)
         {
             var systemTaskStatus = await _systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.Pending);
             var systemTaskType = await _systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendIssueAssignedEmail);
@@ -48,7 +51,7 @@ namespace CFIssueTrackerCommon.Services
             await _systemTaskJobService.AddAsync(systemTaskJob);
         }
 
-        public async Task AddResetPassword(PasswordReset passwordReset, User user)
+        public async Task AddResetPasswordAsync(PasswordReset passwordReset, User user)
         {
             var systemTaskStatus = await _systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.Pending);
             var systemTaskType = await _systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendResetPasswordEmail);
@@ -74,7 +77,7 @@ namespace CFIssueTrackerCommon.Services
             await _systemTaskJobService.AddAsync(systemTaskJob);
         }
 
-        public async Task AddNewUser(User user)
+        public async Task AddNewUserAsync(User user)
         {
             var systemTaskStatus = await _systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.Pending);
             var systemTaskType = await _systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendNewUserEmail);

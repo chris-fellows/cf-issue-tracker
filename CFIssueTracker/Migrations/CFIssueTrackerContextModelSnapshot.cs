@@ -212,6 +212,38 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("MetricsType");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.PasswordReset", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("ExpiresDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ValidationId")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PasswordReset");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Project", b =>
                 {
                     b.Property<string>("Id")
@@ -247,6 +279,90 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProjectComponent");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskJob", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("CreatedDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("StatusId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TypeId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemTaskJob");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskParameter", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SystemTaskJobId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SystemValueTypeId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SystemTaskJobId");
+
+                    b.ToTable("SystemTaskParameter");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskStatus", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemTaskStatus");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskType", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SystemTaskType");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemValueType", b =>
@@ -306,7 +422,19 @@ namespace CFIssueTracker.Migrations
                         .HasForeignKey("AuditEventId");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskParameter", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.SystemTaskJob", null)
+                        .WithMany("Parameters")
+                        .HasForeignKey("SystemTaskJobId");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEvent", b =>
+                {
+                    b.Navigation("Parameters");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskJob", b =>
                 {
                     b.Navigation("Parameters");
                 });

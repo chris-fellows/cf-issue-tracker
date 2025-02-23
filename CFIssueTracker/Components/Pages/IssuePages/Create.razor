@@ -210,7 +210,7 @@
         if (!String.IsNullOrEmpty(Issue.AssignedUserId) &&
            Issue.AssignedUserId != _oldAssignedUserId)
         {
-            await EmailRequestService.AddIssueAssigned(Issue);
+            await EmailRequestService.AddIssueAssignedAsync(Issue);
         }
 
         NavigationManager.NavigateTo("/issues");

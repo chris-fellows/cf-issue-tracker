@@ -117,4 +117,5 @@ namespace CFIssueTracker.Services
                 return issues;
             }
         }
+    }
 }

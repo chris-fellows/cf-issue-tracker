@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CFIssueTrackerCommon.Interfaces
+﻿namespace CFIssueTrackerCommon.Interfaces
 {
     /// <summary>
     /// Email service
     /// </summary>
     public interface IEmailService
     {
-        Task SendAsync(List<string> recipientEmails, List<string> ccEmails, string subject, string body);
+        Task SendAsync(List<string> recipientEmails, List<string> ccEmails, string body, string subject);
     }
 }
