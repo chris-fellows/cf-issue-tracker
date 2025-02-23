@@ -94,6 +94,11 @@ namespace CFIssueTrackerCommon.Services
                                 i.CreatedDateTime <= filter.CreatedDateTimeTo
                             ) &&
                             (
+                                filter.AssignedUserIds == null ||
+                                !filter.AssignedUserIds.Any() ||
+                                filter.AssignedUserIds.Contains(i.AssignedUserId)
+                            ) &&
+                            (
                                 filter.CreatedUserIds == null ||
                                 !filter.CreatedUserIds.Any() ||
                                 filter.CreatedUserIds.Contains(i.CreatedUserId)
@@ -114,6 +119,49 @@ namespace CFIssueTrackerCommon.Services
                                 filter.IssueTypeIds.Contains(i.TypeId)
                             )
                         ).ToListAsync();
+                return issues;
+            }
+        }
+
+        public List<Issue> GetByFilter(IssueFilter filter)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var issues = context.Issue.Where(i =>
+                            (
+                                filter.CreatedDateTimeFrom == null ||
+                                i.CreatedDateTime >= filter.CreatedDateTimeFrom
+                            ) &&
+                            (
+                                filter.CreatedDateTimeTo == null ||
+                                i.CreatedDateTime <= filter.CreatedDateTimeTo
+                            ) &&
+                            (
+                                filter.AssignedUserIds == null ||
+                                !filter.AssignedUserIds.Any() ||
+                                filter.AssignedUserIds.Contains(i.AssignedUserId)
+                            ) &&
+                            (
+                                filter.CreatedUserIds == null ||
+                                !filter.CreatedUserIds.Any() ||
+                                filter.CreatedUserIds.Contains(i.CreatedUserId)
+                            ) &&
+                            (
+                                filter.ProjectIds == null ||
+                                !filter.ProjectIds.Any() ||
+                                filter.ProjectIds.Contains(i.ProjectId)
+                            ) &&
+                            (
+                                filter.IssueStatusIds == null ||
+                                !filter.IssueStatusIds.Any() ||
+                                filter.IssueStatusIds.Contains(i.StatusId)
+                            ) &&
+                            (
+                                filter.IssueTypeIds == null ||
+                                !filter.IssueTypeIds.Any() ||
+                                filter.IssueTypeIds.Contains(i.TypeId)
+                            )
+                        ).ToList();
                 return issues;
             }
         }

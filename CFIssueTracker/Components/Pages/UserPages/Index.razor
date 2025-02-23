@@ -34,6 +34,8 @@
 
 <h1>User List</h1>
 
+<ActivityIndicator IsBusy="@IsBusy"/>
+
 <p>
     <a href="users/create">Create New</a>
     <button @onclick="DownloadCSVAsync">Download</button>
@@ -52,7 +54,7 @@
             <input type="checkbox" />
         }
     </TemplateColumn>
-    
+
     <TemplateColumn Context="user">
         <a href="@($"users/edit?id={user.Id}")">Edit</a> |
         <a href="@($"users/details?id={user.Id}")">Details</a> |
@@ -65,6 +67,8 @@
 
     private IQueryable<User>? UsersQueryable;
 
+    private bool IsBusy { get; set; }
+
     protected override void OnInitialized()
     {
         //context = DbFactory.CreateDbContext();
@@ -76,6 +80,9 @@
     {
         using (var session = new DisposableActionsSession())
         {
+            IsBusy = true;
+            session.AddAction(() => IsBusy = false);
+
             // Get file stream
             var tempFile = Path.GetTempFileName();
             session.AddAction(() =>

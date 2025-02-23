@@ -10,5 +10,7 @@ namespace CFIssueTrackerCommon.Interfaces
     public interface IIssueService : IEntityWithIdService<Issue, string>
     {
         Task<List<Issue>> GetByFilterAsync(IssueFilter filter);
+
+        List<Issue> GetByFilter(IssueFilter filter);
     }
 }

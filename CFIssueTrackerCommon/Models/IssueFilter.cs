@@ -6,6 +6,11 @@
     public class IssueFilter
     {
         /// <summary>
+        /// Assigned User Ids
+        /// </summary>
+        public List<string>? AssignedUserIds { get; set; }
+
+        /// <summary>
         /// Issues created from
         /// </summary>
         public DateTimeOffset? CreatedDateTimeFrom { get; set; }

@@ -112,5 +112,30 @@ namespace CFIssueTrackerCommon.Services
                 return auditEvents;
             }
         }
+
+        public List<AuditEvent> GetByFilter(AuditEventFilter auditEventFilter)
+        {
+            using (var context = _dbFactory.CreateDbContext())
+            {
+                var auditEvents = context.AuditEvent
+                          .Include(i => i.Parameters)
+                          .Where(i =>
+                            (
+                                auditEventFilter.CreatedDateTimeFrom == null ||
+                                i.CreatedDateTime >= auditEventFilter.CreatedDateTimeFrom
+                            ) &&
+                            (
+                                auditEventFilter.CreatedDateTimeTo == null ||
+                                i.CreatedDateTime <= auditEventFilter.CreatedDateTimeTo
+                            ) &&
+                            (
+                                auditEventFilter.AuditEventTypeIds == null ||
+                                !auditEventFilter.AuditEventTypeIds.Any() ||
+                                auditEventFilter.AuditEventTypeIds.Contains(i.TypeId)
+                            )
+                        ).ToList();
+                return auditEvents;
+            }
+        }
     }
 }

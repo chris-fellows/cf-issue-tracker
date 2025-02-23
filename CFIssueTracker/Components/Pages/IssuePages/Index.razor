@@ -43,6 +43,8 @@
 
 <h1>Issue List</h1>
 
+<ActivityIndicator IsBusy="@IsBusy" />
+
 <p>
     <a href="issues/create">Create New</a>
     <button @onclick="DownloadCSVAsync">Download</button>
@@ -103,6 +105,7 @@
         </InputSelect>
     </div>
 </p>
+
 @if (IssuesQueryable == null)
 {
     <p><em>Loading...</em></p>
@@ -130,28 +133,43 @@ else
 }
 
 @code {
-    //private CFIssueTrackerContext context = default!;
-
     private PaginationState Pagination = new PaginationState() { ItemsPerPage = 20 };
 
     private IQueryable<Issue>? IssuesQueryable;
 
     private List<DateRangeFilter> CreatedDateRangeFilters = new();
 
+    private bool IsBusy { get; set; } = false;    
+
+
     private void RefreshIssues(bool notifyStateHasChanged)
     {
-        // TODO: Use IssueFilter
-        IssuesQueryable = IssueService.GetAll()
-                      .Where(i => (String.IsNullOrEmpty(_filterReference) || i.Reference.Contains(_filterReference)) &&
-                                (_filterAssignedUserId == UIUtilities.AnyId || i.AssignedUserId == _filterAssignedUserId) &&
-                                (_filterCreatedUserId == UIUtilities.AnyId || i.CreatedUserId == _filterCreatedUserId) &&
-                                (_filterIssueStatusId == UIUtilities.AnyId || i.StatusId == _filterIssueStatusId) &&
-                                (_filterIssueTypeId == UIUtilities.AnyId || i.TypeId == _filterIssueTypeId) &&
-                                (_filterProjectId == UIUtilities.AnyId || i.ProjectId == _filterProjectId))
-                     .OrderBy(i => i.CreatedDateTime)                                
-                     .AsQueryable();
+        IsBusy = true;
+        
+        IssuesQueryable = IssueService.GetByFilter(GetIssueFilter())
+                            .OrderBy(i => i.CreatedDateTime)
+                            .AsQueryable();
 
-        if (notifyStateHasChanged) StateHasChanged();
+        //var count = IssuesQueryable.Count();
+
+        IsBusy = false;        
+
+        //if (notifyStateHasChanged) StateHasChanged();
+    }
+
+    private async Task RefreshIssuesAsync(bool notifyStateHasChanged)
+    {
+        IsBusy = true;
+
+        //await Task.Delay(3000);
+
+        IssuesQueryable = (await IssueService.GetByFilterAsync(GetIssueFilter()))
+                            .OrderBy(i => i.CreatedDateTime)
+                            .AsQueryable();                            
+
+        IsBusy = false;
+
+        //if (notifyStateHasChanged) StateHasChanged();
     }
 
     // Filter on created
@@ -165,6 +183,7 @@ else
             {
                 _filterCreatedDateRangeId = value;
                 RefreshIssues(true);
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -180,6 +199,7 @@ else
             {
                 _filterReference = value;
                 RefreshIssues(true);
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -195,6 +215,7 @@ else
             {
                 _filterAssignedUserId = value;
                 RefreshIssues(true);
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -210,6 +231,7 @@ else
             {
                 _filterCreatedUserId = value;
                 RefreshIssues(true);
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -225,6 +247,7 @@ else
             {
                 _filterProjectId = value;
                 RefreshIssues(true);
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -240,6 +263,20 @@ else
             {
                 _filterIssueTypeId = value;
                 RefreshIssues(true);
+
+                //RefreshIssuesAsync(false).ConfigureAwait(false);                
+
+                //RefreshIssuesAsync(true).Wait();  // Hangs
+
+                //RefreshIssues(true);
+
+                /*
+                RefreshIssuesAsync(true).ConfigureAwait(true);
+                int count = IssuesQueryable.Count();
+                int xxx = 1000;
+                */
+
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -255,6 +292,7 @@ else
             {
                 _filterIssueStatusId = value;
                 RefreshIssues(true);
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
     }
@@ -266,15 +304,17 @@ else
     private List<User> Users = new();
 
     protected override async Task OnInitializedAsync()
-    {         
+    {
+        IsBusy = true;
+
         IssueStatuses = await IssueStatusService.GetAllAsync();
         IssueTypes = await IssueTypeService.GetAllAsync();
         ProjectComponents = await ProjectComponentService.GetAllAsync();
         Projects = await ProjectService.GetAllAsync();
         Users = await UserService.GetAllAsync();
 
-        CreatedDateRangeFilters = GetDateRangeFilters();
-        _filterIssueStatusId = CreatedDateRangeFilters.First().Id;
+        CreatedDateRangeFilters = UIUtilities.GetDateRangeFilters();
+        _filterCreatedDateRangeId  = CreatedDateRangeFilters.First().Id;
 
         // Add "Any" to filters
         UIUtilities.AddAny(IssueStatuses);
@@ -283,59 +323,8 @@ else
         UIUtilities.AddAny(Projects);
         UIUtilities.AddAny(Users);
 
-        RefreshIssues(false);
-    }
-
-    private List<DateRangeFilter> GetDateRangeFilters()
-    {
-        return new List<DateRangeFilter>()
-        {
-            new DateRangeFilter()
-            {
-                Id = "1",
-                Name = "All time"                
-            },
-            new DateRangeFilter()
-            {
-                Id = "2",
-                Name = "Current month",
-                FromDate = DateTimeUtilities.GetMonthStart()
-            },
-            new DateRangeFilter()
-            {
-                Id = "2",
-                Name = "Current year",
-                FromDate = DateTimeUtilities.GetYearStart()
-            }
-        };
-    }
-
-
-    // protected override void OnInitialized()
-    // {
-    //     context = DbFactory.CreateDbContext();
-
-    //     // Delay
-    //     var stopwatch = new System.Diagnostics.Stopwatch();
-    //     stopwatch.Start();
-    //     while (stopwatch.ElapsedMilliseconds < 2000)
-    //     {
-    //         Thread.Sleep(20);
-    //     }
-    //     stopwatch.Stop();
-
-    //     IssuesQueryable = context.Issue.AsQueryable();
-
-    //     IssueStatuses = IssueStatusService.GetAll();
-    //     IssueTypes = IssueTypeService.GetAll();
-    //     ProjectComponents = ProjectComponentService.GetAll();
-    //     Projects = ProjectService.GetAll();
-    //     Users = UserService.GetAll();
-
-    //     //CurrentPage = 1;
-    //     //PageCount = GetPageCount(context.Issue.Count(), PageSize);
-    //     //CurrentDataPage = GetDataPage(CurrentPage, PageSize);
-    // }    
+        await RefreshIssuesAsync(false);        
+    } 
 
     private string GetIssueStatusName(Issue issue)
     {
@@ -368,9 +357,14 @@ else
     }  
 
     private async Task DownloadCSVAsync()
-    {
+    {        
         using (var session = new DisposableActionsSession())
         {
+            IsBusy = true;
+            session.AddAction(() => IsBusy = false);
+
+            await Task.Delay(5000);
+
             // Get file stream
             var tempFile = Path.GetTempFileName();
             session.AddAction(() =>
@@ -401,7 +395,25 @@ else
         _filterIssueTypeId = UIUtilities.AnyId;
         _filterProjectId = UIUtilities.AnyId;
 
-        RefreshIssues(true);
+        await RefreshIssuesAsync(true);
+    }
+
+    private IssueFilter GetIssueFilter()
+    {
+        var createdDateRange = this.CreatedDateRangeFilters.First(f => f.Id == FilterCreatedDateRangeId);
+
+        // Set filter
+        var issueFilter = new IssueFilter()
+            {
+                AssignedUserIds = FilterAssignedUserId == UIUtilities.AnyId ? null : new() { FilterAssignedUserId },
+                CreatedDateTimeFrom = createdDateRange.FromDate == DateTimeOffset.MinValue ? null : createdDateRange.FromDate,
+                CreatedDateTimeTo = createdDateRange.ToDate == DateTimeOffset.MaxValue ? null : createdDateRange.ToDate,
+                CreatedUserIds = FilterCreatedUserId == UIUtilities.AnyId ? null : new() { FilterCreatedUserId },
+                IssueStatusIds  = FilterIssueStatusId == UIUtilities.AnyId ? null : new() { FilterIssueStatusId },
+                IssueTypeIds  = FilterIssueTypeId == UIUtilities.AnyId ? null : new() { FilterIssueTypeId },
+                ProjectIds = FilterProjectId == UIUtilities.AnyId ? null : new() { FilterProjectId }                
+            };
+        return issueFilter;
     }
 
     // @implements IAsyncDisposable

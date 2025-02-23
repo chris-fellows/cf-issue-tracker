@@ -1,4 +1,5 @@
 ﻿using CFIssueTrackerCommon.Models;
+using CFUtilities.Utilities;
 using System.Drawing.Printing;
 
 namespace CFIssueTracker.Utilities
@@ -67,6 +68,36 @@ namespace CFIssueTracker.Utilities
                 Id = AnyId,
                 Name = _anyText
             });
+        }
+
+        public static List<DateRangeFilter> GetDateRangeFilters()
+        {
+            return new List<DateRangeFilter>()
+        {
+            new DateRangeFilter()
+            {
+                Id = "1",
+                Name = "All time"
+            },
+            new DateRangeFilter()
+            {
+                Id = "2",
+                Name = "Today",
+                FromDate = DateTimeUtilities.GetTodayStart()
+            },
+            new DateRangeFilter()
+            {
+                Id = "3",
+                Name = "Current month",
+                FromDate = DateTimeUtilities.GetMonthStart()
+            },
+            new DateRangeFilter()
+            {
+                Id = "4",
+                Name = "Current year",
+                FromDate = DateTimeUtilities.GetYearStart()
+            }
+        };
         }
     }
 }

@@ -10,5 +10,7 @@ namespace CFIssueTrackerCommon.Interfaces
     public interface IAuditEventService : IEntityWithIdService<AuditEvent, string>
     {
         Task<List<AuditEvent>> GetByFilterAsync(AuditEventFilter auditEventFilter);
+
+        List<AuditEvent> GetByFilter(AuditEventFilter auditEventFilter);
     }
 }

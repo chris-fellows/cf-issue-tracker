@@ -8,6 +8,7 @@
 @using CFIssueTrackerCommon.Data
 @using CFIssueTracker.Utilities
 @using CFUtilities
+@using CFUtilities.Utilities
 @inject IDbContextFactory<CFIssueTrackerCommon.Data.CFIssueTrackerContext> DbFactory
 @inject IAuditEventService AuditEventService
 @inject IAuditEventTypeService AuditEventTypeService
@@ -44,6 +45,8 @@
 
 <h1>Audit Event List</h1>
 
+<ActivityIndicator IsBusy="@IsBusy" />
+
 <p>
     <a href="auditevents/create">Create New</a>
     <button @onclick="DownloadCSVAsync">Download</button>
@@ -58,25 +61,40 @@
                 <option value="@auditEventType.Id">@auditEventType.Name</option>
             }
         </InputSelect>
+
+        <label for="createdate">Created Time:</label>
+        <InputSelect @bind-Value="@FilterCreatedDateRangeId">
+            @foreach (DateRangeFilter dateRangeFilter in CreatedDateRangeFilters)
+            {
+                <option value="@dateRangeFilter.Id">@dateRangeFilter.Name</option>
+            }
+        </InputSelect>
     </div>
 </p>
 
-<QuickGrid Class="table" Items="@AuditEventsQueryable">
-    <PropertyColumn Title="Created Time" Property="auditevent => auditevent.CreatedDateTime" />
-    <PropertyColumn Title="Type" Property="auditevent => GetAuditEventTypeName(auditevent)" />
-    <TemplateColumn Title="Issue" Context="auditevent">
-        <a href="@($"issues/details?id={GetIssueId(auditevent)}")">@($"{GetIssueReference(auditevent)}")</a>
-    </TemplateColumn>    
-    <PropertyColumn Title="User" Property="auditevent => GetUserName(auditevent)" />
+@if (AuditEventsQueryable == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGrid Class="table" Items="@AuditEventsQueryable" Pagination="@Pagination">
+        <PropertyColumn Title="Created Time" Property="auditevent => auditevent.CreatedDateTime" />
+        <PropertyColumn Title="Type" Property="auditevent => GetAuditEventTypeName(auditevent)" />
+        <TemplateColumn Title="Issue" Context="auditevent">
+            <a href="@($"issues/details?id={GetIssueId(auditevent)}")">@($"{GetIssueReference(auditevent)}")</a>
+        </TemplateColumn>    
+        <PropertyColumn Title="User" Property="auditevent => GetUserName(auditevent)" />
 
-    <TemplateColumn Context="auditevent">        
-        <a href="@($"auditevents/details?id={auditevent.Id}")">Details</a>        
-    </TemplateColumn>
-</QuickGrid>
+        <TemplateColumn Context="auditevent">        
+            <a href="@($"auditevents/details?id={auditevent.Id}")">Details</a>        
+        </TemplateColumn>
+    </QuickGrid>
+
+    <Paginator State="@Pagination" />
+}
 
 @code {
-    //private CFIssueTrackerContext context = default!;
-
     private List<AuditEventType> AuditEventTypes = new();
     private List<ProjectComponent> ProjectComponents = new();
     private List<Project> Projects = new();
@@ -87,11 +105,15 @@
 
     private IQueryable<AuditEvent>? AuditEventsQueryable;
 
+    private List<DateRangeFilter> CreatedDateRangeFilters = new();
+
     // Cache data for UI performance otherwise it's slow to load per issue
     private Dictionary<string, string> IssueReferenceById = new();
     private Dictionary<string, string> UserNameById = new();
     private Dictionary<string, string> IssueIdByIssueCommentId = new();
     //private Dictionary<string, string> CreatedUserIdByIssueCommentId = new();
+
+    private bool IsBusy { get; set; }
 
     // Filter on issue status
     private string _filterAuditEventTypeId = UIUtilities.AnyId;
@@ -103,21 +125,38 @@
             if (_filterAuditEventTypeId != value)
             {
                 _filterAuditEventTypeId = value;
-
                 Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));                
+            }
+        }
+    }
+
+    // Filter on created
+    private string _filterCreatedDateRangeId = String.Empty;
+    public string FilterCreatedDateRangeId
+    {
+        get { return _filterCreatedDateRangeId; }
+        set
+        {
+            if (_filterCreatedDateRangeId != value)
+            {
+                _filterCreatedDateRangeId = value;
+                Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));
             }
         }
     }
 
     protected override async Task OnInitializedAsync()
     {
-        //context = DbFactory.CreateDbContext();
+        IsBusy = true;
 
         AuditEventTypes = AuditEventTypeService.GetAll();
         ProjectComponents = ProjectComponentService.GetAll();
         Projects = ProjectService.GetAll();
         SystemValueTypes = SystemValueTypeService.GetAll();
         Users = UserService.GetAll();
+
+        CreatedDateRangeFilters = UIUtilities.GetDateRangeFilters();
+        _filterCreatedDateRangeId = CreatedDateRangeFilters.First().Id;
 
         // Add Any option
         UIUtilities.AddAny(AuditEventTypes);
@@ -143,9 +182,9 @@
             // Check if we can get by issue comment
             var issueCommentId = GetIssueCommentId(auditEvent);
             if (IssueIdByIssueCommentId.ContainsKey(issueCommentId)) issueId = IssueIdByIssueCommentId[issueCommentId];
-        }        
+        }
 
-        return "";
+        return IssueReferenceById.ContainsKey(issueId) ? IssueReferenceById[issueId] : "";
     }
 
     /// <summary>
@@ -204,10 +243,12 @@
 
         if (UserNameById.ContainsKey(userId)) return UserNameById[userId];
         return "";
-    }
+    }    
 
     private async Task RefreshAuditEventsAsync(bool notifyStateHasChanged)
     {
+        IsBusy = true;
+
         // Get audit events
         AuditEventsQueryable = (await AuditEventService.GetByFilterAsync(GetAuditEventFilter()))
                     .OrderBy(e => e.CreatedDateTime)
@@ -290,23 +331,32 @@
             }
         }
 
+        IsBusy = false;
+
         if (notifyStateHasChanged) StateHasChanged();
     }
 
     private AuditEventFilter GetAuditEventFilter()
     {
+        var createdDateRange = this.CreatedDateRangeFilters.First(f => f.Id == FilterCreatedDateRangeId);
+
         // Set filter
         var auditEventFilter = new AuditEventFilter()
             {
-                AuditEventTypeIds = (FilterAuditEventTypeId == UIUtilities.AnyId ? null : new() { FilterAuditEventTypeId })
+                CreatedDateTimeFrom = createdDateRange.FromDate == DateTimeOffset.MinValue ? null : createdDateRange.FromDate,
+                CreatedDateTimeTo = createdDateRange.ToDate == DateTimeOffset.MaxValue ? null :  createdDateRange.ToDate,
+                AuditEventTypeIds = (FilterAuditEventTypeId == UIUtilities.AnyId ? null : new() { FilterAuditEventTypeId }),                
             };
         return auditEventFilter;
     }
 
     private async Task DownloadCSVAsync()
-    {
+    {        
         using (var session = new DisposableActionsSession())
         {
+            IsBusy = true;
+            session.AddAction(() => IsBusy = false);
+
             // Get file stream
             var tempFile = Path.GetTempFileName();
             session.AddAction(() =>
@@ -328,10 +378,11 @@
 
     private async Task ResetFiltersAsync()
     {
+        _filterCreatedDateRangeId = CreatedDateRangeFilters.First().Id;
         _filterAuditEventTypeId = UIUtilities.AnyId;
 
         await RefreshAuditEventsAsync(true);
-    }
+    }    
 
     //public async ValueTask DisposeAsync() => await context.DisposeAsync();
 }
