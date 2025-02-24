@@ -18,9 +18,19 @@ namespace CFIssueTrackerCommon.Models
         [MaxLength(100)]
         public string Email { get; set; } = String.Empty;
 
+        /// <summary>
+        /// Password
+        /// </summary>
+        [Required]
+        [MaxLength(50)]
+        public string Password { get; set; } = String.Empty;
+
+        /// <summary>
+        /// Password salt
+        /// </summary>
         [Required]
         [MaxLength(100)]
-        public string Password { get; set; } = String.Empty;
+        public string Salt { get; set; } = String.Empty;
 
         [Required]
         [MaxLength(100)]

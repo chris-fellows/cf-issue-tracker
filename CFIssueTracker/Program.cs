@@ -43,6 +43,9 @@ if (registerRequestInfoService) builder.Services.AddHttpContextAccessor();  // A
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Add password service
+builder.Services.AddScoped<IPasswordService, PBKDF2PasswordService>();
+
 // Add email config from appsettings.json
 builder.Services.Configure<EmailConfig>(builder.Configuration.GetSection(nameof(EmailConfig)));
 builder.Services.AddSingleton<IEmailConfig>(sp => sp.GetRequiredService<IOptions<EmailConfig>>().Value);
@@ -70,13 +73,16 @@ builder.Services.AddScoped<IUserService, EFUserService>();
 // Add email services
 builder.Services.AddScoped<IEmailRequestService, SystemTaskJobEmailRequestService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.RegisterAllTypes<IEmailContent>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssieCommon assemblies
+builder.Services.RegisterAllTypes<IEmailContent>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+
+// Add notification services
+//builder.Services.RegisterAllTypes<INotificationService>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
 
 // Add metric service for reports
 builder.Services.AddScoped<IMetricService, MetricService>();
 
-// Register system tasks
-builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });   // This & CFTrackerIssieCommon assemblies
+// Register system tasks. Will only use the ones that there's a config for
+builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });   // This & CFTrackerIssueCommon assemblies
 
 // Add seed data
 if (registerSeedDataLoad)

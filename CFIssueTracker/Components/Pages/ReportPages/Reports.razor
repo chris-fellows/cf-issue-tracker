@@ -1,6 +1,7 @@
 ﻿@page "/reports"
 @using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
+@using CFIssueTracker.Utilities
 @using CFUtilities.Utilities;
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
@@ -34,15 +35,15 @@
 
 <label for="periodtype">Period:</label>
 <InputSelect @bind-Value="@MetricsFilterId">
-    @foreach (MetricsFilter metricsFilter in MetricsFilters)
+    @foreach (DateRangeFilter dateRangeFilter in MetricsFilters)
     {
-        @if (metricsFilter.Id == MetricsFilterId)
+        @if (dateRangeFilter.Id == MetricsFilterId)
         {
-            <option selected value="@metricsFilter.Id">@metricsFilter.Name</option>
+            <option selected value="@dateRangeFilter.Id">@dateRangeFilter.Name</option>
         }
         else
         {
-            <option value="@metricsFilter.Id">@metricsFilter.Name</option>
+            <option value="@dateRangeFilter.Id">@dateRangeFilter.Name</option>
         }
     }
 </InputSelect>
@@ -51,27 +52,8 @@
 
 @code {
     private List<MetricsType> MetricsTypes = new();
-    private List<MetricsFilter> MetricsFilters = new();
+    private List<DateRangeFilter> MetricsFilters = new();
     private DateTimeOffset MetricsFilterFromDateTime = DateTimeOffset.MinValue;
-    
-    /// <summary>
-    /// Filter for metrics. E.g. All time, current month etc
-    /// </summary>
-    private class MetricsFilter
-    {
-        public string Id { get; internal set;  }
-
-        public string Name { get; internal set; }
-
-        public DateTimeOffset FromDateTime { get; internal set; }
-
-        public MetricsFilter(string id, string name, DateTimeOffset fromDateTime)
-        {
-            Id = id;
-            Name = name;
-            FromDateTime = fromDateTime;
-        }
-    }
 
     /// <summary>
     /// Selected metrics filter
@@ -85,7 +67,7 @@
             if (_metricsFilterId != value)
             {
                 _metricsFilterId = value;
-                MetricsFilterFromDateTime = MetricsFilters.First(p => p.Id == _metricsFilterId).FromDateTime;
+                MetricsFilterFromDateTime = MetricsFilters.First(p => p.Id == _metricsFilterId).FromDate;
             }
         }
     }
@@ -109,13 +91,8 @@
     protected override async Task OnInitializedAsync()
     {        
         MetricsTypes = MetricsTypeService.GetAll();
-     
-        MetricsFilters = new List<MetricsFilter>
-        {
-            new MetricsFilter("1", "All time", DateTimeOffset.MinValue),
-            new MetricsFilter("2", "Current month", DateTimeUtilities.GetMonthStart()),
-            new MetricsFilter("3", "Current year", DateTimeUtilities.GetYearStart())            
-        };
+
+        MetricsFilters = UIUtilities.GetDateRangeFilters();
 
         MetricsFilterId = MetricsFilters.First().Id;
         MetricsTypeId = MetricsTypes.First().Id;

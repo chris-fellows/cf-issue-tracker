@@ -17,7 +17,7 @@ namespace CFIssueTrackerCommon.SystemTask
             var passwordResetService = serviceProvider.GetRequiredService<IPasswordResetService>();
 
             // Get expired password resets
-            var passwordResets = (await passwordResetService.GetAllAsync()).Where(pr => pr.ExpiresDateTime <= DateTimeOffset.UtcNow).ToList();
+            var passwordResets = (await passwordResetService.GetAllAsync()).Where(pr => pr.ExpiresDateTime.AddMinutes(60) <= DateTimeOffset.UtcNow).ToList();
 
             // Delete
             while (passwordResets.Any() && !cancellationToken.IsCancellationRequested)

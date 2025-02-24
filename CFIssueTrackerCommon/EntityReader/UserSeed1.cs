@@ -1,4 +1,5 @@
 ﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,13 @@ namespace CFIssueTrackerCommon.EntityReader
     /// </summary>
     public class UserSeed1 : IEntityReader<User>
     {
+        private readonly IPasswordService _passwordService;
+
+        public UserSeed1(IPasswordService passwordService)
+        {
+            _passwordService = passwordService;
+        }
+
         public IEnumerable<User> Read()
         {
             var list = new List<User>()
@@ -53,6 +61,14 @@ namespace CFIssueTrackerCommon.EntityReader
                     Active = false
                 },
             };
+
+            // Encrypt passwords
+            foreach(var user in list)
+            {
+                var encrypted = _passwordService.Encrypt(user.Password);
+                user.Password = encrypted[0];
+                user.Salt = encrypted[1];
+            }
 
             return list;
         }

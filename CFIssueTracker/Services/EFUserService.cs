@@ -9,10 +9,13 @@ namespace CFIssueTrackerCommon.Services
     public class EFUserService : IUserService
     {
         private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
+        private readonly IPasswordService _passwordService;
 
-        public EFUserService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+        public EFUserService(IDbContextFactory<CFIssueTrackerContext> dbFactory,
+                            IPasswordService passwordService)
         {
             _dbFactory = dbFactory;
+            _passwordService = passwordService;
         }
 
         public List<User> GetAll()
@@ -81,14 +84,14 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
-        public async Task<User?> ValidateCredentialsAsync(string username, string password)
+        public async Task<User?> ValidateCredentialsAsync(string username, string password)                                                        
         {
             using (var context = _dbFactory.CreateDbContext())
             {
                 var user = await context.User.FirstOrDefaultAsync(i => i.Email == username);
                 if (user != null &&
                     user.GetUserType() == UserTypes.Normal &&
-                    user.Password == password)
+                    _passwordService.IsValid(user.Password, password, user.Salt))                    
                 {
                     return user;
                 }

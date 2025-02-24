@@ -70,34 +70,38 @@ namespace CFIssueTracker.Utilities
             });
         }
 
+        /// <summary>
+        /// Default date range filters
+        /// </summary>
+        /// <returns></returns>
         public static List<DateRangeFilter> GetDateRangeFilters()
         {
             return new List<DateRangeFilter>()
-        {
-            new DateRangeFilter()
             {
-                Id = "1",
-                Name = "All time"
-            },
-            new DateRangeFilter()
-            {
-                Id = "2",
-                Name = "Today",
-                FromDate = DateTimeUtilities.GetTodayStart()
-            },
-            new DateRangeFilter()
-            {
-                Id = "3",
-                Name = "Current month",
-                FromDate = DateTimeUtilities.GetMonthStart()
-            },
-            new DateRangeFilter()
-            {
-                Id = "4",
-                Name = "Current year",
-                FromDate = DateTimeUtilities.GetYearStart()
-            }
-        };
+                new DateRangeFilter()
+                {
+                    Id = "1",
+                    Name = "All time"
+                },
+                new DateRangeFilter()
+                {
+                    Id = "2",
+                    Name = "Today",
+                    FromDate = DateTimeUtilities.GetTodayStart()
+                },
+                new DateRangeFilter()
+                {
+                    Id = "3",
+                    Name = "Current month",
+                    FromDate = DateTimeUtilities.GetMonthStart()
+                },
+                new DateRangeFilter()
+                {
+                    Id = "4",
+                    Name = "Current year",
+                    FromDate = DateTimeUtilities.GetYearStart()
+                }
+            };
         }
     }
 }
