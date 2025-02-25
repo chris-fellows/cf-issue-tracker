@@ -1,6 +1,7 @@
 ﻿using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,9 @@ namespace CFIssueTrackerCommon.EntityReader
                 new ProjectComponent()
                 {
                     Id = Guid.NewGuid().ToString(),                    
-                    Name = "Unknown"
+                    Name = "Unknown",
+                    Color = Color.LightBlue.ToArgb().ToString(),
+                    ImageSource = "project_component.png"
                 }
             };
 

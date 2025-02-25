@@ -1,6 +1,7 @@
 ﻿using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,17 +20,20 @@ namespace CFIssueTrackerCommon.EntityReader
                 new IssueType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Bug"
+                    Name = "Bug",
+                    Color = Color.Red.ToArgb().ToString()
                 },
                 new IssueType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "New feature"
+                    Name = "New feature",
+                    Color = Color.OrangeRed.ToArgb().ToString()
                 },
                 new IssueType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Unknown"
+                    Name = "Unknown",
+                    Color = Color.BurlyWood.ToArgb().ToString()
                 },
             };
 

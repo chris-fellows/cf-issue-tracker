@@ -1,5 +1,6 @@
 ﻿using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
+using System.Drawing;
 
 namespace CFIssueTrackerCommon.Services
 {
@@ -44,6 +45,33 @@ namespace CFIssueTrackerCommon.Services
             return colors;
         }
 
+        /// <summary>
+        /// Gets dimension color (RGBA format) from input color (Color value, color name, RGBA values)
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="colors"></param>
+        /// <returns></returns>
+        private string GetRGBADimensionColor(string color, List<System.Drawing.Color> colors)
+        {
+            // Check if list of RGBA values
+            if (color.Contains(",")) return color;  // RGBA format
+
+            // Check if color value (RGBA value)
+            if (Int32.TryParse(color, out var colorValue))
+            {
+                var colorItem = Color.FromArgb(colorValue);
+                return $"{colorItem.R},{colorItem.G},{colorItem.B},{colorItem.A}";
+            }
+            
+            // Check if color name
+            var colorByName = colors.FirstOrDefault(c => c.Name == color);
+            if (colorByName != null)
+            {
+                return $"{colorByName.R},{colorByName.G},{colorByName.B},{colorByName.A}";
+            }
+            return "";
+        }
+
         public async Task<Metrics> GetIssueCountByProjectMetricsAsync(IssueFilter issueFilter)
         {
             var issues = await _issueService.GetByFilterAsync(issueFilter);
@@ -71,8 +99,9 @@ namespace CFIssueTrackerCommon.Services
 
                 if (!metrics.DimensionColors.ContainsKey(project.Name))
                 {
-                    var color = dimensionColors[++colorIndex];
-                    metrics.DimensionColors.Add(project.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                    metrics.DimensionColors.Add(project.Name, GetRGBADimensionColor(project.Color, dimensionColors));
+                    //var color = dimensionColors[++colorIndex];
+                    //metrics.DimensionColors.Add(project.Name, $"{color.R},{color.G},{color.B},{color.A}");
                 }
             }            
 
@@ -106,8 +135,9 @@ namespace CFIssueTrackerCommon.Services
 
                 if (!metrics.DimensionColors.ContainsKey(issueStatus.Name))
                 {
-                    var color = dimensionColors[++colorIndex];
-                    metrics.DimensionColors.Add(issueStatus.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                    metrics.DimensionColors.Add(issueStatus.Name, GetRGBADimensionColor(issueStatus.Color, dimensionColors));
+                    //var color = dimensionColors[++colorIndex];
+                    //metrics.DimensionColors.Add(issueStatus.Name, $"{color.R},{color.G},{color.B},{color.A}");
                 }
             }
 
@@ -141,8 +171,9 @@ namespace CFIssueTrackerCommon.Services
 
                 if (!metrics.DimensionColors.ContainsKey(issueType.Name))
                 {
-                    var color = dimensionColors[++colorIndex];
-                    metrics.DimensionColors.Add(issueType.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                    metrics.DimensionColors.Add(issueType.Name, GetRGBADimensionColor(issueType.Color, dimensionColors));
+                    //var color = dimensionColors[++colorIndex];
+                    //metrics.DimensionColors.Add(issueType.Name, $"{color.R},{color.G},{color.B},{color.A}");
                 }
             }
 
@@ -176,8 +207,9 @@ namespace CFIssueTrackerCommon.Services
 
                 if (!metrics.DimensionColors.ContainsKey(user.Name))
                 {
-                    var color = dimensionColors[++colorIndex];
-                    metrics.DimensionColors.Add(user.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                    metrics.DimensionColors.Add(user.Name, GetRGBADimensionColor(user.Color, dimensionColors));                    
+                    //var color = dimensionColors[++colorIndex];
+                    //metrics.DimensionColors.Add(user.Name, $"{color.R},{color.G},{color.B},{color.A}");
                 }
             }
 
@@ -211,8 +243,9 @@ namespace CFIssueTrackerCommon.Services
 
                 if (!metrics.DimensionColors.ContainsKey(user.Name))
                 {
-                    var color = dimensionColors[++colorIndex];
-                    metrics.DimensionColors.Add(user.Name, $"{color.R},{color.G},{color.B},{color.A}");
+                    metrics.DimensionColors.Add(user.Name, GetRGBADimensionColor(user.Color, dimensionColors));
+                    //var color = dimensionColors[++colorIndex];
+                    //metrics.DimensionColors.Add(user.Name, $"{color.R},{color.G},{color.B},{color.A}");
                 }
             }
 

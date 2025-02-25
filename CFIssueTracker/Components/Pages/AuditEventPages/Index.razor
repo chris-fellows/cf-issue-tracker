@@ -79,12 +79,19 @@
 else
 {
     <QuickGrid Class="table" Items="@AuditEventsQueryable" Pagination="@Pagination">
-        <PropertyColumn Title="Created Time" Property="auditevent => auditevent.CreatedDateTime" />
-        <PropertyColumn Title="Type" Property="auditevent => GetAuditEventTypeName(auditevent)" />
+        <PropertyColumn Title="Created Time" Property="auditevent => auditevent.CreatedDateTime" />        
+
+        <TemplateColumn Title="Type" Context="auditevent">
+            <ImageAndText ImageSource="@(GetAuditEventTypeImageSource(auditevent))" Text="@(GetAuditEventTypeName(auditevent))" />
+        </TemplateColumn>
+
         <TemplateColumn Title="Issue" Context="auditevent">
             <a href="@($"issues/details?id={GetIssueId(auditevent)}")">@($"{GetIssueReference(auditevent)}")</a>
         </TemplateColumn>    
-        <PropertyColumn Title="User" Property="auditevent => GetUserName(auditevent)" />
+
+        <TemplateColumn Title="User" Context="auditevent">
+            <ImageAndText ImageSource="@(GetUserImageSource(auditevent))" Text="@(GetUserName(auditevent))" />
+        </TemplateColumn>
 
         <TemplateColumn Context="auditevent">        
             <a href="@($"auditevents/details?id={auditevent.Id}")">Details</a>        
@@ -110,7 +117,8 @@ else
     // Cache data for UI performance otherwise it's slow to load per issue
     private Dictionary<string, string> IssueReferenceById = new();
     private Dictionary<string, string> UserNameById = new();
-    private Dictionary<string, string> IssueIdByIssueCommentId = new();
+    private Dictionary<string, string> UserImageSourceById = new();
+    private Dictionary<string, string> IssueIdByIssueCommentId = new();    
     //private Dictionary<string, string> CreatedUserIdByIssueCommentId = new();
 
     private bool IsBusy { get; set; }
@@ -167,6 +175,11 @@ else
     private string GetAuditEventTypeName(AuditEvent auditEvent)
     {
         return AuditEventTypes.First(t => t.Id == auditEvent.TypeId).Name;
+    }
+
+    private string GetAuditEventTypeImageSource(AuditEvent auditEvent)
+    {
+        return $"../images/audit_event_types/{AuditEventTypes.First(t => t.Id == auditEvent.TypeId).ImageSource}";
     }
 
     /// <summary>
@@ -234,16 +247,18 @@ else
     private string GetUserName(AuditEvent auditEvent)
     {
         var userId = GetUserId(auditEvent);
-        // if (String.IsNullOrEmpty(userId))
-        // {
-        //     // Check if we can get by issue comment
-        //     var issueCommentId = GetIssueCommentId(auditEvent);
-        //     if (CreatedUserIdByIssueCommentId.ContainsKey(issueCommentId)) userId = CreatedUserIdByIssueCommentId[issueCommentId];
-        // }
 
         if (UserNameById.ContainsKey(userId)) return UserNameById[userId];
         return "";
     }    
+
+    private string GetUserImageSource(AuditEvent auditEvent)
+    {
+        var userId = GetUserId(auditEvent);
+
+        if (UserImageSourceById.ContainsKey(userId)) return $"../images/users/{UserImageSourceById[userId]}";
+        return "";
+    }
 
     private async Task RefreshAuditEventsAsync(bool notifyStateHasChanged)
     {
@@ -322,12 +337,14 @@ else
 
         // Load user name
         UserNameById.Clear();
+        UserImageSourceById.Clear();       
         if (userIds.Any())
         {
             var users = await UserService.GetByIdsAsync(userIds.ToList());
             foreach (var user in users)
             {
                 UserNameById.Add(user.Id, user.Name);
+                UserImageSourceById.Add(user.Id, user.ImageSource);
             }
         }
 

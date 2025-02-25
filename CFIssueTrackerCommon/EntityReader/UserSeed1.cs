@@ -3,6 +3,7 @@ using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,9 +30,11 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "System",
-                    Password = "123",
-                    Role = UserRoleNames.Administrator,
-                    Active = true
+                    Password = "",
+                    Role = UserRoleNames.Administrator,                  
+                    Active = true,
+                    Color = Color.Blue.ToArgb().ToString(),
+                    ImageSource = "user.png"
                 },
                 new User()
                 {
@@ -40,7 +43,9 @@ namespace CFIssueTrackerCommon.EntityReader
                     Email = "testuser1@domain.com",
                     Password = "testuser1",
                     Role = UserRoleNames.Administrator,
-                    Active = true
+                    Active = true,
+                    Color = Color.Orange.ToArgb().ToString(),
+                    ImageSource = "user.png"
                 },
                 new User()
                 {
@@ -49,7 +54,9 @@ namespace CFIssueTrackerCommon.EntityReader
                     Email = "testuser2@domain.com",
                     Password = "testuser2",
                     Role = UserRoleNames.User,                    
-                    Active = true
+                    Active = true,
+                    Color = Color.Brown.ToArgb().ToString(),
+                    ImageSource = "user.png"
                 },
                 new User()
                 {
@@ -58,12 +65,14 @@ namespace CFIssueTrackerCommon.EntityReader
                     Email = "testuser3@domain.com",
                     Password = "testuser3",
                     Role = UserRoleNames.User,
-                    Active = false
+                    Active = false,
+                    Color = Color.Yellow.ToArgb().ToString(),
+                    ImageSource = "user.png"
                 },
             };
 
             // Encrypt passwords
-            foreach(var user in list)
+            foreach(var user in list.Where(u => !String.IsNullOrEmpty(u.Password)))
             {
                 var encrypted = _passwordService.Encrypt(user.Password);
                 user.Password = encrypted[0];

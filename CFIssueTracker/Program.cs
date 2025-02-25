@@ -17,6 +17,11 @@ using Microsoft.Extensions.Options;
 const bool registerSeedDataLoad = true;
 const bool registerRequestInfoService = true;
 
+//var colorValue = -5952982;
+//var myColor = System.Drawing.Color.FromArgb(colorValue);
+//var htmlColor = System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(colorValue));
+//var htmlColor = System.Drawing.ColorTranslator.ToHtml(Color.FromArgb(someColor.ToArgb()))
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<CFIssueTrackerContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CFIssueTrackerContext") ?? throw new InvalidOperationException("Connection string 'CFIssueTrackerContext' not found.")));

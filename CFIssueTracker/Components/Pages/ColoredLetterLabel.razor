@@ -1,0 +1,29 @@
+﻿<style>
+    svg.coloredletterlogoimage {
+    width: 25px;
+    height: 25px;
+    }
+
+    svg.coloredletterlogoimage > text {
+    fill: white;
+    font-family: Arial;
+    font-size: 18px;
+    font-weight: bolder;
+    text-anchor: middle;
+    }
+</style>
+
+<svg class="coloredletterlogoimage">
+    <circle cx="15" cy="15" r="15" fill="@BackColor" />
+    <text x="50%" y="50%" dy=".3em">
+        @Letter
+    </text>
+</svg>
+
+@code {
+    [Parameter]
+    public string BackColor { get; set; } = String.Empty;
+
+    [Parameter]
+    public string Letter { get; set; } = String.Empty;
+}

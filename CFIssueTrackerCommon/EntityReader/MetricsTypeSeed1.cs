@@ -1,4 +1,5 @@
 ﻿using CFIssueTrackerCommon.Models;
+using System.Drawing;
 
 namespace CFIssueTrackerCommon.EntityReader
 {
@@ -14,27 +15,37 @@ namespace CFIssueTrackerCommon.EntityReader
                 new MetricsType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issues By Project"
+                    Name = "Issues By Project",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
                 },
                 new MetricsType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issues By Status"
+                    Name = "Issues By Status",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
                 },
                 new MetricsType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issues By Type"
+                    Name = "Issues By Type",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
                 },
                 new MetricsType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issues By Created User"
+                    Name = "Issues By Created User",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
                 },
                 new MetricsType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Issues By Assigned User"
+                    Name = "Issues By Assigned User",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
                 }
             };
 

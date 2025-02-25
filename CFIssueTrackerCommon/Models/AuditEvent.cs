@@ -16,6 +16,9 @@ namespace CFIssueTrackerCommon.Models
 
         public DateTimeOffset CreatedDateTime { get; set; }
 
+        /// <summary>
+        /// Parameters
+        /// </summary>
         public ICollection<AuditEventParameter> Parameters { get; set; }
     }
 }

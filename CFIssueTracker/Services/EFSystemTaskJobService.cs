@@ -1,4 +1,5 @@
 ﻿using CFIssueTrackerCommon.Data;
+using CFIssueTrackerCommon.Enums;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
@@ -92,7 +93,7 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issues = await context.SystemTaskJob
+                var systemTaskJobs = await context.SystemTaskJob
                             .Include(i => i.Parameters)
                             .Where(i =>
                             (
@@ -114,7 +115,30 @@ namespace CFIssueTracker.Services
                                 filter.StatusIds.Contains(i.StatusId)
                             )
                         ).ToListAsync();
-                return issues;
+
+                // Filter on parameters
+                if (filter.Parameters != null && filter.Parameters.Any())
+                {
+                    switch (filter.ParametersLogicalOperator)
+                    {
+                        case LogicalOperators.And:    // Jobs containing all filter parameter values
+                            systemTaskJobs = systemTaskJobs.Where(j => filter.Parameters.All(fp =>
+                                  j.Parameters.Any(jp =>
+                                          jp.SystemValueTypeId == fp.TypeId &&
+                                          fp.Values.Contains(jp.Value))
+                                  )).ToList();
+                            break;
+                        case LogicalOperators.Or:   // Jobs containing any filter parameter values
+                            systemTaskJobs = systemTaskJobs.Where(j => filter.Parameters.Any(fp =>
+                                j.Parameters.Any(jp =>
+                                        jp.SystemValueTypeId == fp.TypeId &&
+                                        fp.Values.Contains(jp.Value))
+                                )).ToList();
+                            break;
+                    }
+                }
+
+                return systemTaskJobs;
             }
         }
     }

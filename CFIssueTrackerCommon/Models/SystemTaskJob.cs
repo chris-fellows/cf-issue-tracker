@@ -32,6 +32,9 @@ namespace CFIssueTrackerCommon.Models
 
         public DateTimeOffset CreatedDateTime { get; set; }
 
+        /// <summary>
+        /// Filter on parameters.
+        /// </summary>
         public ICollection<SystemTaskParameter> Parameters { get; set; }
     }
 }

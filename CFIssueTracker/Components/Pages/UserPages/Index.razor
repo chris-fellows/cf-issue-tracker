@@ -6,6 +6,7 @@
 @using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
+@using CFIssueTracker.Utilities
 @using CFUtilities
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IUserService UserService
@@ -44,7 +45,12 @@
 <QuickGrid Class="table" Items="@UsersQueryable">
     <PropertyColumn Property="user => user.Name" />
     <PropertyColumn Property="user => user.Email" />
-    <TemplateColumn Title="Activeeee">
+
+    <TemplateColumn Title="Image" Context="user">
+        <img class="entityimage" src="../images/users/@user.ImageSource" />
+    </TemplateColumn>
+
+    <TemplateColumn Title="Active">
         @if (context.Active)
         {
             <input type="checkbox" checked />
@@ -54,7 +60,7 @@
             <input type="checkbox" />
         }
     </TemplateColumn>
-
+    
     <TemplateColumn Context="user">
         <a href="@($"users/edit?id={user.Id}")">Edit</a> |
         <a href="@($"users/details?id={user.Id}")">Details</a> |
@@ -74,6 +80,11 @@
         //context = DbFactory.CreateDbContext();
 
         UsersQueryable = UserService.GetAll().AsQueryable();
+    }
+
+    private string GetUserColor(User user)
+    {
+        return HTMLUtilities.GetHTMLColor(user.Color);
     }
 
     private async Task DownloadCSVAsync()

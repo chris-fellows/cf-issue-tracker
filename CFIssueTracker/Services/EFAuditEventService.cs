@@ -1,7 +1,9 @@
 ﻿using CFIssueTrackerCommon.Data;
+using CFIssueTrackerCommon.Enums;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Buffers;
 
 namespace CFIssueTrackerCommon.Services
 {
@@ -88,7 +90,7 @@ namespace CFIssueTrackerCommon.Services
             }
         }
 
-        public async Task<List<AuditEvent>> GetByFilterAsync(AuditEventFilter auditEventFilter)
+        public async Task<List<AuditEvent>> GetByFilterAsync(AuditEventFilter filter)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
@@ -96,24 +98,56 @@ namespace CFIssueTrackerCommon.Services
                           .Include(i => i.Parameters)
                           .Where(i =>
                             (
-                                auditEventFilter.CreatedDateTimeFrom == null ||
-                                i.CreatedDateTime >= auditEventFilter.CreatedDateTimeFrom
+                                filter.CreatedDateTimeFrom == null ||
+                                i.CreatedDateTime >= filter.CreatedDateTimeFrom
                             ) &&
                             (
-                                auditEventFilter.CreatedDateTimeTo == null ||
-                                i.CreatedDateTime <= auditEventFilter.CreatedDateTimeTo
+                                filter.CreatedDateTimeTo == null ||
+                                i.CreatedDateTime <= filter.CreatedDateTimeTo
                             ) &&                          
                             (
-                                auditEventFilter.AuditEventTypeIds == null ||
-                                !auditEventFilter.AuditEventTypeIds.Any() ||
-                                auditEventFilter.AuditEventTypeIds.Contains(i.TypeId)
+                                filter.AuditEventTypeIds == null ||
+                                !filter.AuditEventTypeIds.Any() ||
+                                filter.AuditEventTypeIds.Contains(i.TypeId)
                             )
+                            //(
+                            //    filter.Parameters == null ||
+                            //    !filter.Parameters.Any() ||
+                            //    filter.Parameters.All(fp =>
+                            //        i.Parameters.Any(aep =>
+                            //                aep.SystemValueTypeId == fp.TypeId &&
+                            //                fp.Values.Contains(aep.Value))
+                            //            )
+                            //)                            
                         ).ToListAsync();
+
+                // Filter on parameters
+                if (filter.Parameters != null && filter.Parameters.Any())
+                {
+                    switch(filter.ParametersLogicalOperator)
+                    {
+                        case LogicalOperators.And:    // Audit events containing all filter parameter values
+                            auditEvents = auditEvents.Where(ae => filter.Parameters.All(fp =>
+                                  ae.Parameters.Any(aep =>
+                                          aep.SystemValueTypeId == fp.TypeId &&
+                                          fp.Values.Contains(aep.Value))
+                                  )).ToList();
+                            break;
+                        case LogicalOperators.Or:   // Audit events containing any filter parameter values
+                            auditEvents = auditEvents.Where(ae => filter.Parameters.Any(fp =>
+                                ae.Parameters.Any(aep =>
+                                        aep.SystemValueTypeId == fp.TypeId &&
+                                        fp.Values.Contains(aep.Value))
+                                )).ToList();
+                            break;
+                    }
+                }
+
                 return auditEvents;
             }
         }
 
-        public List<AuditEvent> GetByFilter(AuditEventFilter auditEventFilter)
+        public List<AuditEvent> GetByFilter(AuditEventFilter filter)
         {
             using (var context = _dbFactory.CreateDbContext())
             {
@@ -121,21 +155,55 @@ namespace CFIssueTrackerCommon.Services
                           .Include(i => i.Parameters)
                           .Where(i =>
                             (
-                                auditEventFilter.CreatedDateTimeFrom == null ||
-                                i.CreatedDateTime >= auditEventFilter.CreatedDateTimeFrom
+                                filter.CreatedDateTimeFrom == null ||
+                                i.CreatedDateTime >= filter.CreatedDateTimeFrom
                             ) &&
                             (
-                                auditEventFilter.CreatedDateTimeTo == null ||
-                                i.CreatedDateTime <= auditEventFilter.CreatedDateTimeTo
+                                filter.CreatedDateTimeTo == null ||
+                                i.CreatedDateTime <= filter.CreatedDateTimeTo
                             ) &&
                             (
-                                auditEventFilter.AuditEventTypeIds == null ||
-                                !auditEventFilter.AuditEventTypeIds.Any() ||
-                                auditEventFilter.AuditEventTypeIds.Contains(i.TypeId)
+                                filter.AuditEventTypeIds == null ||
+                                !filter.AuditEventTypeIds.Any() ||
+                                filter.AuditEventTypeIds.Contains(i.TypeId)
                             )
-                        ).ToList();
+                            /*
+                            (
+                                filter.Parameters == null ||
+                                !filter.Parameters.Any() ||
+                                filter.Parameters.All(fp =>
+                                    i.Parameters.Any(aep => 
+                                            aep.SystemValueTypeId == fp.SystemValueTypeId &&
+                                            aep.Value == fp.Value)
+                                        )                                                                                        
+                            )
+                            */
+                         ).ToList();
+
+                // Filter on parameters
+                if (filter.Parameters != null && filter.Parameters.Any())
+                {
+                    switch (filter.ParametersLogicalOperator)
+                    {
+                        case LogicalOperators.And:    // Audit events containing all filter parameter values
+                            auditEvents = auditEvents.Where(ae => filter.Parameters.All(fp =>
+                                  ae.Parameters.Any(aep =>
+                                          aep.SystemValueTypeId == fp.TypeId &&
+                                          fp.Values.Contains(aep.Value))
+                                  )).ToList();
+                            break;
+                        case LogicalOperators.Or:   // Audit events containing any filter parameter values
+                            auditEvents = auditEvents.Where(ae => filter.Parameters.Any(fp =>
+                                ae.Parameters.Any(aep =>
+                                        aep.SystemValueTypeId == fp.TypeId &&
+                                        fp.Values.Contains(aep.Value))
+                                )).ToList();
+                            break;
+                    }
+                }
+
                 return auditEvents;
             }
-        }
+        }     
     }
 }

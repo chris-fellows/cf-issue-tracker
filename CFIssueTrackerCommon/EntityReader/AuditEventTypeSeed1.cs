@@ -2,6 +2,7 @@
 using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,102 +21,142 @@ namespace CFIssueTrackerCommon.EntityReader
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.Error
+                    Name = AuditEventTypeNames.Error,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssueCreated                    
+                    Name = AuditEventTypeNames.IssueCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssueUpdated
+                    Name = AuditEventTypeNames.IssueUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssuseCommentCreated
+                    Name = AuditEventTypeNames.IssuseCommentCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssuseCommentUpdated
+                    Name = AuditEventTypeNames.IssuseCommentUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssueStatusCreated
+                    Name = AuditEventTypeNames.IssueStatusCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssueStatusUpdated
+                    Name = AuditEventTypeNames.IssueStatusUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssueTypeCreated
+                    Name = AuditEventTypeNames.IssueTypeCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.IssueTypeUpdated
+                    Name = AuditEventTypeNames.IssueTypeUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.PasswordResetCreated
+                    Name = AuditEventTypeNames.PasswordResetCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.PasswordUpdated
+                    Name = AuditEventTypeNames.PasswordUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.ProjectCreated
+                    Name = AuditEventTypeNames.ProjectCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.ProjectUpdated
+                    Name = AuditEventTypeNames.ProjectUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.ProjectComponentCreated
+                    Name = AuditEventTypeNames.ProjectComponentCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.ProjectComponentUpdated
+                    Name = AuditEventTypeNames.ProjectComponentUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.UserCreated
+                    Name = AuditEventTypeNames.UserCreated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.UserLogInSuccess
+                    Name = AuditEventTypeNames.UserLogInSuccess,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.UserLogOut
+                    Name = AuditEventTypeNames.UserLogOut,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.UserLogInError
+                    Name = AuditEventTypeNames.UserLogInError,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 },
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = AuditEventTypeNames.UserUpdated
+                    Name = AuditEventTypeNames.UserUpdated,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
                 }
             };
 

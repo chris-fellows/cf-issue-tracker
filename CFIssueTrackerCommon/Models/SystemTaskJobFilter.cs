@@ -1,4 +1,6 @@
-﻿namespace CFIssueTrackerCommon.Models
+﻿using CFIssueTrackerCommon.Enums;
+
+namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
     /// System task job filter
@@ -24,5 +26,14 @@
         /// System task types
         /// </summary>
         public List<string>? TypeIds { get; set; }
+
+        public LogicalOperators ParametersLogicalOperator { get; set; } = LogicalOperators.And;
+
+        /// <summary>
+        /// Systen task job parameter(s)
+        /// 
+        /// E.g. TypeId=UserId, Values=[UserId1,UserId2]
+        /// </summary>
+        public List<SystemValueFilter>? Parameters { get; set; }
     }
 }

@@ -23,6 +23,10 @@
     <PropertyColumn Title="Project" Property="projectcomponent => GetProjectName(projectcomponent)" />
     <PropertyColumn Title="Name" Property="projectcomponent => projectcomponent.Name" />
 
+    <TemplateColumn Title="Image" Context="projectcomponent">
+        <img class="entityimage" src="../images/project_components/@projectcomponent.ImageSource" />
+    </TemplateColumn>
+
     <TemplateColumn Context="projectcomponent">
         <a href="@($"projectcomponents/edit?id={projectcomponent.Id}")">Edit</a> |
         <a href="@($"projectcomponents/details?id={projectcomponent.Id}")">Details</a> |

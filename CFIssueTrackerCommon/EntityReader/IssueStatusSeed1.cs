@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,31 +16,36 @@ namespace CFIssueTrackerCommon.EntityReader
         public IEnumerable<IssueStatus> Read()
         {
             var list = new List<IssueStatus>()
-            {               
+            {
                 new IssueStatus()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "New"
+                    Name = "New",
+                    Color = Color.Blue.ToArgb().ToString()
                 },
                 new IssueStatus()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Pending"
+                    Name = "Pending",
+                    Color = Color.Red.ToArgb().ToString()
                 },
                 new IssueStatus()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Active"
+                    Name = "Active",
+                    Color = Color.Green.ToArgb().ToString()
                 },
                 new IssueStatus()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Resolved [Fixed]"
+                    Name = "Resolved [Fixed]",
+                    Color = Color.Green.ToArgb().ToString()
                 },
                 new IssueStatus()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Resolved [No action]"
+                    Name = "Resolved [No action]",
+                    Color = Color.Brown.ToArgb().ToString()
                 },
             };
 

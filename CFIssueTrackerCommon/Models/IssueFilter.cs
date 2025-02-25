@@ -9,7 +9,7 @@
         /// Assigned User Ids
         /// </summary>
         public List<string>? AssignedUserIds { get; set; }
-
+        
         /// <summary>
         /// Issues created from
         /// </summary>

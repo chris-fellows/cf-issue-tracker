@@ -90,6 +90,7 @@ namespace CFIssueTrackerCommon.Services
             {
                 var user = await context.User.FirstOrDefaultAsync(i => i.Email == username);
                 if (user != null &&
+                    user.Active &&
                     user.GetUserType() == UserTypes.Normal &&
                     _passwordService.IsValid(user.Password, password, user.Salt))                    
                 {

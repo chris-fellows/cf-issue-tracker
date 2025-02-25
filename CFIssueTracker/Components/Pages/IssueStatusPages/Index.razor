@@ -4,6 +4,7 @@
 @using CFIssueTrackerCommon.Data
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
+@using CFIssueTracker.Utilities
 @implements IAsyncDisposable
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 
@@ -20,6 +21,10 @@
 <QuickGrid Class="table" Items="context.IssueStatus">
     <PropertyColumn Property="issuestatus => issuestatus.Name" />
 
+    <TemplateColumn Title="Color" Context="issuestatus">
+        <ColoredLabel BackColor="@(GetIssueStatusColor(@issuestatus))" Text="@issuestatus.Name" />
+    </TemplateColumn>
+
     <TemplateColumn Context="issuestatus">
         <a href="@($"issuestatuses/edit?id={issuestatus.Id}")">Edit</a> |
         <a href="@($"issuestatuses/details?id={issuestatus.Id}")">Details</a> |
@@ -33,6 +38,11 @@
     protected override void OnInitialized()
     {
         context = DbFactory.CreateDbContext();
+    }    
+
+    private string GetIssueStatusColor(IssueStatus issueStatus)
+    {
+        return HTMLUtilities.GetHTMLColor(issueStatus.Color);
     }
 
     public async ValueTask DisposeAsync() => await context.DisposeAsync();

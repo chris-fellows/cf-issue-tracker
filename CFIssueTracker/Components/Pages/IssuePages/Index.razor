@@ -114,13 +114,32 @@ else
 {
     <QuickGrid Class="table" Items="@IssuesQueryable" Pagination="@Pagination">
         <PropertyColumn Property="issue => issue.Reference" />
-        <PropertyColumn Title="Project" Property="issue => GetProjectName(issue)" />
-        <PropertyColumn Title="Component" Property="issue => GetProjectComponentName(issue)" />
-        <PropertyColumn Title="Type" Property="issue => GetIssueTypeName(issue)" />
-        <PropertyColumn Title="Status" Property="issue => GetIssueStatusName(issue)" />
-        <PropertyColumn Title="Created User" Property="issue => GetCreatedUserName(issue)" />
-        <PropertyColumn Title="Created Time" Property="issue => issue.CreatedDateTime" />
-        <PropertyColumn Title="Assigned User" Property="issue => GetAssignedUserName(issue)" />
+
+        <TemplateColumn Title="Project" Context="issue">
+            <ImageAndText ImageSource="@(GetProjectImageSource(issue))" Text="@(GetProjectName(issue))" />
+        </TemplateColumn>
+
+        <TemplateColumn Title="Component" Context="issue">
+            <ImageAndText ImageSource="@(GetProjectComponentImageSource(issue))" Text="@(GetProjectComponentName(issue))" />
+        </TemplateColumn>
+
+        <TemplateColumn Title="Type" Context="issue">
+            <ColoredLabel BackColor="@(GetIssueTypeColor(issue))" Text="@(GetIssueTypeName(issue))" />
+        </TemplateColumn>
+
+        <TemplateColumn Title="Status" Context="issue">
+            <ColoredLabel BackColor="@(GetIssueStatusColor(issue))" Text="@(GetIssueStatusName(issue))" />
+        </TemplateColumn>
+
+        <TemplateColumn Title="Created User" Context="issue">
+            <ImageAndText ImageSource="@(GetCreatedUserImageSource(issue))" Text="@(GetCreatedUserName(issue))" />
+        </TemplateColumn>
+
+        <PropertyColumn Title="Created Time" Property="issue => issue.CreatedDateTime" />        
+
+        <TemplateColumn Title="Assigned User" Context="issue">
+            <ImageAndText ImageSource="@(GetAssignedUserImageSource(issue))" Text="@(GetAssignedUserName(issue))" />
+        </TemplateColumn>
 
         <TemplateColumn Context="issue">
             <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
@@ -145,7 +164,7 @@ else
     private void RefreshIssues(bool notifyStateHasChanged)
     {
         IsBusy = true;
-        
+
         IssuesQueryable = IssueService.GetByFilter(GetIssueFilter())
                             .OrderBy(i => i.CreatedDateTime)
                             .AsQueryable();
@@ -326,9 +345,19 @@ else
         await RefreshIssuesAsync(false);        
     } 
 
+    private string GetIssueStatusColor(Issue issue)
+    {
+        return HTMLUtilities.GetHTMLColor(IssueStatuses.First(s => s.Id == issue.StatusId).Color);
+    }
+
     private string GetIssueStatusName(Issue issue)
     {
         return IssueStatuses.First(s => s.Id == issue.StatusId).Name;
+    }
+
+    private string GetIssueTypeColor(Issue issue)
+    {
+        return HTMLUtilities.GetHTMLColor(IssueTypes.First(t => t.Id == issue.TypeId).Color);
     }
 
     private string GetIssueTypeName(Issue issue)
@@ -336,9 +365,19 @@ else
         return IssueTypes.First(t => t.Id == issue.TypeId).Name;
     }
 
+    // private string GetProjectColor(Issue issue)
+    // {
+    //     return Projects.First(p => p.Id == issue.ProjectId).Color;
+    // }
+
     private string GetProjectName(Issue issue)
     {            
         return Projects.First(p => p.Id == issue.ProjectId).Name;
+    }
+
+    private string GetProjectImageSource(Issue issue)
+    {
+        return $"../images/projects/{Projects.First(p => p.Id == issue.ProjectId).ImageSource}";
     }
 
     private string GetProjectComponentName(Issue issue)
@@ -346,15 +385,40 @@ else
         return ProjectComponents.First(c => c.Id == issue.ProjectComponentId).Name;
     }
 
+    private string GetProjectComponentImageSource(Issue issue)
+    {
+        return $"../images/project_components/{ProjectComponents.First(c => c.Id == issue.ProjectComponentId).ImageSource}";
+    }
+
+    private string GetCreatedUserColor(Issue issue)
+    {
+        return HTMLUtilities.GetHTMLColor(Users.First(u => u.Id == issue.CreatedUserId).Color);
+    }
+
     private string GetCreatedUserName(Issue issue)
     {        
         return Users.First(u => u.Id == issue.CreatedUserId).Name;
+    }
+
+    private string GetCreatedUserImageSource(Issue issue)
+    {
+        return $"../images/users/{Users.First(u => u.Id == issue.CreatedUserId).ImageSource}";
+    }
+
+    private string GetAssignedUserColor(Issue issue)
+    {
+        return HTMLUtilities.GetHTMLColor(Users.First(u => u.Id == issue.AssignedUserId).Color);
     }
 
     private string GetAssignedUserName(Issue issue)
     {     
         return Users.First(u => u.Id == issue.AssignedUserId).Name;
     }  
+
+    private string GetAssignedUserImageSource(Issue issue)
+    {
+        return $"../images/users/{Users.First(u => u.Id == issue.AssignedUserId).ImageSource}";
+    }
 
     private async Task DownloadCSVAsync()
     {        
