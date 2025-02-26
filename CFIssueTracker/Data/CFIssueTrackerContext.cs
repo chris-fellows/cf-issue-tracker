@@ -18,6 +18,8 @@ namespace CFIssueTrackerCommon.Data
 
         public DbSet<CFIssueTrackerCommon.Models.AuditEventType> AuditEventType { get; set; } = default!;
 
+        public DbSet<CFIssueTrackerCommon.Models.Document> Document { get; set; } = default!;
+
         public DbSet<CFIssueTrackerCommon.Models.Issue> Issue { get; set; } = default!;
 
         public DbSet<CFIssueTrackerCommon.Models.IssueComment> IssueComment { get; set; } = default!;
@@ -32,6 +34,7 @@ namespace CFIssueTrackerCommon.Data
         public DbSet<CFIssueTrackerCommon.Models.SystemTaskStatus> SystemTaskStatus { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.SystemTaskType> SystemTaskType { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.SystemValueType> SystemValueType { get; set; } = default!;
+        public DbSet<CFIssueTrackerCommon.Models.Tag> Tag { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.User> User { get; set; } = default!;        
     }
 }

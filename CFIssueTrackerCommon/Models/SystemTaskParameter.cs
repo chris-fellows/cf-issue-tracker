@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CFIssueTrackerCommon.Models
 {
@@ -15,7 +17,11 @@ namespace CFIssueTrackerCommon.Models
         /// </summary>
         [Required]
         [MaxLength(50)]
+        [ForeignKey("SystemValueType")]        
         public string SystemValueTypeId { get; set; } = String.Empty;
+
+        [DeleteBehavior(DeleteBehavior.NoAction)]
+        public virtual SystemValueType? SystemValueType { get; set; }
 
         /// <summary>
         /// Value

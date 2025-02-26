@@ -1,6 +1,8 @@
 ﻿using CFIssueTrackerCommon.Constants;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace CFIssueTrackerCommon.Services
 {
@@ -11,6 +13,7 @@ namespace CFIssueTrackerCommon.Services
     {
         private readonly IAuditEventService _auditEventService;
         private readonly IAuditEventTypeService _auditEventTypeService;
+        private readonly IDocumentService _documentService;
         private readonly IIssueCommentService _issueCommentService;
         private readonly IIssueService _issueService;
         private readonly IIssueStatusService _issueStatusService;
@@ -18,10 +21,12 @@ namespace CFIssueTrackerCommon.Services
         private readonly IProjectComponentService _projectComponentService;
         private readonly IProjectService _projectService;
         private readonly ISystemValueTypeService _systemValueTypeService;
+        private readonly ITagService _tagService;
         private readonly IUserService _userService;
 
         public RandomIssueCreator(IAuditEventService auditEventService,
             IAuditEventTypeService auditEventTypeService,
+            IDocumentService documentService,
             IIssueCommentService issueCommentService,
             IIssueService issueService,
             IIssueStatusService issueStatusService,
@@ -29,10 +34,12 @@ namespace CFIssueTrackerCommon.Services
             IProjectComponentService projectComponentService,
             IProjectService projectService,
             ISystemValueTypeService systemValueTypeService,
+            ITagService tagService,
             IUserService userService)
         {
             _auditEventService = auditEventService;
             _auditEventTypeService = auditEventTypeService;
+            _documentService = documentService;
             _issueCommentService = issueCommentService;
             _issueService = issueService;
             _issueStatusService = issueStatusService;
@@ -40,6 +47,7 @@ namespace CFIssueTrackerCommon.Services
             _projectComponentService = projectComponentService;
             _projectService = projectService;
             _systemValueTypeService = systemValueTypeService;
+            _tagService = tagService;
             _userService = userService;
         }
 
@@ -51,6 +59,7 @@ namespace CFIssueTrackerCommon.Services
             var projectComponents = await _projectComponentService.GetAllAsync();
             var projects = await _projectService.GetAllAsync();
             var systemValueTypes = await _systemValueTypeService.GetAllAsync();
+            var tags = await _tagService.GetAllAsync();
             var users = await _userService.GetAllAsync();
 
             var random = new Random();
@@ -75,6 +84,57 @@ namespace CFIssueTrackerCommon.Services
                     createdUser = users[random.Next(0, users.Count - 1)];
                 } while (createdUser.GetUserType() != Enums.UserTypes.Normal);
 
+                // Add random tags
+                var issueTagRefs = new List<TagReference>();
+                if (tags.Any() && random.Next(0, 100) >= 50)     // Approx percentage of issues to add for
+                {
+                    var countTagsToAdd = random.Next(0, 2);
+                    for (int tagIndex =0; tagIndex < countTagsToAdd; tagIndex++)
+                    {
+                        var tag = tags[random.Next(0, tags.Count - 1)];
+                        if (!issueTagRefs.Any(t => t.TagId == tag.Id))   // Only add tag once
+                        {
+                            issueTagRefs.Add(new TagReference()
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                TagId = tag.Id
+                            });
+                        }
+                    }
+                }
+
+                // Add tracking user for some issues
+                var trackingUsersRefs = new List<UserReference>();
+                if (random.Next(0, 100) >= 50)       // Approx percentage of issues to add for
+                {
+                    var trackingUser = users[random.Next(0, users.Count - 1)];
+                    trackingUsersRefs.Add(new UserReference()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = trackingUser.Id
+                    });
+                }
+
+                // Add document for some issues
+                var documentRefs =new List<DocumentReference>();
+                if (random.Next(0, 100) >= 90)  // Approx percentage of issues to add for
+                {
+                    // Add document
+                    var document = new Document()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = "Test Document 1.txt",
+                        Content = Encoding.UTF8.GetBytes("This is some text")
+                    };
+                    await _documentService.AddAsync(document);
+
+                    documentRefs.Add(new DocumentReference()
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        DocumentId = document.Id
+                    });
+                }
+
                 // Create issue
                 var issue = new Issue()
                 {
@@ -84,11 +144,14 @@ namespace CFIssueTrackerCommon.Services
                     CreatedDateTime = DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(random.Next(0, 3600 * 24 * 7))),  // Random in last N days
                     CreatedUserId = createdUser.Id,
                     Description = "This is the issue description. It can be quite long. Or it can be quite short. It it can be both.",
+                    Documents = documentRefs,
                     ProjectComponentId = projectComponent.Id,
                     ProjectId = project.Id,
                     Reference = $"R{index.ToString("00000000")}",
                     StatusId = issueStatus.Id,                    
-                    TypeId = issueType.Id                                       
+                    Tags = issueTagRefs,
+                    TrackingUsers = trackingUsersRefs,
+                    TypeId = issueType.Id                                
                 };
 
                 var issueResult = await _issueService.AddAsync(issue);

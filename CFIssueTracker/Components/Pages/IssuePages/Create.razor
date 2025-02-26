@@ -12,6 +12,7 @@
 @inject IIssueTypeService IssueTypeService
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
+@inject ITagService TagService
 @inject IUserService UserService
 @inject IRequestContextService RequestContextService
 
@@ -27,7 +28,8 @@
     <div class="col-md-4">
         <EditForm method="post" Model="Issue" OnValidSubmit="AddIssue" FormName="create" Enhance>
             <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert"/>
+            <ValidationSummary class="text-danger" role="alert"/>          
+
             <div class="mb-3">
                 <label for="reference" class="form-label">Reference:</label> 
                 <InputText id="reference" @bind-Value="Issue.Reference" class="form-control" /> 
@@ -152,7 +154,19 @@
                 </InputSelect>
             </div>
 
-            <button type="submit" class="btn btn-primary">Create</button>
+            <div class="mb-3">
+                <ul>
+                    @foreach (MyCheckboxOption tagOption in TagCheckboxOptions)
+                    {
+                        <li>
+                            <label for="@(tagOption.ClassId)" class="form-label">@tagOption.Tag.Name</label>
+                            <InputCheckbox id="@(tagOption.ClassId)" @bind-Value="@tagOption.Selected" />
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>                        
         </EditForm>
     </div>
 </div>
@@ -165,13 +179,51 @@
     [SupplyParameterFromForm]
     private Issue Issue { get; set; } = new();
 
+    // Inside form: <AntiforgeryToken />
+    // A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.
+
     private List<IssueStatus> IssueStatuses = new();
     private List<IssueType> IssueTypes = new();
     private List<ProjectComponent> ProjectComponents = new();
     private List<Project> Projects = new();
+    private List<Tag> Tags = new();
     private List<User> Users = new();
 
     private string _oldAssignedUserId = String.Empty;
+
+    //private string MySelectedUserId { get; set; } = String.Empty;
+    //private int MySelectedInteger { get; set; } = 0;
+
+    private List<MyCheckboxOption> TagCheckboxOptions = new();
+
+     /*
+     *
+     *   <ImageAndTextDropdown ImageSources="Users.Select(u => u.ImageSource).ToList()"
+                            Texts="Users.Select(u => u.Name).ToList()"
+                            Values="Users.Select(u => u.Id).ToList()"
+       SelectedValue="@MySelectedUserId" />
+                *
+
+                    <div class="mb-3">
+                    <ul>
+                    @foreach (MyCheckboxOption tagOption in TagCheckboxOptions)
+                            {
+                            <li>
+                            <label for="@(tagOption.ClassId)" class="form-label">@tagOption.Tag.Name</label>
+                            <InputCheckbox id="@(tagOption.ClassId)" @bind-Value="@tagOption.Selected" />
+                    </li>
+                }
+            </ul>
+     </div>
+     *
+     */
+
+    private class MyCheckboxOption
+    {
+        public string ClassId { get; set; } = String.Empty;        
+        public Tag Tag { get; set; } = new Tag();
+        public bool Selected { get; set; }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -182,6 +234,7 @@
         IssueTypes = await IssueTypeService.GetAllAsync();
         ProjectComponents = await ProjectComponentService.GetAllAsync();
         Projects = await ProjectService.GetAllAsync();
+        Tags = await TagService.GetAllAsync();
         Users = await UserService.GetAllAsync();
 
         // Initalise Issue to defaults
@@ -192,12 +245,25 @@
         Issue.CreatedUserId = Users.First().Id;
         Issue.AssignedUserId = Users.First(u => u.Name == "System").Id;
 
+        TagCheckboxOptions = Tags.Select(tag =>
+        {
+            return new MyCheckboxOption()
+                {
+                    ClassId = $"tag-{tag.Id}",
+                    Selected = Issue.Tags != null && Issue.Tags.Any(t => t.TagId == tag.Id),
+                    Tag = tag
+
+                };
+        }).ToList();
+
         await base.OnParametersSetAsync();
     }   
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddIssue()
-    {       
+    {
+        var tags = TagCheckboxOptions.Where(i => i.Selected).ToList();
+
         Issue.Id = Guid.NewGuid().ToString();
         Issue.CreatedDateTime = DateTimeOffset.UtcNow;
         Issue.CreatedUserId = RequestContextService.UserId;
@@ -214,5 +280,5 @@
         }
 
         NavigationManager.NavigateTo("/issues");
-    }
+    }   
 }

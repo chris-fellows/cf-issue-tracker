@@ -15,7 +15,7 @@ namespace CFIssueTrackerCommon.Models
         /// </summary>
         [Required]
         [MaxLength(50)]
-        public string StatusId { get; set; } = String.Empty;
+        public string StatusId { get; set; } = String.Empty;        
 
         /// <summary>
         /// Job type (SystemTaskType.Id)

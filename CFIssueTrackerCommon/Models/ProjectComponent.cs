@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CFIssueTrackerCommon.Models
 {
@@ -12,7 +14,11 @@ namespace CFIssueTrackerCommon.Models
 
         [Required]
         [MaxLength(50)]
+        [ForeignKey("Project")]
         public string ProjectId { get; set; } = String.Empty;
+
+        [DeleteBehavior(DeleteBehavior.NoAction)]
+        public virtual Project? Project { get; set; }
 
         [Required]
         [MaxLength(100)]

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CFIssueTracker.Migrations
 {
     [DbContext(typeof(CFIssueTrackerContext))]
-    [Migration("20250225155143_InitialCreate")]
+    [Migration("20250226103426_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -41,6 +41,8 @@ namespace CFIssueTracker.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TypeId");
+
                     b.ToTable("AuditEvent");
                 });
 
@@ -66,6 +68,8 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuditEventId");
+
+                    b.HasIndex("SystemValueTypeId");
 
                     b.ToTable("AuditEventParameter");
                 });
@@ -94,6 +98,49 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AuditEventType");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.Document", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Document");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.DocumentReference", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("DocumentId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IssueId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("IssueId");
+
+                    b.ToTable("DocumentReference");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
@@ -148,6 +195,18 @@ namespace CFIssueTracker.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AssignedUserId");
+
+                    b.HasIndex("CreatedUserId");
+
+                    b.HasIndex("ProjectComponentId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("StatusId");
+
+                    b.HasIndex("TypeId");
 
                     b.ToTable("Issue");
                 });
@@ -331,6 +390,8 @@ namespace CFIssueTracker.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ProjectId");
+
                     b.ToTable("ProjectComponent");
                 });
 
@@ -385,6 +446,8 @@ namespace CFIssueTracker.Migrations
 
                     b.HasIndex("SystemTaskJobId");
 
+                    b.HasIndex("SystemValueTypeId");
+
                     b.ToTable("SystemTaskParameter");
                 });
 
@@ -432,6 +495,45 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SystemValueType");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.Tag", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tag");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.TagReference", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IssueId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TagId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IssueId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("TagReference");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.User", b =>
@@ -483,11 +585,130 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("User");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.UserReference", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IssueId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IssueId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserReference");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEvent", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.AuditEventType", "AuditEventType")
+                        .WithMany()
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AuditEventType");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEventParameter", b =>
                 {
                     b.HasOne("CFIssueTrackerCommon.Models.AuditEvent", null)
                         .WithMany("Parameters")
                         .HasForeignKey("AuditEventId");
+
+                    b.HasOne("CFIssueTrackerCommon.Models.SystemValueType", "SystemValueType")
+                        .WithMany()
+                        .HasForeignKey("SystemValueTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("SystemValueType");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.DocumentReference", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CFIssueTrackerCommon.Models.Issue", null)
+                        .WithMany("Documents")
+                        .HasForeignKey("IssueId");
+
+                    b.Navigation("Document");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.User", "AssignedUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CFIssueTrackerCommon.Models.User", "CreatedUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CFIssueTrackerCommon.Models.ProjectComponent", "ProjectComponent")
+                        .WithMany()
+                        .HasForeignKey("ProjectComponentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CFIssueTrackerCommon.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CFIssueTrackerCommon.Models.IssueStatus", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("CFIssueTrackerCommon.Models.IssueType", "Type")
+                        .WithMany()
+                        .HasForeignKey("TypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AssignedUser");
+
+                    b.Navigation("CreatedUser");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("ProjectComponent");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.ProjectComponent", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskParameter", b =>
@@ -495,11 +716,58 @@ namespace CFIssueTracker.Migrations
                     b.HasOne("CFIssueTrackerCommon.Models.SystemTaskJob", null)
                         .WithMany("Parameters")
                         .HasForeignKey("SystemTaskJobId");
+
+                    b.HasOne("CFIssueTrackerCommon.Models.SystemValueType", "SystemValueType")
+                        .WithMany()
+                        .HasForeignKey("SystemValueTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("SystemValueType");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.TagReference", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.Issue", null)
+                        .WithMany("Tags")
+                        .HasForeignKey("IssueId");
+
+                    b.HasOne("CFIssueTrackerCommon.Models.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.UserReference", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.Issue", null)
+                        .WithMany("TrackingUsers")
+                        .HasForeignKey("IssueId");
+
+                    b.HasOne("CFIssueTrackerCommon.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEvent", b =>
                 {
                     b.Navigation("Parameters");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
+                {
+                    b.Navigation("Documents");
+
+                    b.Navigation("Tags");
+
+                    b.Navigation("TrackingUsers");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskJob", b =>

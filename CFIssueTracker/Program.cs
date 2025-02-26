@@ -17,11 +17,6 @@ using Microsoft.Extensions.Options;
 const bool registerSeedDataLoad = true;
 const bool registerRequestInfoService = true;
 
-//var colorValue = -5952982;
-//var myColor = System.Drawing.Color.FromArgb(colorValue);
-//var htmlColor = System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(colorValue));
-//var htmlColor = System.Drawing.ColorTranslator.ToHtml(Color.FromArgb(someColor.ToArgb()))
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContextFactory<CFIssueTrackerContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CFIssueTrackerContext") ?? throw new InvalidOperationException("Connection string 'CFIssueTrackerContext' not found.")));
@@ -35,6 +30,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             options.Cookie.MaxAge = TimeSpan.FromMinutes(120);
             options.AccessDeniedPath = "/access-denied";            
         });
+
+//builder.Services.AddAntiforgery(opts => opts.Cookie.Name = "___RequestVerificationToken");      // Manually added
+
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
         
@@ -61,6 +59,7 @@ if (registerRequestInfoService) builder.Services.AddScoped<IRequestContextServic
 // Add data services
 builder.Services.AddScoped<IAuditEventService, EFAuditEventService>();
 builder.Services.AddScoped<IAuditEventTypeService, EFAuditEventTypeService>();
+builder.Services.AddScoped<IDocumentService, EFDocumentService>();
 builder.Services.AddScoped<IIssueCommentService, EFIssueCommentService>();
 builder.Services.AddScoped<IIssueService, EFIssueService>();
 builder.Services.AddScoped<IIssueStatusService, EFIssueStatusService>();
@@ -73,6 +72,7 @@ builder.Services.AddScoped<ISystemTaskJobService, EFSystemTaskJobService>();
 builder.Services.AddScoped<ISystemTaskStatusService, EFSystemTaskStatusService>();
 builder.Services.AddScoped<ISystemTaskTypeService, EFSystemTaskTypeService>();
 builder.Services.AddScoped<ISystemValueTypeService, EFSystemValueTypeService>();
+builder.Services.AddScoped<ITagService, EFTagService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
 // Add email services
@@ -101,6 +101,7 @@ if (registerSeedDataLoad)
     builder.Services.AddKeyedScoped<IEntityReader<SystemTaskStatus>, SystemTaskStatusSeed1>("SystemTaskStatusSeed");
     builder.Services.AddKeyedScoped<IEntityReader<SystemTaskType>, SystemTaskTypeSeed1>("SystemTaskTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<SystemValueType>, SystemValueTypeSeed1>("SystemValueTypeSeed");
+    builder.Services.AddKeyedScoped<IEntityReader<Tag>, TagSeed1>("TagSeed");
     builder.Services.AddKeyedScoped<IEntityReader<User>, UserSeed1>("UserSeed");
 }
 
@@ -175,9 +176,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-app.UseAntiforgery();
+//app.UseAntiforgery();
 app.UseAuthentication();    // CMF Added
 app.UseAuthorization();     // CMF Added
+
+app.UseAntiforgery();   // CF Moved from above
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CFIssueTrackerCommon.Models
 {
@@ -12,7 +14,11 @@ namespace CFIssueTrackerCommon.Models
 
         [Required]
         [MaxLength(50)]
+        [ForeignKey("AuditEventType")]        
         public string TypeId { get; set; } = String.Empty;
+
+        [DeleteBehavior(DeleteBehavior.NoAction)]
+        public virtual AuditEventType? AuditEventType { get; set; }
 
         public DateTimeOffset CreatedDateTime { get; set; }
 

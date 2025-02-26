@@ -140,7 +140,7 @@ else
         <TemplateColumn Title="Assigned User" Context="issue">
             <ImageAndText ImageSource="@(GetAssignedUserImageSource(issue))" Text="@(GetAssignedUserName(issue))" />
         </TemplateColumn>
-
+       
         <TemplateColumn Context="issue">
             <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
             <a href="@($"issues/details?id={issue.Id}")">Details</a> |

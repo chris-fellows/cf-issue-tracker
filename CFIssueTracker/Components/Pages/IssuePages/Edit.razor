@@ -13,6 +13,7 @@
 @inject IIssueTypeService IssueTypeService
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
+@inject ITagService TagService
 @inject IUserService UserService
 @inject IRequestContextService RequestContextService
 
@@ -158,7 +159,25 @@ else
                             }
                         }
                     </InputSelect>
-                </div>              
+                </div>           
+
+                Tags                
+                @if (Issue.Tags != null)
+                {
+                    @foreach (TagReference tagReference in Issue.Tags)
+                    {
+                        @(GetTagName(tagReference))                     
+                    }                
+                }
+
+                Tracking Users                
+                @if (Issue.TrackingUsers != null)
+                {
+                    @foreach (UserReference userReference in Issue.TrackingUsers)
+                    {
+                        @(GetUserName(userReference))
+                    }                
+                }
 
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
@@ -183,6 +202,7 @@ else
     private List<IssueType> IssueTypes = new();
     private List<ProjectComponent> ProjectComponents = new();
     private List<Project> Projects = new();
+    private List<Tag> Tags = new();
     private List<User> Users = new();
 
     //private List<IssueComment> IssueComments = new();
@@ -197,6 +217,7 @@ else
         IssueTypes = await IssueTypeService.GetAllAsync();
         ProjectComponents = await ProjectComponentService.GetAllAsync();
         Projects = await ProjectService.GetAllAsync();
+        Tags = await TagService.GetAllAsync();
         Users = await UserService.GetAllAsync();
 
         await base.OnParametersSetAsync();
@@ -249,5 +270,15 @@ else
     {
         using var context = DbFactory.CreateDbContext();
         return context.Issue.Any(e => e.Id == id);
+    }
+
+    private string GetTagName(TagReference tagReference)
+    {
+        return Tags.First(t => t.Id == tagReference.TagId).Name;
+    }
+
+    private string GetUserName(UserReference userReference)
+    {
+        return Users.First(u => u.Id == userReference.UserId).Name;
     }
 }

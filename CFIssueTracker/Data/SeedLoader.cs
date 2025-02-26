@@ -24,6 +24,7 @@ namespace CFIssueTracker.Data
             // Get services
             var auditEventService = scope.ServiceProvider.GetRequiredService<IAuditEventService>();
             var auditEventTypeService = scope.ServiceProvider.GetRequiredService<IAuditEventTypeService>();
+            var documentService = scope.ServiceProvider.GetRequiredService<IDocumentService>();
             var issueCommentService = scope.ServiceProvider.GetRequiredService<IIssueCommentService>();
             var issueService = scope.ServiceProvider.GetRequiredService<IIssueService>();
             var issueStatusService = scope.ServiceProvider.GetRequiredService<IIssueStatusService>();
@@ -34,6 +35,7 @@ namespace CFIssueTracker.Data
             var systemTaskStatusService = scope.ServiceProvider.GetRequiredService<ISystemTaskStatusService>();
             var systemTaskTypeService = scope.ServiceProvider.GetRequiredService<ISystemTaskTypeService>();
             var systemValueTypeService = scope.ServiceProvider.GetRequiredService<ISystemValueTypeService>();
+            var tagService = scope.ServiceProvider.GetRequiredService<ITagService>();
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
             // Delete transaction data
@@ -103,6 +105,18 @@ namespace CFIssueTracker.Data
             {
                 await systemValueTypeService.DeleteByIdAsync(systemValueType.Id);
             }
+
+            var documents = await documentService.GetAllAsync();
+            foreach(var document in documents)
+            {
+                await documentService.DeleteByIdAsync(document.Id);
+            }
+
+            var tags = await tagService.GetAllAsync();
+            foreach (var tag in tags)
+            {
+                await tagService.DeleteByIdAsync(tag.Id);
+            }
         }
 
         /// <summary>
@@ -117,6 +131,7 @@ namespace CFIssueTracker.Data
             // Get services
             var auditEventService = scope.ServiceProvider.GetRequiredService<IAuditEventService>();
             var auditEventTypeService = scope.ServiceProvider.GetRequiredService<IAuditEventTypeService>();
+            var documentService = scope.ServiceProvider.GetRequiredService<IDocumentService>();
             var issueCommentService = scope.ServiceProvider.GetRequiredService<IIssueCommentService>();
             var issueService = scope.ServiceProvider.GetRequiredService<IIssueService>();
             var issueStatusService = scope.ServiceProvider.GetRequiredService<IIssueStatusService>();
@@ -127,6 +142,7 @@ namespace CFIssueTracker.Data
             var systemTaskStatusService = scope.ServiceProvider.GetRequiredService<ISystemTaskStatusService>();
             var systemTaskTypeService = scope.ServiceProvider.GetRequiredService<ISystemTaskTypeService>();
             var systemValueTypeService = scope.ServiceProvider.GetRequiredService<ISystemValueTypeService>();
+            var tagService = scope.ServiceProvider.GetRequiredService<ITagService>();
             var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
             // Get seed data services
@@ -139,6 +155,7 @@ namespace CFIssueTracker.Data
             var systemTaskStatusSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemTaskStatus>>("SystemTaskStatusSeed");
             var systemTaskTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemTaskType>>("SystemTaskTypeSeed");
             var systemValueTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemValueType>>("SystemValueTypeSeed");
+            var tagSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<Tag>>("TagSeed");
             var userSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<User>>("UserSeed");
 
             // Check that no data exists
@@ -160,6 +177,13 @@ namespace CFIssueTracker.Data
             foreach (var auditEventType in auditEventTypesNew)
             {
                 await auditEventTypeService.AddAsync(auditEventType);
+            }
+
+            // Add audit event types
+            var tagsNew = tagSeed.Read();
+            foreach (var tag in tagsNew)
+            {
+                await tagService.AddAsync(tag);
             }
 
             // Get audit event types & system value types
@@ -328,10 +352,12 @@ namespace CFIssueTracker.Data
             if (randomIssuesToCreate > 0)
             {                
                 var issueCreator = new RandomIssueCreator(auditEventService, auditEventTypeService,
+                    documentService,
                     issueCommentService, issueService,
                     issueStatusService, issueTypeService,
                     projectComponentService, projectService,
-                    systemValueTypeService, userService);
+                    systemValueTypeService, tagService,
+                    userService);
 
                 await issueCreator.CreateIssuesAsync(randomIssuesToCreate);
             }

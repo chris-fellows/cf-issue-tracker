@@ -18,7 +18,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return context.Issue.ToList();
+                return context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers)
+                    .ToList();
             }
         }
 
@@ -26,7 +30,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {                
-                return await context.Issue.ToListAsync();
+                return await context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers)
+                    .ToListAsync();
             }
         }
 
@@ -54,7 +62,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issue = await context.Issue.FirstOrDefaultAsync(i => i.Id == id);
+                var issue = await context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers)
+                    .FirstOrDefaultAsync(i => i.Id == id);
                 return issue;
             }
         }
@@ -63,7 +75,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return await context.Issue.Where(i => ids.Contains(i.Id)).ToListAsync();
+                return await context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers)
+                    .Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
 
@@ -71,7 +87,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issue = await context.Issue.FirstOrDefaultAsync(i => i.Id == id);
+                var issue = await context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers)
+                    .FirstOrDefaultAsync(i => i.Id == id);
                 if (issue != null)
                 {
                     context.Issue.Remove(issue);
@@ -84,7 +104,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issues = await context.Issue.Where(i =>
+                var issues = await context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers)
+                    .Where(i =>
                             (
                                 filter.CreatedDateTimeFrom == null ||
                                 i.CreatedDateTime >= filter.CreatedDateTimeFrom
@@ -127,7 +151,11 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var issues = context.Issue.Where(i =>
+                var issues = context.Issue
+                    .Include(i => i.Documents)
+                    .Include(i => i.Tags)
+                    .Include(i => i.TrackingUsers).
+                    Where(i =>
                             (
                                 filter.CreatedDateTimeFrom == null ||
                                 i.CreatedDateTime >= filter.CreatedDateTimeFrom

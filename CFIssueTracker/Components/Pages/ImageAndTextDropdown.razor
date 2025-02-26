@@ -1,0 +1,149 @@
+﻿@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+<style>
+    .customlistdiv {
+        border: solid;
+        border-width: 1px;
+        background-color: #F8F8F8;        
+        position: absolute;
+        margin: 0px;
+    }
+
+    .customlistshow {
+        list-style-type: none;
+        display: block;        
+    }
+
+    .customlisthide {
+        list-style-type: none;
+        display: none;        
+    }
+
+    .customlistitem {
+        margin: 0px;
+    }
+
+    .customlistitemanchor {
+        text-decoration: none !important;
+        color: black;
+    }
+
+    .myimage {
+        width: 18px;
+        height: 18px;
+    }
+
+</style>
+<div class="customlistdiv">
+    <input type="text" value="@SelectedText" @onclick="@(() => ToggleList())" />
+    <ul class="@ListClass">
+        @foreach (MyItem item in GetListItems())
+        {
+            <li class="customlistitem">                
+                <img alt="image" class="entityimage myimage" src="../images/users/@item.ImageSource" />
+                <a class="customlistitemanchor" href="javascript:void(0);" @onclick="@(() => ItemSelected(item.Text))">@item.Text</a>
+            </li>
+        }
+    </ul>
+</div>
+
+@code {
+    // Adding onblur to input prevents user from clicking on item
+    // @onblur="@(() => HideList())"
+
+    [Parameter]
+    public List<string> ImageSources { get; set; } = new();
+
+    [Parameter]
+    public List<string> Texts { get; set; } = new();
+
+    [Parameter]
+    public List<string> Values { get; set; } = new();
+
+    [Parameter]
+    public string SelectedValue { get; set; } = String.Empty;
+
+    [Parameter]
+    public int SelectedInteger { get; set; } = 0;
+
+    private string SelectedText { get; set; } = String.Empty;
+
+    private const string _classShow = "customlistshow";
+    private const string _classHide = "customlisthide";    
+
+    private string ListClass = _classHide;
+
+    private List<MyItem> MyItems = new();
+
+    private class MyItem
+    {
+        public string Text { get; set; } = String.Empty;
+
+        public string ImageSource { get; set; } = String.Empty;
+    }
+
+    private List<MyItem> GetListItems()
+    {
+        var items = new List<MyItem>();
+
+        for(int index =0; index < Texts.Count; index++)
+        {
+            items.Add(new MyItem()
+            {
+                ImageSource = ImageSources[index],
+                Text = Texts[index]
+            });            
+        }
+
+        return items;
+    }
+
+    // protected override void OnParametersSet()
+    // {
+    //     int xxx = 100;
+    //     var result = this.ImageSources;
+
+    //     base.OnParametersSet();
+    // }
+
+    // protected override void OnAfterRender(bool firstRender)
+    // {
+    //     // Set selected text
+    //     if (firstRender && !String.IsNullOrEmpty(SelectedValue))
+    //     {
+    //         SelectedText = Texts[Values.IndexOf(SelectedValue)];
+    //     }
+
+    //     base.OnAfterRender(firstRender);
+    // }
+
+    private void ItemSelected(string item)
+    {
+        var index = Texts.IndexOf(item);
+        SelectedText = Texts[index];
+        SelectedValue = Values[index];
+        SelectedInteger = 10;
+
+        HideList();
+    }  
+
+    private void ToggleList()
+    {
+        ListClass = ListClass switch
+        {
+            _classHide => _classShow,
+            _ => _classHide
+        };
+    }
+
+    private void ShowList()
+    {
+        ListClass = _classShow;
+    }
+
+    private void HideList()
+    {
+        ListClass = _classHide;
+    }   
+}

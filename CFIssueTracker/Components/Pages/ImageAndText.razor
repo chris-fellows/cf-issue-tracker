@@ -1,7 +1,7 @@
 ﻿<style>
     .imageandtextimg {
         height: 18px;
-        width: 18px;
+        width: 18px;        
     }
 </style>
 
@@ -16,4 +16,11 @@
     [Parameter] public string ImageSource { get; set; } = String.Empty;
 
     [Parameter] public string Text { get; set; } = String.Empty;
+
+    /*
+     *
+    <div>
+        <img class="imageandtextimg" src="@ImageSource" />@Text
+     </div>
+    */
 }
