@@ -48,12 +48,35 @@
     }
 </InputSelect>
 
-<ChartObject MetricsTypeId="@MetricsTypeId" FromDateTime="@MetricsFilterFromDateTime"></ChartObject>
+<label for="chartType">Chart:</label>
+<InputSelect @bind-Value="@ChartTypeId">
+    @foreach (ChartType chartType in ChartTypes)
+    {
+        @if (chartType.Id == ChartTypeId)
+        {
+            <option selected value="@chartType.Id">@chartType.Name</option>
+        }
+        else
+        {
+            <option value="@chartType.Id">@chartType.Name</option>
+        }
+    }
+</InputSelect>
+
+<ChartObject MetricsTypeId="@MetricsTypeId" FromDateTime="@MetricsFilterFromDateTime" ChartTypeId="@ChartTypeId"></ChartObject>
 
 @code {
     private List<MetricsType> MetricsTypes = new();
     private List<DateRangeFilter> MetricsFilters = new();
+    private List<ChartType> ChartTypes = new();
     private DateTimeOffset MetricsFilterFromDateTime = DateTimeOffset.MinValue;
+
+    private class ChartType
+    {
+        public string Id { get; set; } = String.Empty;
+
+        public string Name { get; set; } = String.Empty;
+    }
 
     /// <summary>
     /// Selected metrics filter
@@ -81,19 +104,58 @@
         get { return _metricsTypeId; }
         set
         {
-            if (_metricsTypeId != null)
+            if (_metricsTypeId != value)
             {
                 _metricsTypeId = value;       
             }
         }
     }
 
+    private string _chartTypeId = String.Empty;
+    public string ChartTypeId
+    {
+        get { return _chartTypeId; }
+        set
+        {
+            if (_chartTypeId != value)
+            {
+                _chartTypeId = value;
+            }
+        }
+    }
+
+    private List<ChartType> GetChartTypes()
+    {
+        var chartTypes = new List<ChartType>()
+        {
+            new ChartType()
+            {
+                Id = "1",
+                Name = "Bar chart"
+            },
+            new ChartType()
+            {
+                Id = "2",
+                Name = "Stacked bar chart"
+            },
+            new ChartType()
+            {
+                Id = "3",
+                Name = "Pie chart"
+            }
+        };
+
+        return chartTypes;
+    }
+
     protected override async Task OnInitializedAsync()
     {        
         MetricsTypes = MetricsTypeService.GetAll();
+        ChartTypes = GetChartTypes();
 
         MetricsFilters = UIUtilities.GetDateRangeFilters();
 
+        ChartTypeId = ChartTypes.First().Id;
         MetricsFilterId = MetricsFilters.First().Id;
         MetricsTypeId = MetricsTypes.First().Id;
     }

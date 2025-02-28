@@ -15,6 +15,9 @@ namespace CFIssueTrackerCommon.Models
         [Required]
         [MaxLength(100)]
         public string Name { get; set; } = String.Empty;
+        
+        //[MaxLength(150)]
+        //public string DimensionPropertyNames { get; set; } = String.Empty;
 
         [Required]
         [MaxLength(50)]

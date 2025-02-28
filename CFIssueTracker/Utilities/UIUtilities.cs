@@ -102,6 +102,6 @@ namespace CFIssueTracker.Utilities
                     FromDate = DateTimeUtilities.GetYearStart()
                 }
             };
-        }
+        }        
     }
 }

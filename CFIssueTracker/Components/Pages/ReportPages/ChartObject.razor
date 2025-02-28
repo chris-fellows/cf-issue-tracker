@@ -20,7 +20,7 @@
 
     const ctx = document.getElementById(controlId);
 
-    let barChart = new Chart(ctx, {
+    let newChart = new Chart(ctx, {
     type: 'bar',
     data: {
     labels: chartLabels,        //  ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
@@ -40,10 +40,102 @@
     }
     });
 
-    myChartObject = barChart;
+    myChartObject = newChart;
 
-    return barChart;
+    return newChart;
     }
+
+    async function createBarChartV2(controlId, chartLabels, chartData, isStacked) {
+
+    // Clean up previous chart
+    if(myChartObject)
+    {
+    myChartObject.destroy();
+    }
+
+    const ctx = document.getElementById(controlId);
+
+    // Create datasets
+    // chartLabels contains array of Dimension1
+    // chartData contains a 2D array of [Dimension2, Dimension2Color Value1, Value2    
+    let datasetsObject = [];            
+    for(var index = 0; index < chartData.length; index++) {                         
+    datasetsObject.push({
+    "label": chartData[index][0],
+    "data": chartData[index].slice(2),        // Exclude label & color
+    "backgroundColor": chartData[index][1]
+    });                
+    }
+
+    //let isStacked = chartData.length > 1;  
+
+    let newChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+    labels: chartLabels,        
+    datasets: datasetsObject
+    },            
+    options: {
+    responsive: false,
+    legend: {
+    position: 'right' // place legend on the right side of chart
+    },
+    scales: {
+    x: {
+    stacked: isStacked // this should be set to make the bars stacked
+    },
+    y: {
+    stacked: isStacked // this also..
+    }
+    }
+    }       
+    });
+
+    myChartObject = newChart;
+
+    return newChart;
+    }
+
+    async function createPieChart(controlId, chartLabels, chartData) {
+    // Clean up previous chart
+    if(myChartObject)
+    {
+    myChartObject.destroy();
+    }
+
+    const ctx = document.getElementById(controlId);
+
+    // Create datasets
+    // chartLabels contains array of Dimension1
+    // chartData contains a 2D array of [Dimension2, Dimension2Color Value1, Value2
+    let datasetsObject = [];
+    for(var index = 0; index < chartData.length; index++) {
+    datasetsObject.push({
+    "label": chartData[index][0],
+    "data": chartData[index].slice(2),        // Exclude label & color
+    "backgroundColor": chartData[index][1]
+    });
+    }
+
+    let newChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+    labels: chartLabels,
+    datasets: datasetsObject
+    },
+    options: {
+    responsive: false,
+    legend: {
+    position: 'right' // place legend on the right side of chart
+    }         
+    }
+    });
+
+    myChartObject = newChart;
+
+    return newChart;
+    }
+
 </script>
 <div>
     <canvas id="myChart"></canvas>
@@ -63,7 +155,7 @@
             {
                 _metricsTypeId = value;
 
-                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime));
+                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime, ChartTypeId));
             }
         }
     }
@@ -80,7 +172,23 @@
             {
                 _fromDateTime = value;
 
-                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime));
+                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime, ChartTypeId));
+            }
+        }
+    }
+
+    private string _chartTypeId = "1";  // Default
+    [Parameter]
+    public string ChartTypeId
+    {
+        get { return _chartTypeId; }    
+        set
+        {
+            if (_chartTypeId != value)
+            {
+                _chartTypeId = value;
+
+                Task.Factory.StartNew(() => DisplayChartAsync(MetricsTypeId, FromDateTime, ChartTypeId));
             }
         }
     }
@@ -92,7 +200,13 @@
         MetricsTypes = MetricsTypeService.GetAll();        
     }
 
-    private async Task DisplayChartAsync(string metricsTypeId, DateTimeOffset fromDateTime)
+    /// <summary>
+    /// Displays chart
+    /// </summary>
+    /// <param name="metricsTypeId"></param>
+    /// <param name="fromDateTime"></param>
+    /// <returns></returns>
+    private async Task DisplayChartAsync(string metricsTypeId, DateTimeOffset fromDateTime, string chartTypeId)
     {
         var metricsType = MetricsTypes.First(mt => mt.Id == metricsTypeId);
 
@@ -101,24 +215,111 @@
                         new IssueFilter() :
                         new IssueFilter() { CreatedDateTimeFrom = fromDateTime };
 
-        // TODO: Clean this up and make it generic
-        Metrics metrics = metricsType.Name switch
-        {
-            "Issues By Assigned User" => await MetricService.GetIssueCountByAssignedUserMetricsAsync(issueFilter),
-            "Issues By Created User" => await MetricService.GetIssueCountByCreatedUserMetricsAsync(issueFilter),
-            "Issues By Project" => await MetricService.GetIssueCountByProjectMetricsAsync(issueFilter),
-            "Issues By Status" => await MetricService.GetIssueCountByStatusMetricsAsync(issueFilter),
-            "Issues By Type" => await MetricService.GetIssueCountByTypeMetricsAsync(issueFilter),
-            _ => new Metrics()
-        };
+        //Metrics metrics = await MetricService.GetIssueAssignedCountByUserAndStatusMetricsAsync(issueFilter);
 
-        // Display chart
-        // TODO: Handle time period dimension (DateTimeOffset[])
-        await JS.InvokeVoidAsync("createBarChart",
-                      "myChart",
-                      metrics.Title,
-                      metrics.Items.Select(m => m.Dimensions[0]).ToArray(),
-                      metrics.Items.Select(m => m.Value).ToArray(),
-                      metrics.Items.Select(m => $"rgba({metrics.DimensionColors[(string)m.Dimensions[0]]})").ToArray());
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "CreatedUserId", "TypeId" }, true);
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId", "StatusId" }, true);
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId" }, true);
+        var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "StatusId" }, true);
+
+        // Get metrics
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
+
+        // Get the dimensions        
+        var dimensionNames = new List<List<string>>();
+        for (int dimensionIndex =0; dimensionIndex < metrics.Items.Max(m => m.Dimensions.Count); dimensionIndex++)
+        {
+            dimensionNames.Add(metrics.Items.Select(i => (string)i.Dimensions[dimensionIndex]).Distinct().ToList());
+        }
+
+        // Iterate through every 2nd dimension and add the values for each 1st dimension.
+        // E.g. If metrics are for User + Issue Status then we pass a chartData item for each status
+        // and each item includes the values for the user
+        var chartData = new List<object[]>();
+        if (dimensionNames.Count == 1)    // Single dimension
+        {
+            // Difference from multiple dimensions is that background colour is an array of colors
+            var chartDataDimension = new List<object>() { "My Chart" };
+            chartDataDimension.Add(metrics.Items.Select(m => $"rgba({metrics.DimensionColors[(string)m.Dimensions[0]]})").ToArray());
+            chartDataDimension.AddRange(metrics.Items.Select(m => (object)m.Value).ToList());
+
+            chartData.Add(chartDataDimension.ToArray());
+        }
+        else    // Multiple dimensions
+        {
+            foreach (var dimension2 in dimensionNames[1])      // Statuses
+            {
+                var chartDataDimension = new List<object>() { dimension2, $"rgba({metrics.DimensionColors[dimension2]})" };   // Will be [Label, Color, Value1, Value2 etc]
+
+                foreach (var dimension1 in dimensionNames[0])  // Users
+                {
+                    var metric = metrics.Items.FirstOrDefault(i => (string)i.Dimensions[0] == dimension1 && (string)i.Dimensions[1] == dimension2);
+                    chartDataDimension.Add(metric == null ? 0 : metric.Value);
+                }
+
+                chartData.Add(chartDataDimension.ToArray());
+            }
+        }
+
+        // TODO: Clean this up
+        switch(chartTypeId)
+        {
+            case "1":
+                await JS.InvokeVoidAsync("createBarChartV2",
+                       "myChart",
+                       dimensionNames[0].ToArray(),
+                       chartData.ToArray(),
+                       false);    // Show stacked if multiple dimensions
+                break;
+            case "2":
+                await JS.InvokeVoidAsync("createBarChartV2",
+                          "myChart",
+                          dimensionNames[0].ToArray(),
+                          chartData.ToArray(),
+                          true);
+                break;
+            case "3":
+                await JS.InvokeVoidAsync("createPieChart",
+                               "myChart",
+                               dimensionNames[0].ToArray(),
+                               chartData.ToArray());
+                break;
+        }
+
+        // // Display chart
+        // // TODO: Handle time period dimension (DateTimeOffset[])
+        // await JS.InvokeVoidAsync("createPieChart",
+        //               "myChart",
+        //               dimensionNames[0].ToArray(),
+        //               chartData.ToArray());
+
+        // // Display chart
+        // // TODO: Handle time period dimension (DateTimeOffset[])       
+        // var isStacked = false;  // dimensionNames.Count > 1;
+        // await JS.InvokeVoidAsync("createBarChartV2",
+        //               "myChart",
+        //               dimensionNames[0].ToArray(),
+        //               chartData.ToArray(),
+        //               isStacked);    // Show stacked if multiple dimensions
+        
+        // // TODO: Clean this up and make it generic
+        // Metrics metrics = metricsType.Name switch
+        // {
+        //     "Issues By Assigned User" => await MetricService.GetIssueCountByAssignedUserMetricsAsync(issueFilter),
+        //     "Issues By Created User" => await MetricService.GetIssueCountByCreatedUserMetricsAsync(issueFilter),
+        //     "Issues By Project" => await MetricService.GetIssueCountByProjectMetricsAsync(issueFilter),
+        //     "Issues By Status" => await MetricService.GetIssueCountByStatusMetricsAsync(issueFilter),
+        //     "Issues By Type" => await MetricService.GetIssueCountByTypeMetricsAsync(issueFilter),
+        //     _ => new Metrics()
+        // };        
+
+        // // Display chart
+        // // TODO: Handle time period dimension (DateTimeOffset[])
+        // await JS.InvokeVoidAsync("createBarChart",
+        //               "myChart",
+        //               metrics.Title,
+        //               metrics.Items.Select(m => m.Dimensions[0]).ToArray(),
+        //               metrics.Items.Select(m => m.Value).ToArray(),
+        //               metrics.Items.Select(m => $"rgba({metrics.DimensionColors[(string)m.Dimensions[0]]})").ToArray());
     }
 }
