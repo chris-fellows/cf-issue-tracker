@@ -3,6 +3,7 @@
     public static class AuditEventTypeNames
     {
         public static string Error = "Error";
+        public static string IssueAssigned = "Issue assigned";
         public static string IssueCreated = "Issue created";
         public static string IssueUpdated = "Issue updated";
         public static string IssuseCommentCreated = "Issue comment created";

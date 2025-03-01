@@ -21,5 +21,10 @@ namespace CFIssueTrackerCommon.Models
         [Required]
         [MaxLength(50)]
         public string ImageSource { get; set; } = String.Empty;
+        
+        /// <summary>
+        /// Notification groups
+        /// </summary>
+        public ICollection<NotificationGroupReference> NotificationGroups { get; set; }
     }
 }

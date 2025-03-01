@@ -6,7 +6,8 @@
 @using CFIssueTrackerCommon.Models
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject NavigationManager NavigationManager
-@inject IEmailRequestService EmailRequestService
+@inject IAuditEventService AuditEventService
+@inject IAuditEventTypeService AuditEventTypeService
 @inject ISystemValueTypeService SystemValueTypeService
 
 @attribute [Authorize(Roles = "Administrator")]
@@ -60,8 +61,31 @@
         await context.SaveChangesAsync();
 
         // Send email
-        await EmailRequestService.AddNewUserAsync(User);
+        await AddAuditEventUserCreated(User.Id);
 
         NavigationManager.NavigateTo("/users");
     } 
+
+    private async Task AddAuditEventUserCreated(string userId)
+    {
+        var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.UserCreated);
+        var systemValueTypeUserId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.UserId);
+
+        var auditEvent = new AuditEvent()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                TypeId = auditEventType.Id,
+                Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypeUserId.Id,
+                            Value = userId
+                        }
+                    }
+            };
+        await AuditEventService.AddAsync(auditEvent);
+    }
 }

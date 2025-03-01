@@ -131,12 +131,14 @@ namespace CFIssueTracker.Data
             // Get services
             var auditEventService = scope.ServiceProvider.GetRequiredService<IAuditEventService>();
             var auditEventTypeService = scope.ServiceProvider.GetRequiredService<IAuditEventTypeService>();
+            var contentTemplateService = scope.ServiceProvider.GetRequiredService<IContentTemplateService>();
             var documentService = scope.ServiceProvider.GetRequiredService<IDocumentService>();
             var issueCommentService = scope.ServiceProvider.GetRequiredService<IIssueCommentService>();
             var issueService = scope.ServiceProvider.GetRequiredService<IIssueService>();
             var issueStatusService = scope.ServiceProvider.GetRequiredService<IIssueStatusService>();
             var issueTypeService = scope.ServiceProvider.GetRequiredService<IIssueTypeService>();
-            var metricsTypeService = scope.ServiceProvider.GetRequiredService<IMetricsTypeService>();            
+            var metricsTypeService = scope.ServiceProvider.GetRequiredService<IMetricsTypeService>();
+            var notificationGroupService = scope.ServiceProvider.GetRequiredService<INotificationGroupService>();
             var projectComponentService = scope.ServiceProvider.GetRequiredService<IProjectComponentService>();
             var projectService = scope.ServiceProvider.GetRequiredService<IProjectService>();
             var systemTaskStatusService = scope.ServiceProvider.GetRequiredService<ISystemTaskStatusService>();
@@ -147,9 +149,11 @@ namespace CFIssueTracker.Data
 
             // Get seed data services
             var auditEventTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<AuditEventType>>("AuditEventTypeSeed");
+            var contentTemplateSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<ContentTemplate>>("ContentTemplateSeed");
             var issueStatusSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<IssueStatus>>("IssueStatusSeed");
             var issueTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<IssueType>>("IssueTypeSeed");
             var metricsTypeSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<MetricsType>>("MetricsTypeSeed");
+            var notificationGroupSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<NotificationGroup>>("NotificationGroupSeed");
             var projectComponentSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<ProjectComponent>>("ProjectComponentSeed");
             var projectSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<Project>>("ProjectSeed");
             var systemTaskStatusSeed = scope.ServiceProvider.GetRequiredKeyedService<IEntityReader<SystemTaskStatus>>("SystemTaskStatusSeed");
@@ -170,9 +174,16 @@ namespace CFIssueTracker.Data
             foreach (var systemValueType in systemValueTypesNew)
             {
                 await systemValueTypeService.AddAsync(systemValueType);
-            }            
+            }
 
-            // Add audit event types
+            // Add notification groups templates
+            var notificationGroupsNew = notificationGroupSeed.Read();
+            foreach (var notificationGroup in notificationGroupsNew)
+            {
+                await notificationGroupService.AddAsync(notificationGroup);
+            }
+
+            // Add audit event types (Depends on notification groups existing)
             var auditEventTypesNew = auditEventTypeSeed.Read();
             foreach (var auditEventType in auditEventTypesNew)
             {
@@ -186,6 +197,13 @@ namespace CFIssueTracker.Data
                 await tagService.AddAsync(tag);
             }
 
+            // Add content templates (E.g. Email notifications)
+            var contentTemplatesNew = contentTemplateSeed.Read();
+            foreach(var contentTemplate in contentTemplatesNew)
+            {
+                await contentTemplateService.AddAsync(contentTemplate);
+            }
+         
             // Get audit event types & system value types
             var auditEventTypes = await auditEventTypeService.GetAllAsync();
             var systemValueTypes = await systemValueTypeService.GetAllAsync();

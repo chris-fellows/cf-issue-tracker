@@ -22,6 +22,16 @@ namespace CFIssueTrackerCommon.EntityReader
                  new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.DatadogCreator
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.EmailCreator
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.IssueCommentId
                 },
                 new SystemValueType()
@@ -58,6 +68,26 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.ProjectComponentId
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.RecipientEmails
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.SlackCreator
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.SystemValueTypeId
+                },
+                 new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.TeamsCreator
                 },
                 new SystemValueType()
                 {

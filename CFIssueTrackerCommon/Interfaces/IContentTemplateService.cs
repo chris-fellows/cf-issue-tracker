@@ -7,11 +7,7 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Interfaces
 {
-    /// <summary>
-    /// Notification service
-    /// </summary>
-    public interface INotificationService
+    public interface IContentTemplateService : IEntityWithIdNameService<ContentTemplate, string>
     {
-        Task NotifyAsync(AuditEvent auditEvent);
     }
 }

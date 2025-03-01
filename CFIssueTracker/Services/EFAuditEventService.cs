@@ -9,10 +9,13 @@ namespace CFIssueTrackerCommon.Services
 {
     public class EFAuditEventService : IAuditEventService
     {
+        private readonly IAuditEventProcessorService _auditEventProcessorService;
         private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
 
-        public EFAuditEventService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+        public EFAuditEventService(IAuditEventProcessorService auditEventProcessorService,
+                                IDbContextFactory<CFIssueTrackerContext> dbFactory)
         {
+            _auditEventProcessorService = auditEventProcessorService;
             _dbFactory = dbFactory;
         }
 
@@ -42,6 +45,9 @@ namespace CFIssueTrackerCommon.Services
             {
                 context.AuditEvent.Add(auditEvent);
                 await context.SaveChangesAsync();
+                
+                await _auditEventProcessorService.ProcessAsync(auditEvent);
+
                 return auditEvent;
             }
         }

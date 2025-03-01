@@ -18,6 +18,7 @@ namespace CFIssueTrackerCommon.Data
 
         public DbSet<CFIssueTrackerCommon.Models.AuditEventType> AuditEventType { get; set; } = default!;
 
+        public DbSet<CFIssueTrackerCommon.Models.ContentTemplate> ContentTemplate { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.Document> Document { get; set; } = default!;
 
         public DbSet<CFIssueTrackerCommon.Models.Issue> Issue { get; set; } = default!;
@@ -25,6 +26,8 @@ namespace CFIssueTrackerCommon.Data
         public DbSet<CFIssueTrackerCommon.Models.IssueComment> IssueComment { get; set; } = default!;
 
         public DbSet<CFIssueTrackerCommon.Models.MetricsType> MetricsType { get; set; } = default!;
+
+        public DbSet<CFIssueTrackerCommon.Models.NotificationGroup> NotificationGroup { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.PasswordReset> PasswordReset { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.Project> Project { get; set; } = default!;
         public DbSet<CFIssueTrackerCommon.Models.ProjectComponent> ProjectComponent { get; set; } = default!;

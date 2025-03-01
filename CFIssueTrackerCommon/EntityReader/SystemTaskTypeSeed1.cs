@@ -15,18 +15,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 new SystemTaskType()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = SystemTaskTypeNames.SendIssueAssignedEmail
-                },
-                new SystemTaskType()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = SystemTaskTypeNames.SendNewUserEmail
-                },
-                new SystemTaskType()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = SystemTaskTypeNames.SendResetPasswordEmail
-                }
+                    Name = SystemTaskTypeNames.SendEmail
+                }             
             };
 
             return list;

@@ -1,17 +1,18 @@
 ﻿using CFIssueTrackerCommon.Constants;
-using CFIssueTrackerCommon.Email;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.SystemTask
 {
-    /// <summary>
-    /// Sends New User emails that have been requested as system task jobs
-    /// </summary>
-    public class SendNewUserEmailSystemTask : ISystemTask
+    public class SendTeamsSystemTask : ISystemTask
     {
-        public static string TaskName => SystemTaskTypeNames.SendNewUserEmail;
+        public static string TaskName => SystemTaskTypeNames.SendTeams;
 
         public string Name => TaskName;
 
@@ -31,10 +32,11 @@ namespace CFIssueTrackerCommon.SystemTask
             var systemTaskStatusCompletedSuccess = await systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.CompletedSuccess);
             var systemTaskStatusCompletedError = await systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.CompletedError);
 
-            var systemTaskType = await systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendNewUserEmail);
+            // Get system task type
+            var systemTaskType = await systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendTeams);
 
-            var systemValueTypePasswordResetId = await systemValueTypeService.GetByNameAsync(SystemValueTypeNames.PasswordResetId);
-            var systemValueTypeUserId = await systemValueTypeService.GetByNameAsync(SystemValueTypeNames.UserId);        
+            // Get value type for Teams creator
+            var systemValueTypeCreator = await systemValueTypeService.GetByNameAsync(SystemValueTypeNames.TeamsCreator);
 
             // Get system task jobs for Pending status
             var systemTaskJobFilter = new SystemTaskJobFilter()
@@ -45,38 +47,47 @@ namespace CFIssueTrackerCommon.SystemTask
             var systemTaskJobs = (await systemTaskJobService.GetByFilterAsync(systemTaskJobFilter)).OrderBy(s => s.CreatedDateTime).ToList();
 
             // Execute jobs
-            var emailContent = new NewUserEmailContent();
             while (systemTaskJobs.Any() && !cancellationToken.IsCancellationRequested)
             {
                 var systemTaskJob = systemTaskJobs.First();
                 systemTaskJobs.Remove(systemTaskJob);
 
-                await SendEmail(systemTaskJob,
-                                emailContent, emailService,
-                                passwordResetService, systemTaskJobService, systemValueTypeService,
-                                systemTaskStatusActive,
-                                systemTaskStatusCompletedSuccess,
-                                systemTaskStatusCompletedError,
-                                systemValueTypePasswordResetId, systemValueTypeUserId,
-                                userService,
-                                cancellationToken);
+                // Get Slack creator
+                var parameterCreator = systemTaskJob.Parameters.First(p => p.SystemValueTypeId == systemValueTypeCreator.Id);
+                var creator = serviceProvider.GetRequiredKeyedService<ITeamsCreator>(parameterCreator.Value);
+
+                try
+                {
+                    // Send Slack
+                    await Send(systemTaskJob,
+                                    creator,
+                                    emailService,
+                                    passwordResetService, systemTaskJobService, systemValueTypeService,
+                                    systemTaskStatusActive,
+                                    systemTaskStatusCompletedSuccess,
+                                    systemTaskStatusCompletedError,
+                                    userService,
+                                    cancellationToken);
+                }
+                catch (Exception exception)
+                {
+                    // TODO: Log error
+                }
             }
         }
 
         /// <summary>
-        /// Sends email
+        /// Sends Teams notification
         /// </summary>
         /// <param name="systemTaskJob"></param>
-        /// <param name="emailContent"></param>
+        /// <param name="creator"></param>
         /// <param name="emailService"></param>
         /// <param name="passwordResetService"></param>
-        /// <param name="systemValueTypeService"></param>
-        /// <param name="systemValueTypePasswordResetId"></param>
-        /// <param name="systemValueTypeUserId"></param>
+        /// <param name="systemValueTypeService"></param>        
         /// <param name="userService"></param>
         /// <returns></returns>
-        private async Task SendEmail(SystemTaskJob systemTaskJob,
-                                            IEmailContent emailContent,
+        private async Task Send(SystemTaskJob systemTaskJob,
+                                            ITeamsCreator creator,
                                             IEmailService emailService,
                                             IPasswordResetService passwordResetService,
                                             ISystemTaskJobService systemTaskJobService,
@@ -84,8 +95,6 @@ namespace CFIssueTrackerCommon.SystemTask
                                             SystemTaskStatus systemTaskStatusActive,
                                             SystemTaskStatus systemTaskStatusCompletedSuccess,
                                             SystemTaskStatus systemTaskStatusCompletedError,
-                                            SystemValueType systemValueTypePasswordResetId,
-                                            SystemValueType systemValueTypeUserId,
                                             IUserService userService,
                                             CancellationToken cancellationToken)
         {
@@ -93,19 +102,17 @@ namespace CFIssueTrackerCommon.SystemTask
             systemTaskJob.StatusId = systemTaskStatusActive.Id;
             await systemTaskJobService.UpdateAsync(systemTaskJob);
 
-            // Get password reset            
-            var userId = systemTaskJob.Parameters.First(p => p.SystemValueTypeId == systemValueTypeUserId.Id).Value;
+            //// Get system values for parameters
+            //var systemValues = systemTaskJob.Parameters.Select(p => p.ToSystemValue()).ToList();
 
-            // Get user
-            var user = await userService.GetByIdAsync(userId);
+            //// Create email            
+            //var subject = emailCreator.GetSubject(systemValues);
+            //var body = emailCreator.GetBody(systemValues);
+            //var emailRecipients = emailCreator.GetRecipientEmails(systemValues);
+            //var ccEmails = new List<string>();
 
-            // Create email
-            var emailParameters = new Dictionary<string, string>();
-            var body = emailContent.GetBody(emailParameters);
-
-            // Send email
-            await emailService.SendAsync(new List<string>() { user.Email }, new(),
-                                       body, "Welcome to CF Issue Tracker");
+            //// Send email
+            //await emailService.SendAsync(emailRecipients, ccEmails, body, subject);
 
             // Set job status Completed Succcess
             systemTaskJob.StatusId = systemTaskStatusCompletedSuccess.Id;

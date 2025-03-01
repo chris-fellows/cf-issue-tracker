@@ -2,8 +2,12 @@
 {
     public static class SystemTaskTypeNames
     {
-        public static string SendIssueAssignedEmail = "Send Issue Assigned Email";
-        public static string SendNewUserEmail = "Send New User Email";
-        public static string SendResetPasswordEmail = "Send Reset Password Email";        
+        public static string SendDatadog = "Send Datadog";
+
+        public static string SendEmail = "Send Email";
+
+        public static string SendSlack = "Send Slack";
+
+        public static string SendTeams = "Send Teams";
     }
 }

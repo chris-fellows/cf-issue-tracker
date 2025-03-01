@@ -12,6 +12,9 @@
 
   <ItemGroup>
     <Folder Include="Data\" />
+    <Folder Include="Datadog\" />
+    <Folder Include="Teams\" />
+    <Folder Include="Slack\" />
   </ItemGroup>
 
   <ItemGroup>

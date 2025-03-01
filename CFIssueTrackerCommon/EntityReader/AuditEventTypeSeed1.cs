@@ -1,4 +1,5 @@
 ﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,17 @@ namespace CFIssueTrackerCommon.EntityReader
     /// </summary>
     public class AuditEventTypeSeed1 : IEntityReader<AuditEventType>
     {
+        private readonly INotificationGroupService _notificationGroupService;
+
+        public AuditEventTypeSeed1(INotificationGroupService notificationGroupService)
+        {
+            _notificationGroupService = notificationGroupService;
+        }
+
         public IEnumerable<AuditEventType> Read()
         {
+            var notificationGroups = _notificationGroupService.GetAll();
+
             var list = new List<AuditEventType>()
             {
                 new AuditEventType()
@@ -23,7 +33,22 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = AuditEventTypeNames.Error,
                     Color = Color.Red.ToArgb().ToString(),
-                    ImageSource = "audit_event_type.png"
+                    ImageSource = "audit_event_type.png",                     
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.IssueAssigned,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png",
+                    NotificationGroups = new List<NotificationGroupReference>()
+                    {
+                        new NotificationGroupReference()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            NotificationGroupId = notificationGroups.First(ng => ng.Name == NotificationGroupNames.IssueAssigned).Id                            
+                        }
+                    }
                 },
                 new AuditEventType()
                 {
@@ -86,7 +111,15 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = AuditEventTypeNames.PasswordResetCreated,
                     Color = Color.Red.ToArgb().ToString(),
-                    ImageSource = "audit_event_type.png"
+                    ImageSource = "audit_event_type.png",
+                    NotificationGroups = new List<NotificationGroupReference>()
+                    {
+                        new NotificationGroupReference()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            NotificationGroupId = notificationGroups.First(ng => ng.Name == NotificationGroupNames.ResetPassword).Id
+                        }
+                    }
                 },
                 new AuditEventType()
                 {
@@ -128,7 +161,15 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = AuditEventTypeNames.UserCreated,
                     Color = Color.Red.ToArgb().ToString(),
-                    ImageSource = "audit_event_type.png"
+                    ImageSource = "audit_event_type.png",
+                    NotificationGroups = new List<NotificationGroupReference>()
+                    {
+                        new NotificationGroupReference()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            NotificationGroupId = notificationGroups.First(ng => ng.Name == NotificationGroupNames.NewUser).Id
+                        }
+                    }
                 },
                 new AuditEventType()
                 {

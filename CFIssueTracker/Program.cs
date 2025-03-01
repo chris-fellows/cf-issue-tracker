@@ -59,12 +59,14 @@ if (registerRequestInfoService) builder.Services.AddScoped<IRequestContextServic
 // Add data services
 builder.Services.AddScoped<IAuditEventService, EFAuditEventService>();
 builder.Services.AddScoped<IAuditEventTypeService, EFAuditEventTypeService>();
+builder.Services.AddScoped<IContentTemplateService, EFContentTemplateService>();
 builder.Services.AddScoped<IDocumentService, EFDocumentService>();
 builder.Services.AddScoped<IIssueCommentService, EFIssueCommentService>();
 builder.Services.AddScoped<IIssueService, EFIssueService>();
 builder.Services.AddScoped<IIssueStatusService, EFIssueStatusService>();
 builder.Services.AddScoped<IIssueTypeService, EFIssueTypeService>();
 builder.Services.AddScoped<IMetricsTypeService, EFMetricsTypeService>();
+builder.Services.AddScoped<INotificationGroupService, EFNotificationGroupService>();
 builder.Services.AddScoped<IPasswordResetService, EFPasswordResetService>();
 builder.Services.AddScoped<IProjectComponentService, EFProjectComponentService>();
 builder.Services.AddScoped<IProjectService, EFProjectService>();
@@ -75,13 +77,21 @@ builder.Services.AddScoped<ISystemValueTypeService, EFSystemValueTypeService>();
 builder.Services.AddScoped<ITagService, EFTagService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
-// Add email services
-builder.Services.AddScoped<IEmailRequestService, SystemTaskJobEmailRequestService>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.RegisterAllTypes<IEmailContent>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+// Add audit event processor (E.g. Create notifications)
+builder.Services.AddScoped<IAuditEventProcessorService, AuditEventProcessorService>();
 
-// Add notification services
-//builder.Services.RegisterAllTypes<INotificationService>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+// Add email services
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.RegisterAllTypes<IEmailCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+
+// Add Datadog services
+builder.Services.RegisterAllTypes<IDatadogCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+
+// Add Slack services
+builder.Services.RegisterAllTypes<ISlackCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+
+// Add Teams services
+builder.Services.RegisterAllTypes<ITeamsCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
 
 // Add metric service for reports
 builder.Services.AddScoped<IMetricService, MetricService>();
@@ -93,9 +103,11 @@ builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(Program).Assembly,
 if (registerSeedDataLoad)
 {
     builder.Services.AddKeyedScoped<IEntityReader<AuditEventType>, AuditEventTypeSeed1>("AuditEventTypeSeed");
+    builder.Services.AddKeyedScoped<IEntityReader<ContentTemplate>, ContentTemplateSeed1>("ContentTemplateSeed");
     builder.Services.AddKeyedScoped<IEntityReader<IssueStatus>, IssueStatusSeed1>("IssueStatusSeed");
     builder.Services.AddKeyedScoped<IEntityReader<IssueType>, IssueTypeSeed1>("IssueTypeSeed");
     builder.Services.AddKeyedScoped<IEntityReader<MetricsType>, MetricsTypeSeed1>("MetricsTypeSeed");
+    builder.Services.AddKeyedScoped<IEntityReader<NotificationGroup>, NotificationGroupSeed1>("NotificationGroupSeed");
     builder.Services.AddKeyedScoped<IEntityReader<ProjectComponent>, ProjectComponentSeed1>("ProjectComponentSeed");
     builder.Services.AddKeyedScoped<IEntityReader<Project>, ProjectSeed1>("ProjectSeed");
     builder.Services.AddKeyedScoped<IEntityReader<SystemTaskStatus>, SystemTaskStatusSeed1>("SystemTaskStatusSeed");
@@ -138,21 +150,26 @@ builder.Services.AddSingleton<ISystemTaskList>((scope) =>
             SystemTaskName = NotificationSystemTask.TaskName,
             ExecuteFrequency = TimeSpan.FromMinutes(5)
         },
+        //new SystemTaskConfig()
+        //{
+        //    SystemTaskName = SendDatadogSystemTask.TaskName,
+        //    ExecuteFrequency = TimeSpan.FromMinutes(1)
+        //},
         new SystemTaskConfig()
         {
-            SystemTaskName = SendIssueAssignedEmailSystemTask.TaskName,
+            SystemTaskName = SendEmailSystemTask.TaskName,
             ExecuteFrequency = TimeSpan.FromMinutes(1)
         },
-        new SystemTaskConfig()
-        {
-            SystemTaskName = SendNewUserEmailSystemTask.TaskName,
-            ExecuteFrequency = TimeSpan.FromMinutes(1)
-        },
-        new SystemTaskConfig()
-        {
-            SystemTaskName = SendResetPasswordEmailSystemTask.TaskName,
-            ExecuteFrequency = TimeSpan.FromMinutes(1)
-        }
+        //new SystemTaskConfig()
+        //{
+        //    SystemTaskName = SendSlackSystemTask.TaskName,
+        //    ExecuteFrequency = TimeSpan.FromMinutes(1)
+        //},
+        //new SystemTaskConfig()
+        //{
+        //    SystemTaskName = SendTeamsSystemTask.TaskName,
+        //    ExecuteFrequency = TimeSpan.FromMinutes(1)
+        //}
     };
     systemTaskConfigs.ForEach(stc => stc.NextExecuteTime = DateTimeUtilities.GetNextTaskExecuteTimeFromFrequency(stc.ExecuteFrequency));
 
