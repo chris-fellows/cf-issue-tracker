@@ -3,7 +3,9 @@
 namespace CFIssueTrackerCommon.Models
 {
     /// <summary>
-    /// System value type
+    /// System value type.
+    /// 
+    /// Allows us to handle lots of different types of values without having to add new properties.
     /// </summary>
     public class SystemValueType
     {

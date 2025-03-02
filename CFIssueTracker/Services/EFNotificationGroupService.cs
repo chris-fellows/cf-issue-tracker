@@ -2,6 +2,7 @@
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CFIssueTracker.Services
 {
@@ -18,7 +19,9 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return context.NotificationGroup.OrderBy(i => i.Name).ToList();
+                return context.NotificationGroup
+                            .Include(i => i.EmailNotificationConfigs)
+                            .OrderBy(i => i.Name).ToList();
             }
         }
 
@@ -26,7 +29,9 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return (await context.NotificationGroup.ToListAsync()).OrderBy(i => i.Name).ToList();
+                return (await context.NotificationGroup
+                            .Include(i => i.EmailNotificationConfigs)
+                            .ToListAsync()).OrderBy(i => i.Name).ToList();
             }
         }
 
@@ -54,7 +59,9 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var notificationGroup = await context.NotificationGroup.FirstOrDefaultAsync(i => i.Id == id);
+                var notificationGroup = await context.NotificationGroup
+                            .Include(i => i.EmailNotificationConfigs)
+                            .FirstOrDefaultAsync(i => i.Id == id);
                 return notificationGroup;
             }
         }
@@ -63,7 +70,9 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return await context.NotificationGroup.Where(i => ids.Contains(i.Id)).ToListAsync();
+                return await context.NotificationGroup
+                        .Include(i => i.EmailNotificationConfigs)
+                        .Where(i => ids.Contains(i.Id)).ToListAsync();
             }
         }
 
@@ -84,7 +93,9 @@ namespace CFIssueTracker.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var notificationGroup = await context.NotificationGroup.FirstOrDefaultAsync(i => i.Name == name);
+                var notificationGroup = await context.NotificationGroup
+                                .Include(i => i.EmailNotificationConfigs)
+                                .FirstOrDefaultAsync(i => i.Name == name);
                 return notificationGroup;
             }
         }

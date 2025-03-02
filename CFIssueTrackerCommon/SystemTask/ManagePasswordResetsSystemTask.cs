@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Interfaces;
+﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CFIssueTrackerCommon.SystemTask
@@ -7,10 +8,8 @@ namespace CFIssueTrackerCommon.SystemTask
     /// Manages password resets. Deletes old instances that have expired.
     /// </summary>
     public class ManagePasswordResetsSystemTask : ISystemTask
-    {
-        public static string TaskName => "Manage Password Resets";
-
-        public string Name => TaskName;
+    {        
+        public string Name => SystemTaskTypeNames.ManagePasswordResets;
 
         public async Task ExecuteAsync(Dictionary<string, object> parameters, IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {

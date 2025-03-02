@@ -10,21 +10,27 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.SystemTask
 {
+    /// <summary>
+    /// Sends Teams messages that were scheduled as system task jobs
+    /// </summary>
     public class SendTeamsSystemTask : ISystemTask
-    {
-        public static string TaskName => SystemTaskTypeNames.SendTeams;
-
-        public string Name => TaskName;
+    {        
+        public string Name => SystemTaskTypeNames.SendTeams;
 
         public async Task ExecuteAsync(Dictionary<string, object> parameters, IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
-            var emailService = serviceProvider.GetRequiredService<IEmailService>();
-            var passwordResetService = serviceProvider.GetRequiredService<IPasswordResetService>();
+            // Get services
+            var auditEventService = serviceProvider.GetRequiredService<IAuditEventService>();
+            var auditEventTypeService = serviceProvider.GetRequiredService<IAuditEventTypeService>();            
             var systemTaskJobService = serviceProvider.GetRequiredService<ISystemTaskJobService>();
             var systemTaskStatusService = serviceProvider.GetRequiredService<ISystemTaskStatusService>();
             var systemTaskTypeService = serviceProvider.GetRequiredService<ISystemTaskTypeService>();
             var systemValueTypeService = serviceProvider.GetRequiredService<ISystemValueTypeService>();
+            var teamsService = serviceProvider.GetRequiredService<ITeamsService>();
             var userService = serviceProvider.GetRequiredService<IUserService>();
+            
+            // Set current user as System user
+            var currentUser = (await userService.GetAllAsync()).First(u => u.GetUserType() == Enums.UserTypes.System);
 
             // Get system task statuses
             var systemTaskStatusPending = await systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.Pending);
@@ -33,7 +39,7 @@ namespace CFIssueTrackerCommon.SystemTask
             var systemTaskStatusCompletedError = await systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.CompletedError);
 
             // Get system task type
-            var systemTaskType = await systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendTeams);
+            var systemTaskTypeSend = await systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendTeams);
 
             // Get value type for Teams creator
             var systemValueTypeCreator = await systemValueTypeService.GetByNameAsync(SystemValueTypeNames.TeamsCreator);
@@ -42,7 +48,7 @@ namespace CFIssueTrackerCommon.SystemTask
             var systemTaskJobFilter = new SystemTaskJobFilter()
             {
                 StatusIds = new List<string>() { systemTaskStatusPending.Id },
-                TypeIds = new List<string>() { systemTaskType.Id }
+                TypeIds = new List<string>() { systemTaskTypeSend.Id }
             };
             var systemTaskJobs = (await systemTaskJobService.GetByFilterAsync(systemTaskJobFilter)).OrderBy(s => s.CreatedDateTime).ToList();
 
@@ -61,12 +67,13 @@ namespace CFIssueTrackerCommon.SystemTask
                     // Send Slack
                     await Send(systemTaskJob,
                                     creator,
-                                    emailService,
-                                    passwordResetService, systemTaskJobService, systemValueTypeService,
+                                    teamsService,
+                                    auditEventService, auditEventTypeService,
+                                    systemTaskJobService, systemValueTypeService,
                                     systemTaskStatusActive,
                                     systemTaskStatusCompletedSuccess,
-                                    systemTaskStatusCompletedError,
-                                    userService,
+                                    systemTaskStatusCompletedError, 
+                                    currentUser,
                                     cancellationToken);
                 }
                 catch (Exception exception)
@@ -81,42 +88,67 @@ namespace CFIssueTrackerCommon.SystemTask
         /// </summary>
         /// <param name="systemTaskJob"></param>
         /// <param name="creator"></param>
-        /// <param name="emailService"></param>
+        /// <param name="teamsService"></param>
         /// <param name="passwordResetService"></param>
         /// <param name="systemValueTypeService"></param>        
         /// <param name="userService"></param>
         /// <returns></returns>
         private async Task Send(SystemTaskJob systemTaskJob,
                                             ITeamsCreator creator,
-                                            IEmailService emailService,
-                                            IPasswordResetService passwordResetService,
+                                            ITeamsService teamsService,
+                                            IAuditEventService auditEventService,
+                                            IAuditEventTypeService auditEventTypeService,                                            
                                             ISystemTaskJobService systemTaskJobService,
                                             ISystemValueTypeService systemValueTypeService,
                                             SystemTaskStatus systemTaskStatusActive,
                                             SystemTaskStatus systemTaskStatusCompletedSuccess,
                                             SystemTaskStatus systemTaskStatusCompletedError,
-                                            IUserService userService,
+                                            User currentUser,
                                             CancellationToken cancellationToken)
         {
             // Set job status Active
             systemTaskJob.StatusId = systemTaskStatusActive.Id;
             await systemTaskJobService.UpdateAsync(systemTaskJob);
 
-            //// Get system values for parameters
-            //var systemValues = systemTaskJob.Parameters.Select(p => p.ToSystemValue()).ToList();
+            // Get system values for parameters
+            var systemValues = systemTaskJob.Parameters.Select(p => p.ToSystemValue()).ToList();
 
-            //// Create email            
-            //var subject = emailCreator.GetSubject(systemValues);
-            //var body = emailCreator.GetBody(systemValues);
-            //var emailRecipients = emailCreator.GetRecipientEmails(systemValues);
-            //var ccEmails = new List<string>();
+            // TODO: Send Teams message
 
-            //// Send email
-            //await emailService.SendAsync(emailRecipients, ccEmails, body, subject);
+            // Add audit event
+            await AddAuditEvenSentAsync(creator, auditEventService, auditEventTypeService, systemValueTypeService, currentUser);
 
             // Set job status Completed Succcess
             systemTaskJob.StatusId = systemTaskStatusCompletedSuccess.Id;
             await systemTaskJobService.UpdateAsync(systemTaskJob);
+        }
+
+        private async Task AddAuditEvenSentAsync(ITeamsCreator creator,
+                                 IAuditEventService auditEventService,
+                                 IAuditEventTypeService auditEventTypeService,
+                                 ISystemValueTypeService systemValueTypeService,
+                                 User currentUser)
+        {
+            var auditEventType = await auditEventTypeService.GetByNameAsync(AuditEventTypeNames.SentTeams);
+            var systemValueTypeCreator = await systemValueTypeService.GetByNameAsync(SystemValueTypeNames.TeamsCreator);
+
+            var auditEvent = new AuditEvent()
+            {
+                Id = Guid.NewGuid().ToString(),
+                CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = currentUser.Id,
+                TypeId = auditEventType.Id,
+                Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypeCreator.Id,
+                            Value = creator.Name
+                        }
+                    }
+            };
+            await auditEventService.AddAsync(auditEvent);
         }
     }
 }

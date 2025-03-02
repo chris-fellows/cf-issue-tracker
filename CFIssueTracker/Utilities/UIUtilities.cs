@@ -92,12 +92,18 @@ namespace CFIssueTracker.Utilities
                 new DateRangeFilter()
                 {
                     Id = "3",
+                    Name = "Current week",
+                    FromDate = DateTimeUtilities.GetWeekStart()
+                },
+                new DateRangeFilter()
+                {
+                    Id = "4",
                     Name = "Current month",
                     FromDate = DateTimeUtilities.GetMonthStart()
                 },
                 new DateRangeFilter()
                 {
-                    Id = "4",
+                    Id = "5",
                     Name = "Current year",
                     FromDate = DateTimeUtilities.GetYearStart()
                 }

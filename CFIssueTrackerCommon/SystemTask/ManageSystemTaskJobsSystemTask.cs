@@ -10,10 +10,8 @@ namespace CFIssueTrackerCommon.SystemTask
     /// can be investigated.
     /// </summary>
     public class ManageSystemTaskJobsSystemTask : ISystemTask
-    {
-        public static string TaskName => "Manage System Task Jobs";
-
-        public string Name => TaskName;
+    {        
+        public string Name => SystemTaskTypeNames.ManageSystemTaskJobs;
 
         public async Task ExecuteAsync(Dictionary<string, object> parameters, IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {            

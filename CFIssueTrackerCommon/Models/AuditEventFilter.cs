@@ -15,22 +15,17 @@ namespace CFIssueTrackerCommon.Models
         /// <summary>
         /// Event created up to
         /// </summary>
-        public DateTimeOffset? CreatedDateTimeTo { get; set; }
-
-        /// <summary>
-        /// Event User Ids
-        /// </summary>
-        public List<string>? CreatedUserIds { get; set; }
+        public DateTimeOffset? CreatedDateTimeTo { get; set; }      
 
         /// <summary>
         /// Audit Event Type Ids
         /// </summary>
-        public List<string>? AuditEventTypeIds { get; set; }
-
+        public List<string>? AuditEventTypeIds { get; set; }    
+        
         /// <summary>
-        /// Issue Ids
+        /// Created User Ids
         /// </summary>
-        public List<string>? IssueIds { get; set; }
+        public List<string>? CreatedUserIds { get; set; }
 
         /// <summary>
         /// Logical operator for Parameters. Allows us to handle any filter valid or all filters valid

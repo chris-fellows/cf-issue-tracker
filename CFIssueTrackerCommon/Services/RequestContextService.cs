@@ -69,5 +69,10 @@ namespace CFIssueTrackerCommon.Services
             }
             return null;
         }
+
+        public User SystemUser
+        {
+            get { return _userService.GetAll().First(u => u.GetUserType() == Enums.UserTypes.System); }
+        }
     }
 }

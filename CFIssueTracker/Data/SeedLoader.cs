@@ -3,14 +3,11 @@ using CFIssueTrackerCommon.EntityReader;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using CFIssueTrackerCommon.Services;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Net;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace CFIssueTracker.Data
 {
     /// <summary>
-    /// Loads seed data
+    /// Loads seed data from IEntityReader(s)    
     /// </summary>
     public class SeedLoader
     {
@@ -24,12 +21,15 @@ namespace CFIssueTracker.Data
             // Get services
             var auditEventService = scope.ServiceProvider.GetRequiredService<IAuditEventService>();
             var auditEventTypeService = scope.ServiceProvider.GetRequiredService<IAuditEventTypeService>();
+            var contentTemplateService = scope.ServiceProvider.GetRequiredService<IContentTemplateService>();
             var documentService = scope.ServiceProvider.GetRequiredService<IDocumentService>();
             var issueCommentService = scope.ServiceProvider.GetRequiredService<IIssueCommentService>();
             var issueService = scope.ServiceProvider.GetRequiredService<IIssueService>();
             var issueStatusService = scope.ServiceProvider.GetRequiredService<IIssueStatusService>();
             var issueTypeService = scope.ServiceProvider.GetRequiredService<IIssueTypeService>();
             var metricsTypeService = scope.ServiceProvider.GetRequiredService<IMetricsTypeService>();
+            var notificationGroupService = scope.ServiceProvider.GetRequiredService<INotificationGroupService>();
+            var passwordResetService = scope.ServiceProvider.GetRequiredService<IPasswordResetService>();
             var projectComponentService = scope.ServiceProvider.GetRequiredService<IProjectComponentService>();
             var projectService = scope.ServiceProvider.GetRequiredService<IProjectService>();
             var systemTaskStatusService = scope.ServiceProvider.GetRequiredService<ISystemTaskStatusService>();
@@ -57,6 +57,12 @@ namespace CFIssueTracker.Data
                 await issueService.DeleteByIdAsync(issue.Id);
             }
 
+            var passwordResets = await passwordResetService.GetAllAsync();
+            foreach (var passwordReset in passwordResets)
+            {
+                await passwordResetService.DeleteByIdAsync(passwordReset.Id);
+            }
+
             // Delete static data
             var projectComponents = await projectComponentService.GetAllAsync();
             foreach(var projectComponent in projectComponents)
@@ -76,6 +82,7 @@ namespace CFIssueTracker.Data
                 await userService.DeleteByIdAsync(user.Id);
             }
 
+            // Delete static data
             var issueStatuses = await issueStatusService.GetAllAsync();
             foreach(var issueStatus in issueStatuses)
             {
@@ -94,10 +101,22 @@ namespace CFIssueTracker.Data
                 await auditEventTypeService.DeleteByIdAsync(auditEventType.Id);
             }
 
+            var notificationGroups = await notificationGroupService.GetAllAsync();
+            foreach (var notificationGroup in notificationGroups)
+            {
+                await notificationGroupService.DeleteByIdAsync(notificationGroup.Id);
+            }
+
             var metricsTypes = await metricsTypeService.GetAllAsync();
             foreach (var metricsType in metricsTypes)
             {
                 await metricsTypeService.DeleteByIdAsync(metricsType.Id);
+            }
+
+            var systemTaskTypes = await systemTaskTypeService.GetAllAsync();
+            foreach (var systemTaskType in systemTaskTypes)
+            {
+                await systemTaskTypeService.DeleteByIdAsync(systemTaskType.Id);
             }
 
             var systemValueTypes = await systemValueTypeService.GetAllAsync();
@@ -116,6 +135,12 @@ namespace CFIssueTracker.Data
             foreach (var tag in tags)
             {
                 await tagService.DeleteByIdAsync(tag.Id);
+            }
+
+            var contentTemplates = await contentTemplateService.GetAllAsync();
+            foreach(var contentTemplate in contentTemplates)
+            {
+                await contentTemplateService.DeleteByIdAsync(contentTemplate.Id);
             }
         }
 
@@ -176,6 +201,20 @@ namespace CFIssueTracker.Data
                 await systemValueTypeService.AddAsync(systemValueType);
             }
 
+            // Add system task statuses
+            var systemTaskStatusNew = systemTaskStatusSeed.Read();
+            foreach (var systemTaskStatus in systemTaskStatusNew)
+            {
+                var systemTaskStatusResult = await systemTaskStatusService.AddAsync(systemTaskStatus);
+            }
+
+            // Add system task types
+            var systemTaskTypesNew = systemTaskTypeSeed.Read();
+            foreach (var systemTaskType in systemTaskTypesNew)
+            {
+                var systemTaskTypeResult = await systemTaskTypeService.AddAsync(systemTaskType);
+            }
+
             // Add notification groups templates
             var notificationGroupsNew = notificationGroupSeed.Read();
             foreach (var notificationGroup in notificationGroupsNew)
@@ -207,7 +246,41 @@ namespace CFIssueTracker.Data
             // Get audit event types & system value types
             var auditEventTypes = await auditEventTypeService.GetAllAsync();
             var systemValueTypes = await systemValueTypeService.GetAllAsync();
-            
+
+            // Add users. We can't add the audit event in this loop because we been to log the UserId for the
+            // System user
+            var usersNew = userSeed.Read();
+            foreach (var user in usersNew)
+            {
+                var userResult = await userService.AddAsync(user);
+            }
+
+            // Get all users
+            var users = await userService.GetAllAsync();
+            var systemUser = users.First(u => u.GetUserType() == CFIssueTrackerCommon.Enums.UserTypes.System);
+
+            // Add audit event for users
+            foreach(var user in users)
+            {
+                var auditEvent = new AuditEvent()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    CreatedDateTime = DateTimeOffset.UtcNow,
+                    CreatedUserId = systemUser.Id,
+                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.UserCreated).Id,
+                    Parameters = new List<AuditEventParameter>()
+                    {
+                        new AuditEventParameter()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId).Id,
+                            Value = user.Id
+                        }
+                    }
+                };
+                await auditEventService.AddAsync(auditEvent);
+            }
+
             // Add issue statuses
             var issueStatusesNew = issueStatusSeed.Read();
             foreach (var issueStatus in issueStatusesNew)
@@ -218,6 +291,7 @@ namespace CFIssueTracker.Data
                 {
                     Id = Guid.NewGuid().ToString(),
                     CreatedDateTime = DateTimeOffset.UtcNow,
+                    CreatedUserId = systemUser.Id,
                     TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.IssueStatusCreated).Id,
                     Parameters = new List<AuditEventParameter>()
                     {
@@ -242,6 +316,7 @@ namespace CFIssueTracker.Data
                 {
                     Id = Guid.NewGuid().ToString(),
                     CreatedDateTime = DateTimeOffset.UtcNow,
+                    CreatedUserId = systemUser.Id,
                     TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.IssueTypeCreated).Id,
                     Parameters = new List<AuditEventParameter>()
                     {
@@ -289,6 +364,7 @@ namespace CFIssueTracker.Data
                 {
                     Id = Guid.NewGuid().ToString(),
                     CreatedDateTime = DateTimeOffset.UtcNow,
+                    CreatedUserId = systemUser.Id,
                     TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.ProjectCreated).Id,
                     Parameters = new List<AuditEventParameter>()
                     {
@@ -314,6 +390,7 @@ namespace CFIssueTracker.Data
                 {
                     Id = Guid.NewGuid().ToString(),
                     CreatedDateTime = DateTimeOffset.UtcNow,
+                    CreatedUserId = systemUser.Id,
                     TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.ProjectComponentCreated).Id,
                     Parameters = new List<AuditEventParameter>()
                     {
@@ -322,44 +399,6 @@ namespace CFIssueTracker.Data
                             Id = Guid.NewGuid().ToString(),
                             SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.ProjectComponentId).Id,
                             Value = projectComponentResult.Id
-                        }
-                    }
-                };
-                await auditEventService.AddAsync(auditEvent);
-            }
-
-            // Add system task statuses
-            var systemTaskStatusNew = systemTaskStatusSeed.Read();
-            foreach (var systemTaskStatus in systemTaskStatusNew)
-            {
-                var systemTaskStatusResult = await systemTaskStatusService.AddAsync(systemTaskStatus);
-            }
-
-            // Add system task types
-            var systemTaskTypesNew = systemTaskTypeSeed.Read();
-            foreach (var systemTaskType in systemTaskTypesNew)
-            {                
-                var systemTaskTypeResult = await systemTaskTypeService.AddAsync(systemTaskType);             
-            }
-
-            // Add users
-            var usersNew = userSeed.Read();
-            foreach (var user in usersNew)
-            {
-                var userResult = await userService.AddAsync(user);
-
-                var auditEvent = new AuditEvent()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    CreatedDateTime = DateTimeOffset.UtcNow,
-                    TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.UserCreated).Id,
-                    Parameters = new List<AuditEventParameter>()
-                    {
-                        new AuditEventParameter()
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            SystemValueTypeId = systemValueTypes.First(i => i.Name == SystemValueTypeNames.UserId).Id,
-                            Value = userResult.Id
                         }
                     }
                 };

@@ -36,14 +36,14 @@
 
         if (HttpContext.User.Identity.IsAuthenticated)
         {
-            await AddAuditEventLogOut(RequestContextService.UserId);
+            await AddAuditEventLogOutAsync(RequestContextService.UserId);
 
             await HttpContext.SignOutAsync();
             NavigationManager.NavigateTo("/logout", true);
         }
     }
 
-    private async Task AddAuditEventLogOut(string userId)
+    private async Task AddAuditEventLogOutAsync(string userId)
     {        
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.UserLogOut);
         var systemValueTypeUserId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.UserId);
@@ -52,6 +52,7 @@
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = RequestContextService.UserId,
                 TypeId = auditEventType.Id,
                 Parameters = new List<AuditEventParameter>()
                     {

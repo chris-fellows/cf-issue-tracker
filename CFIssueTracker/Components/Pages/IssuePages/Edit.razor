@@ -15,6 +15,7 @@
 @inject IIssueTypeService IssueTypeService
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
+@inject IRequestContextService RequestContextService
 @inject ISystemValueTypeService SystemValueTypeService
 @inject ITagService TagService
 @inject IUserService UserService
@@ -256,7 +257,7 @@ else
             if (!String.IsNullOrEmpty(Issue.AssignedUserId) &&
                 _oldAssignedUserId != Issue.AssignedUserId)
             {
-                await AddAuditEventIssueAssigned(Issue.Id);
+                await AddAuditEventIssueAssignedAsync(Issue.Id);
             }
         }
         catch (DbUpdateConcurrencyException)
@@ -290,7 +291,7 @@ else
         return Users.First(u => u.Id == userReference.UserId).Name;
     }
 
-    private async Task AddAuditEventIssueAssigned(string issueId)
+    private async Task AddAuditEventIssueAssignedAsync(string issueId)
     {
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.IssueAssigned);
         var systemValueTypeIssueId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.IssueId);
@@ -299,6 +300,7 @@ else
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = RequestContextService.UserId,
                 TypeId = auditEventType.Id,
                 Parameters = new List<AuditEventParameter>()
                     {

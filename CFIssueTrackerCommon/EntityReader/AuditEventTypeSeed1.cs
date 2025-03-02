@@ -159,6 +159,34 @@ namespace CFIssueTrackerCommon.EntityReader
                 new AuditEventType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.SentEmail,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.SentDatadog,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.SentSlack,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = AuditEventTypeNames.SentTeams,
+                    Color = Color.Red.ToArgb().ToString(),
+                    ImageSource = "audit_event_type.png"
+                },
+                new AuditEventType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = AuditEventTypeNames.UserCreated,
                     Color = Color.Red.ToArgb().ToString(),
                     ImageSource = "audit_event_type.png",

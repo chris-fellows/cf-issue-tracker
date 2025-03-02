@@ -8,6 +8,7 @@
 @inject NavigationManager NavigationManager
 @inject IAuditEventService AuditEventService
 @inject IAuditEventTypeService AuditEventTypeService
+@inject IRequestContextService RequestContextService
 @inject ISystemValueTypeService SystemValueTypeService
 
 @attribute [Authorize(Roles = "Administrator")]
@@ -61,12 +62,12 @@
         await context.SaveChangesAsync();
 
         // Send email
-        await AddAuditEventUserCreated(User.Id);
+        await AddAuditEventUserCreatedAsync(User.Id);
 
         NavigationManager.NavigateTo("/users");
     } 
 
-    private async Task AddAuditEventUserCreated(string userId)
+    private async Task AddAuditEventUserCreatedAsync(string userId)
     {
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.UserCreated);
         var systemValueTypeUserId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.UserId);
@@ -75,6 +76,7 @@
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = RequestContextService.UserId,
                 TypeId = auditEventType.Id,
                 Parameters = new List<AuditEventParameter>()
                     {

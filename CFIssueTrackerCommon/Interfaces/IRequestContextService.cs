@@ -17,5 +17,10 @@ namespace CFIssueTrackerCommon.Interfaces
         /// User
         /// </summary>
         public User? User { get; }
+
+        /// <summary>
+        /// System User
+        /// </summary>
+        public User SystemUser { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.Models;
+﻿using CFIssueTrackerCommon.Enums;
+using CFIssueTrackerCommon.Models;
 using System.Drawing;
 
 namespace CFIssueTrackerCommon.EntityReader
@@ -9,15 +10,25 @@ namespace CFIssueTrackerCommon.EntityReader
     public class MetricsTypeSeed1 : IEntityReader<MetricsType>
     {
         public IEnumerable<MetricsType> Read()
-        {
-            // Note that for stacked bar charts (Multi-dimension) then 
+        {            
             var list = new List<MetricsType>()
             {
+                // Issue metrics
                 new MetricsType()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Project",
-                    //DimensionPropertyNames = nameof(Issue.ProjectId),
+                    EntityType = EntityTypes.Issue, 
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.ProjectId)}",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
+                },
+                new MetricsType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Issues By Project Component",
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.ProjectComponentId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -25,7 +36,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Status",
-                   // DimensionPropertyNames = nameof(Issue.StatusId),
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.StatusId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -33,7 +45,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Type",
-                    //DimensionPropertyNames = nameof(Issue.TypeId),
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.TypeId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -41,7 +54,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Created User",
-                    //DimensionPropertyNames = nameof(Issue.CreatedUserId),
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.CreatedUserId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -49,7 +63,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Assigned User",
-                  //  DimensionPropertyNames = nameof(Issue.AssignedUserId),
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.AssignedUserId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -57,7 +72,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Tag",
-                   // DimensionPropertyNames = nameof(TagReference.TagId),
+                    DimensionPropertyNames = $"Issue.{nameof(TagReference.TagId)}",
+                    EntityType = EntityTypes.Issue,
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -65,7 +81,8 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Assigned User & Status",
-                  //  DimensionPropertyNames = $"{nameof(Issue.AssignedUserId)},{nameof(Issue.StatusId)}",
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.AssignedUserId)},Issue.{nameof(Issue.StatusId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },
@@ -73,7 +90,28 @@ namespace CFIssueTrackerCommon.EntityReader
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = "Issues By Assigned User & Type",
-                   // DimensionPropertyNames = $"{nameof(Issue.AssignedUserId)},{nameof(Issue.TypeId)}",
+                    EntityType = EntityTypes.Issue,
+                    DimensionPropertyNames = $"Issue.{nameof(Issue.AssignedUserId)},Issue.{nameof(Issue.TypeId)}",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
+                },
+
+                // Audit event metrics
+                new MetricsType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Audit Events By Type",
+                    EntityType = EntityTypes.AuditEvent,
+                    DimensionPropertyNames = $"AuditEvent.{nameof(Issue.TypeId)}",
+                    Color = Color.Green.ToArgb().ToString(),
+                    ImageSource = "metrics_type.png"
+                },
+                new MetricsType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Audit Events By Created User & Type",
+                    EntityType = EntityTypes.AuditEvent,
+                    DimensionPropertyNames = $"AuditEvent.{nameof(AuditEvent.CreatedUserId)},AuditEvent.{nameof(AuditEvent.TypeId)}",
                     Color = Color.Green.ToArgb().ToString(),
                     ImageSource = "metrics_type.png"
                 },

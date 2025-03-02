@@ -14,6 +14,7 @@
 @inject IIssueTypeService IssueTypeService
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
+@inject IRequestContextService RequestContextService
 @inject ISystemValueTypeService SystemValueTypeService
 @inject ITagService TagService
 @inject IUserService UserService
@@ -276,19 +277,19 @@
         await context.SaveChangesAsync();
 
         // Create Issue Created audit event
-        await AddAuditEventIssueCreated(Issue.Id);
+        await AddAuditEventIssueCreatedAsync(Issue.Id);
 
         // Create Issue Assigned audit event
         if (!String.IsNullOrEmpty(Issue.AssignedUserId))
         {
-            await AddAuditEventIssueAssigned(Issue.Id);
+            await AddAuditEventIssueAssignedAsync(Issue.Id);
         }
 
 
         NavigationManager.NavigateTo("/issues");
     }   
 
-    private async Task AddAuditEventIssueCreated(string issueId)
+    private async Task AddAuditEventIssueCreatedAsync(string issueId)
     {        
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.IssueCreated);
         var systemValueTypeIssueId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.IssueId);
@@ -297,6 +298,7 @@
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = RequestContextService.UserId,
                 TypeId = auditEventType.Id,
                 Parameters = new List<AuditEventParameter>()
                     {
@@ -311,7 +313,7 @@
         await AuditEventService.AddAsync(auditEvent);
     }
 
-    private async Task AddAuditEventIssueAssigned(string issueId)
+    private async Task AddAuditEventIssueAssignedAsync(string issueId)
     {
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.IssueAssigned);
         var systemValueTypeIssueId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.IssueId);
@@ -320,6 +322,7 @@
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = RequestContextService.UserId,
                 TypeId = auditEventType.Id,
                 Parameters = new List<AuditEventParameter>()
                     {

@@ -19,6 +19,11 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.AuditEventTypeId
                 },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.ContentTemplateId
+                },
                  new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -27,7 +32,22 @@ namespace CFIssueTrackerCommon.EntityReader
                 new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.DiagnosticMessage
+                },
+                   new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.DocumentId
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.EmailCreator
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.ErrorMessage
                 },
                 new SystemValueType()
                 {
@@ -57,6 +77,11 @@ namespace CFIssueTrackerCommon.EntityReader
                 new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.Notes
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.PasswordResetId
                 },
                 new SystemValueType()
@@ -82,13 +107,23 @@ namespace CFIssueTrackerCommon.EntityReader
                 new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.SystemTaskJobId
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemValueTypeNames.SystemTaskTypeId
+                },
+                new SystemValueType()
+                {
+                    Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.SystemValueTypeId
                 },
-                 new SystemValueType()
+                new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),
                     Name = SystemValueTypeNames.TeamsCreator
-                },
+                },               
                 new SystemValueType()
                 {
                     Id = Guid.NewGuid().ToString(),

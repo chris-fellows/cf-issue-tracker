@@ -62,6 +62,8 @@ namespace CFIssueTrackerCommon.Services
             var tags = await _tagService.GetAllAsync();
             var users = await _userService.GetAllAsync();
 
+            var systemUser = users.First(u => u.GetUserType() == Enums.UserTypes.System);
+
             var random = new Random();
 
             for (int index = 0; index < max; index++)
@@ -161,6 +163,7 @@ namespace CFIssueTrackerCommon.Services
                 {
                     Id = Guid.NewGuid().ToString(),
                     CreatedDateTime = DateTimeOffset.UtcNow,
+                    CreatedUserId = systemUser.Id,
                     TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.IssueCreated).Id,
                     Parameters = new List<AuditEventParameter>()
                     {
@@ -200,6 +203,7 @@ namespace CFIssueTrackerCommon.Services
                     {
                         Id = Guid.NewGuid().ToString(),
                         CreatedDateTime = DateTimeOffset.UtcNow,
+                        CreatedUserId = systemUser.Id,
                         TypeId = auditEventTypes.First(i => i.Name == AuditEventTypeNames.IssuseCommentCreated).Id,
                         Parameters = new List<AuditEventParameter>()
                         {

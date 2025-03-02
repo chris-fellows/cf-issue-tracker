@@ -1,4 +1,5 @@
 ﻿@page "/reports"
+@using CFIssueTrackerCommon.Constants
 @using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Utilities
@@ -6,7 +7,6 @@
 @inject IIssueService IssueService
 @inject IIssueStatusService IssueStatusService
 @inject IIssueTypeService IssueTypeService
-@inject IMetricService MetricService
 @inject IMetricsTypeService MetricsTypeService 
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
@@ -131,17 +131,17 @@
             new ChartType()
             {
                 Id = "1",
-                Name = "Bar chart"
+                Name = ChartTypeNames.Bar
             },
             new ChartType()
             {
                 Id = "2",
-                Name = "Stacked bar chart"
+                Name = ChartTypeNames.BarStacked
             },
             new ChartType()
             {
                 Id = "3",
-                Name = "Pie chart"
+                Name = ChartTypeNames.Pie
             }
         };
 

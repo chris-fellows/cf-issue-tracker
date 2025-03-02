@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CFIssueTracker.Migrations
 {
     [DbContext(typeof(CFIssueTrackerContext))]
-    [Migration("20250226103426_InitialCreate")]
+    [Migration("20250302130533_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -34,12 +34,19 @@ namespace CFIssueTracker.Migrations
                     b.Property<DateTimeOffset>("CreatedDateTime")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("CreatedUserId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("TypeId")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedUserId");
 
                     b.HasIndex("TypeId");
 
@@ -100,6 +107,27 @@ namespace CFIssueTracker.Migrations
                     b.ToTable("AuditEventType");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.ContentTemplate", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasMaxLength(100000)
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ContentTemplate");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Document", b =>
                 {
                     b.Property<string>("Id")
@@ -108,6 +136,7 @@ namespace CFIssueTracker.Migrations
 
                     b.Property<byte[]>("Content")
                         .IsRequired()
+                        .HasMaxLength(100000)
                         .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Name")
@@ -141,6 +170,32 @@ namespace CFIssueTracker.Migrations
                     b.HasIndex("IssueId");
 
                     b.ToTable("DocumentReference");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.EmailNotificationConfig", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Creator")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationGroupId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("RecipientEmails")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationGroupId");
+
+                    b.ToTable("EmailNotificationConfig");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
@@ -289,6 +344,14 @@ namespace CFIssueTracker.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("DimensionPropertyNames")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("int");
+
                     b.Property<string>("ImageSource")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -302,6 +365,45 @@ namespace CFIssueTracker.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MetricsType");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.NotificationGroup", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationGroup");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.NotificationGroupReference", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AuditEventTypeId")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NotificationGroupId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuditEventTypeId");
+
+                    b.HasIndex("NotificationGroupId");
+
+                    b.ToTable("NotificationGroupReference");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.PasswordReset", b =>
@@ -610,6 +712,12 @@ namespace CFIssueTracker.Migrations
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEvent", b =>
                 {
+                    b.HasOne("CFIssueTrackerCommon.Models.User", "CreatedUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("CFIssueTrackerCommon.Models.AuditEventType", "AuditEventType")
                         .WithMany()
                         .HasForeignKey("TypeId")
@@ -617,6 +725,8 @@ namespace CFIssueTracker.Migrations
                         .IsRequired();
 
                     b.Navigation("AuditEventType");
+
+                    b.Navigation("CreatedUser");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEventParameter", b =>
@@ -647,6 +757,13 @@ namespace CFIssueTracker.Migrations
                         .HasForeignKey("IssueId");
 
                     b.Navigation("Document");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.EmailNotificationConfig", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.NotificationGroup", null)
+                        .WithMany("EmailNotificationConfigs")
+                        .HasForeignKey("NotificationGroupId");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
@@ -698,6 +815,21 @@ namespace CFIssueTracker.Migrations
                     b.Navigation("Status");
 
                     b.Navigation("Type");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.NotificationGroupReference", b =>
+                {
+                    b.HasOne("CFIssueTrackerCommon.Models.AuditEventType", null)
+                        .WithMany("NotificationGroups")
+                        .HasForeignKey("AuditEventTypeId");
+
+                    b.HasOne("CFIssueTrackerCommon.Models.NotificationGroup", "NotificationGroup")
+                        .WithMany()
+                        .HasForeignKey("NotificationGroupId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("NotificationGroup");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.ProjectComponent", b =>
@@ -761,6 +893,11 @@ namespace CFIssueTracker.Migrations
                     b.Navigation("Parameters");
                 });
 
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.AuditEventType", b =>
+                {
+                    b.Navigation("NotificationGroups");
+                });
+
             modelBuilder.Entity("CFIssueTrackerCommon.Models.Issue", b =>
                 {
                     b.Navigation("Documents");
@@ -768,6 +905,11 @@ namespace CFIssueTracker.Migrations
                     b.Navigation("Tags");
 
                     b.Navigation("TrackingUsers");
+                });
+
+            modelBuilder.Entity("CFIssueTrackerCommon.Models.NotificationGroup", b =>
+                {
+                    b.Navigation("EmailNotificationConfigs");
                 });
 
             modelBuilder.Entity("CFIssueTrackerCommon.Models.SystemTaskJob", b =>

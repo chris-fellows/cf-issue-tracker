@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
+using CFIssueTrackerCommon.Constants;
 
 const bool registerSeedDataLoad = true;
 const bool registerRequestInfoService = true;
@@ -82,24 +83,28 @@ builder.Services.AddScoped<IAuditEventProcessorService, AuditEventProcessorServi
 
 // Add email services
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.RegisterAllTypes<IEmailCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+builder.Services.RegisterAllTypes<IEmailCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });
 
 // Add Datadog services
-builder.Services.RegisterAllTypes<IDatadogCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+builder.Services.AddScoped<IDatadogService, DatadogService>();
+builder.Services.RegisterAllTypes<IDatadogCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });
 
 // Add Slack services
-builder.Services.RegisterAllTypes<ISlackCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+builder.Services.AddScoped<ISlackService, SlackService>();
+builder.Services.RegisterAllTypes<ISlackCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });
 
 // Add Teams services
-builder.Services.RegisterAllTypes<ITeamsCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });  // This & CFTrackerIssueCommon assemblies
+builder.Services.AddScoped<ITeamsService, TeamsService>();
+builder.Services.RegisterAllTypes<ITeamsCreator>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });
 
 // Add metric service for reports
-builder.Services.AddScoped<IMetricService, MetricService>();
+builder.Services.AddScoped<IAuditEventMetricService, AuditEventMetricService>();
+builder.Services.AddScoped<IIssueMetricService, IssueMetricService>();
 
 // Register system tasks. Will only use the ones that there's a config for
-builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });   // This & CFTrackerIssueCommon assemblies
+builder.Services.RegisterAllTypes<ISystemTask>(new[] { typeof(Program).Assembly, typeof(ISystemTask).Assembly });
 
-// Add seed data
+// Add seed data. Only need it as a one-off
 if (registerSeedDataLoad)
 {
     builder.Services.AddKeyedScoped<IEntityReader<AuditEventType>, AuditEventTypeSeed1>("AuditEventTypeSeed");
@@ -137,39 +142,34 @@ builder.Services.AddSingleton<ISystemTaskList>((scope) =>
     {
         new SystemTaskConfig()
         {
-            SystemTaskName = ManagePasswordResetsSystemTask.TaskName,
+            SystemTaskName = SystemTaskTypeNames.ManagePasswordResets,
             ExecuteFrequency = TimeSpan.FromMinutes(30)
         },
         new SystemTaskConfig()
         {
-            SystemTaskName = ManageSystemTaskJobsSystemTask.TaskName,
+            SystemTaskName = SystemTaskTypeNames.ManageSystemTaskJobs,
             ExecuteFrequency = TimeSpan.FromHours(12),
         },
         new SystemTaskConfig()
         {
-            SystemTaskName = NotificationSystemTask.TaskName,
-            ExecuteFrequency = TimeSpan.FromMinutes(5)
-        },
-        //new SystemTaskConfig()
-        //{
-        //    SystemTaskName = SendDatadogSystemTask.TaskName,
-        //    ExecuteFrequency = TimeSpan.FromMinutes(1)
-        //},
-        new SystemTaskConfig()
-        {
-            SystemTaskName = SendEmailSystemTask.TaskName,
+            SystemTaskName = SystemTaskTypeNames.SendDatadog,
             ExecuteFrequency = TimeSpan.FromMinutes(1)
         },
-        //new SystemTaskConfig()
-        //{
-        //    SystemTaskName = SendSlackSystemTask.TaskName,
-        //    ExecuteFrequency = TimeSpan.FromMinutes(1)
-        //},
-        //new SystemTaskConfig()
-        //{
-        //    SystemTaskName = SendTeamsSystemTask.TaskName,
-        //    ExecuteFrequency = TimeSpan.FromMinutes(1)
-        //}
+        new SystemTaskConfig()
+        {
+            SystemTaskName = SystemTaskTypeNames.SendEmail,
+            ExecuteFrequency = TimeSpan.FromMinutes(1)
+        },
+        new SystemTaskConfig()
+        {
+            SystemTaskName = SystemTaskTypeNames.SendSlack,
+            ExecuteFrequency = TimeSpan.FromMinutes(1)
+        },
+        new SystemTaskConfig()
+        {
+            SystemTaskName = SystemTaskTypeNames.SendTeams,
+            ExecuteFrequency = TimeSpan.FromMinutes(1)
+        }
     };
     systemTaskConfigs.ForEach(stc => stc.NextExecuteTime = DateTimeUtilities.GetNextTaskExecuteTimeFromFrequency(stc.ExecuteFrequency));
 

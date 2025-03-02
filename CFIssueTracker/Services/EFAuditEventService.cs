@@ -115,16 +115,21 @@ namespace CFIssueTrackerCommon.Services
                                 filter.AuditEventTypeIds == null ||
                                 !filter.AuditEventTypeIds.Any() ||
                                 filter.AuditEventTypeIds.Contains(i.TypeId)
+                            ) &&
+                            (
+                                filter.CreatedUserIds == null ||
+                                !filter.CreatedUserIds.Any() ||
+                                filter.CreatedUserIds.Contains(i.CreatedUserId)
                             )
-                            //(
-                            //    filter.Parameters == null ||
-                            //    !filter.Parameters.Any() ||
-                            //    filter.Parameters.All(fp =>
-                            //        i.Parameters.Any(aep =>
-                            //                aep.SystemValueTypeId == fp.TypeId &&
-                            //                fp.Values.Contains(aep.Value))
-                            //            )
-                            //)                            
+                        //(
+                        //    filter.Parameters == null ||
+                        //    !filter.Parameters.Any() ||
+                        //    filter.Parameters.All(fp =>
+                        //        i.Parameters.Any(aep =>
+                        //                aep.SystemValueTypeId == fp.TypeId &&
+                        //                fp.Values.Contains(aep.Value))
+                        //            )
+                        //)                            
                         ).ToListAsync();
 
                 // Filter on parameters
@@ -172,18 +177,23 @@ namespace CFIssueTrackerCommon.Services
                                 filter.AuditEventTypeIds == null ||
                                 !filter.AuditEventTypeIds.Any() ||
                                 filter.AuditEventTypeIds.Contains(i.TypeId)
-                            )
-                            /*
+                            ) &&
                             (
-                                filter.Parameters == null ||
-                                !filter.Parameters.Any() ||
-                                filter.Parameters.All(fp =>
-                                    i.Parameters.Any(aep => 
-                                            aep.SystemValueTypeId == fp.SystemValueTypeId &&
-                                            aep.Value == fp.Value)
-                                        )                                                                                        
+                                filter.CreatedUserIds == null ||
+                                !filter.CreatedUserIds.Any() ||
+                                filter.CreatedUserIds.Contains(i.CreatedUserId)
                             )
-                            */
+                         /*
+                         (
+                             filter.Parameters == null ||
+                             !filter.Parameters.Any() ||
+                             filter.Parameters.All(fp =>
+                                 i.Parameters.Any(aep => 
+                                         aep.SystemValueTypeId == fp.SystemValueTypeId &&
+                                         aep.Value == fp.Value)
+                                     )                                                                                        
+                         )
+                         */
                          ).ToList();
 
                 // Filter on parameters

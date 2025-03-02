@@ -20,6 +20,17 @@ namespace CFIssueTrackerCommon.Models
         [DeleteBehavior(DeleteBehavior.NoAction)]
         public virtual AuditEventType? AuditEventType { get; set; }
 
+        /// <summary>
+        /// User who created audit event (Default to System)
+        /// </summary>
+        [Required]
+        [MaxLength(50)]
+        [ForeignKey("User")]
+        public string CreatedUserId { get; set; } = String.Empty;
+
+        [DeleteBehavior(DeleteBehavior.NoAction)]
+        public virtual User? CreatedUser { get; set; }
+
         public DateTimeOffset CreatedDateTime { get; set; }
 
         /// <summary>

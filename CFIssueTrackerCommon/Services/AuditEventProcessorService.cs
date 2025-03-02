@@ -23,9 +23,21 @@ namespace CFIssueTrackerCommon.Services
         private readonly ISystemValueTypeService _systemValueTypeService;
         private readonly IUserService _userService;
 
-        public AuditEventProcessorService(IAuditEventTypeService auditEventTypeService)
+        public AuditEventProcessorService(IAuditEventTypeService auditEventTypeService,
+                            INotificationGroupService notificationGroupService,
+                            ISystemTaskJobService systemTaskJobService,
+                            ISystemTaskStatusService systemTaskStatusService,
+                            ISystemTaskTypeService systemTaskTypeService,
+                            ISystemValueTypeService systemValueTypeService,
+                            IUserService userService)
         {
             _auditEventTypeService = auditEventTypeService;
+            _notificationGroupService = notificationGroupService;
+            _systemTaskJobService = systemTaskJobService;
+            _systemTaskStatusService = systemTaskStatusService;
+            _systemTaskTypeService = systemTaskTypeService;
+            _systemValueTypeService = systemValueTypeService;
+            _userService = userService;
         }
 
         public async Task ProcessAsync(AuditEvent auditEvent)
@@ -57,6 +69,7 @@ namespace CFIssueTrackerCommon.Services
             var systemTaskType = await _systemTaskTypeService.GetByNameAsync(SystemTaskTypeNames.SendEmail);
             var systemTaskStatus = await _systemTaskStatusService.GetByNameAsync(SystemTaskStatusNames.Pending);
             
+            // Get value types for parameters
             var systemValueType2 = await _systemValueTypeService.GetByNameAsync(SystemValueTypeNames.EmailCreator);
             var systemValueType1 = await _systemValueTypeService.GetByNameAsync(SystemValueTypeNames.AuditEventId);
             
@@ -134,6 +147,9 @@ namespace CFIssueTrackerCommon.Services
                     });
                 }
             }
+
+            // Add system task job
+            await _systemTaskJobService.AddAsync(systemTaskJob);
         }               
 
         //private async Task ProcessMSTeams(AuditEvent auditEvent, AuditEventType auditEventType, MSTeamsNotificationConfig msTeamsNotificationConfig)

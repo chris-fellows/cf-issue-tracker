@@ -6,5 +6,6 @@
         public static string Active = "Active";
         public static string CompletedSuccess = "Completed [Success]";
         public static string CompletedError = "Completed [Error]";
+        public static string Cancelled = "Cancelled";
     }
 }

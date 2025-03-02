@@ -62,6 +62,14 @@
             }
         </InputSelect>
 
+        <label for="createduserid">Created User:</label>
+        <InputSelect @bind-Value="@FilterCreatedUserId">
+            @foreach (User user in Users)
+            {
+                <option value="@user.Id">@user.Name</option>
+            }
+        </InputSelect>
+
         <label for="createdate">Created Time:</label>
         <InputSelect @bind-Value="@FilterCreatedDateRangeId">
             @foreach (DateRangeFilter dateRangeFilter in CreatedDateRangeFilters)
@@ -83,6 +91,10 @@ else
 
         <TemplateColumn Title="Type" Context="auditevent">
             <ImageAndText ImageSource="@(GetAuditEventTypeImageSource(auditevent))" Text="@(GetAuditEventTypeName(auditevent))" />
+        </TemplateColumn>
+
+        <TemplateColumn Title="Created User" Context="auditevent">
+            <ImageAndText ImageSource="@(GetCreatedUserImageSource(auditevent))" Text="@(GetCreatedUserName(auditevent))" />
         </TemplateColumn>
 
         <TemplateColumn Title="Issue" Context="auditevent">
@@ -138,6 +150,21 @@ else
         }
     }
 
+    // Filter on created user
+    private string _filterCreatedUserId = UIUtilities.AnyId;
+    public string FilterCreatedUserId
+    {
+        get { return _filterCreatedUserId; }
+        set
+        {
+            if (_filterCreatedUserId != value)
+            {
+                _filterCreatedUserId = value;
+                Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));                
+            }
+        }
+    }
+
     // Filter on created
     private string _filterCreatedDateRangeId = String.Empty;
     public string FilterCreatedDateRangeId
@@ -162,6 +189,9 @@ else
         Projects = ProjectService.GetAll();
         SystemValueTypes = SystemValueTypeService.GetAll();
         Users = UserService.GetAll();
+
+        // Add Any user
+        UIUtilities.AddAny(Users);
 
         CreatedDateRangeFilters = UIUtilities.GetDateRangeFilters();
         _filterCreatedDateRangeId = CreatedDateRangeFilters.First().Id;
@@ -227,7 +257,7 @@ else
     }
 
     /// <summary>
-    /// Gets UserId (if any) from audit event
+    /// Gets UserId (if any) from audit event. Not the created user.
     /// </summary>
     /// <param name="auditEvent"></param>
     /// <returns></returns>
@@ -240,7 +270,7 @@ else
     }
 
     /// <summary>
-    /// Gets user name for audit event. E.g. User that logged in/logged out
+    /// Gets user name for audit event. E.g. User that logged in/logged out. Not the created user
     /// </summary>
     /// <param name="auditEvent"></param>
     /// <returns></returns>
@@ -257,6 +287,28 @@ else
         var userId = GetUserId(auditEvent);
 
         if (UserImageSourceById.ContainsKey(userId)) return $"../images/users/{UserImageSourceById[userId]}";
+        return "";
+    }
+
+    /// <summary>
+    /// Gets user name for user who created issue
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
+    private string GetCreatedUserName(AuditEvent auditEvent)
+    {        
+        if (UserNameById.ContainsKey(auditEvent.CreatedUserId)) return UserNameById[auditEvent.CreatedUserId];
+        return "";
+    }
+
+    /// <summary>
+    /// Gets user image for user who created issue
+    /// </summary>
+    /// <param name="auditEvent"></param>
+    /// <returns></returns>
+    private string GetCreatedUserImageSource(AuditEvent auditEvent)
+    {    
+        if (UserImageSourceById.ContainsKey(auditEvent.CreatedUserId)) return $"../images/users/{UserImageSourceById[auditEvent.CreatedUserId]}";
         return "";
     }
 
@@ -362,6 +414,7 @@ else
             {
                 CreatedDateTimeFrom = createdDateRange.FromDate == DateTimeOffset.MinValue ? null : createdDateRange.FromDate,
                 CreatedDateTimeTo = createdDateRange.ToDate == DateTimeOffset.MaxValue ? null :  createdDateRange.ToDate,
+                CreatedUserIds = (FilterCreatedUserId == UIUtilities.AnyId ? null : new() { FilterCreatedUserId }),
                 AuditEventTypeIds = (FilterAuditEventTypeId == UIUtilities.AnyId ? null : new() { FilterAuditEventTypeId }),                
             };
         return auditEventFilter;
@@ -396,6 +449,7 @@ else
     private async Task ResetFiltersAsync()
     {
         _filterCreatedDateRangeId = CreatedDateRangeFilters.First().Id;
+        _filterCreatedUserId = UIUtilities.AnyId;
         _filterAuditEventTypeId = UIUtilities.AnyId;
 
         await RefreshAuditEventsAsync(true);

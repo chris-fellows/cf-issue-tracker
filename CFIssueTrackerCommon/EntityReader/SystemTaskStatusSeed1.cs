@@ -32,6 +32,11 @@ namespace CFIssueTrackerCommon.EntityReader
                     Id = Guid.NewGuid().ToString(),
                     Name = SystemTaskStatusNames.CompletedError
                 },
+                new SystemTaskStatus()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = SystemTaskStatusNames.Cancelled
+                }
             };
 
             return list;

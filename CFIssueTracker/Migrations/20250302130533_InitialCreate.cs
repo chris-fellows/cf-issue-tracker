@@ -26,12 +26,25 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ContentTemplate",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Content = table.Column<byte[]>(type: "varbinary(max)", maxLength: 100000, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContentTemplate", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Document",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Content = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
+                    Content = table.Column<byte[]>(type: "varbinary(max)", maxLength: 100000, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -84,12 +97,26 @@ namespace CFIssueTracker.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    EntityType = table.Column<int>(type: "int", nullable: false),
+                    DimensionPropertyNames = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Color = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ImageSource = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MetricsType", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NotificationGroup",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationGroup", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -205,20 +232,44 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AuditEvent",
+                name: "EmailNotificationConfig",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    TypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                    Creator = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    RecipientEmails = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    NotificationGroupId = table.Column<string>(type: "nvarchar(50)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AuditEvent", x => x.Id);
+                    table.PrimaryKey("PK_EmailNotificationConfig", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AuditEvent_AuditEventType_TypeId",
-                        column: x => x.TypeId,
+                        name: "FK_EmailNotificationConfig_NotificationGroup_NotificationGroupId",
+                        column: x => x.NotificationGroupId,
+                        principalTable: "NotificationGroup",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "NotificationGroupReference",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    NotificationGroupId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AuditEventTypeId = table.Column<string>(type: "nvarchar(50)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_NotificationGroupReference", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_NotificationGroupReference_AuditEventType_AuditEventTypeId",
+                        column: x => x.AuditEventTypeId,
                         principalTable: "AuditEventType",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_NotificationGroupReference_NotificationGroup_NotificationGroupId",
+                        column: x => x.NotificationGroupId,
+                        principalTable: "NotificationGroup",
                         principalColumn: "Id");
                 });
 
@@ -267,26 +318,26 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AuditEventParameter",
+                name: "AuditEvent",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    SystemValueTypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Value = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    AuditEventId = table.Column<string>(type: "nvarchar(50)", nullable: true)
+                    TypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedUserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedDateTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AuditEventParameter", x => x.Id);
+                    table.PrimaryKey("PK_AuditEvent", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AuditEventParameter_AuditEvent_AuditEventId",
-                        column: x => x.AuditEventId,
-                        principalTable: "AuditEvent",
+                        name: "FK_AuditEvent_AuditEventType_TypeId",
+                        column: x => x.TypeId,
+                        principalTable: "AuditEventType",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_AuditEventParameter_SystemValueType_SystemValueTypeId",
-                        column: x => x.SystemValueTypeId,
-                        principalTable: "SystemValueType",
+                        name: "FK_AuditEvent_User_CreatedUserId",
+                        column: x => x.CreatedUserId,
+                        principalTable: "User",
                         principalColumn: "Id");
                 });
 
@@ -338,6 +389,30 @@ namespace CFIssueTracker.Migrations
                         name: "FK_Issue_User_CreatedUserId",
                         column: x => x.CreatedUserId,
                         principalTable: "User",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditEventParameter",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    SystemValueTypeId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    AuditEventId = table.Column<string>(type: "nvarchar(50)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditEventParameter", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuditEventParameter_AuditEvent_AuditEventId",
+                        column: x => x.AuditEventId,
+                        principalTable: "AuditEvent",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_AuditEventParameter_SystemValueType_SystemValueTypeId",
+                        column: x => x.SystemValueTypeId,
+                        principalTable: "SystemValueType",
                         principalColumn: "Id");
                 });
 
@@ -411,6 +486,11 @@ namespace CFIssueTracker.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AuditEvent_CreatedUserId",
+                table: "AuditEvent",
+                column: "CreatedUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AuditEvent_TypeId",
                 table: "AuditEvent",
                 column: "TypeId");
@@ -434,6 +514,11 @@ namespace CFIssueTracker.Migrations
                 name: "IX_DocumentReference_IssueId",
                 table: "DocumentReference",
                 column: "IssueId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailNotificationConfig_NotificationGroupId",
+                table: "EmailNotificationConfig",
+                column: "NotificationGroupId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Issue_AssignedUserId",
@@ -464,6 +549,16 @@ namespace CFIssueTracker.Migrations
                 name: "IX_Issue_TypeId",
                 table: "Issue",
                 column: "TypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationGroupReference_AuditEventTypeId",
+                table: "NotificationGroupReference",
+                column: "AuditEventTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_NotificationGroupReference_NotificationGroupId",
+                table: "NotificationGroupReference",
+                column: "NotificationGroupId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectComponent_ProjectId",
@@ -508,13 +603,22 @@ namespace CFIssueTracker.Migrations
                 name: "AuditEventParameter");
 
             migrationBuilder.DropTable(
+                name: "ContentTemplate");
+
+            migrationBuilder.DropTable(
                 name: "DocumentReference");
+
+            migrationBuilder.DropTable(
+                name: "EmailNotificationConfig");
 
             migrationBuilder.DropTable(
                 name: "IssueComment");
 
             migrationBuilder.DropTable(
                 name: "MetricsType");
+
+            migrationBuilder.DropTable(
+                name: "NotificationGroupReference");
 
             migrationBuilder.DropTable(
                 name: "PasswordReset");
@@ -539,6 +643,9 @@ namespace CFIssueTracker.Migrations
 
             migrationBuilder.DropTable(
                 name: "Document");
+
+            migrationBuilder.DropTable(
+                name: "NotificationGroup");
 
             migrationBuilder.DropTable(
                 name: "SystemTaskJob");

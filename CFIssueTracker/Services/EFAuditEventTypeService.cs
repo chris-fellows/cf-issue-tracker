@@ -18,7 +18,9 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return context.AuditEventType.OrderBy(e => e.Name).ToList();
+                return context.AuditEventType
+                            .Include(e => e.NotificationGroups)
+                             .OrderBy(e => e.Name).ToList();
             }
         }
 
@@ -26,7 +28,9 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return (await context.AuditEventType.ToListAsync()).OrderBy(e => e.Name).ToList();
+                return (await context.AuditEventType
+                            .Include(e => e.NotificationGroups)
+                            .ToListAsync()).OrderBy(e => e.Name).ToList();
             }
         }
 
@@ -54,7 +58,7 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var auditEventType = await context.AuditEventType.FirstOrDefaultAsync(i => i.Id == id);
+                var auditEventType = await context.AuditEventType.Include(e => e.NotificationGroups).FirstOrDefaultAsync(i => i.Id == id);
                 return auditEventType;
             }
         }
@@ -63,7 +67,7 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                return await context.AuditEventType.Where(i => ids.Contains(i.Id)).ToListAsync();                
+                return await context.AuditEventType.Include(e => e.NotificationGroups).Where(i => ids.Contains(i.Id)).ToListAsync();                
             }
         }
 
@@ -84,7 +88,7 @@ namespace CFIssueTrackerCommon.Services
         {
             using (var context = _dbFactory.CreateDbContext())
             {
-                var auditEventType = await context.AuditEventType.FirstOrDefaultAsync(i => i.Name == name);
+                var auditEventType = await context.AuditEventType.Include(e => e.NotificationGroups).FirstOrDefaultAsync(i => i.Name == name);
                 return auditEventType;
             }
         }

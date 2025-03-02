@@ -1,6 +1,8 @@
-﻿@using CFIssueTrackerCommon.Interfaces
+﻿@using CFIssueTrackerCommon.Enums
+@using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
-@inject IMetricService MetricService
+@inject IAuditEventMetricService AuditEventMetricService
+@inject IIssueMetricService IssueMetricService
 @inject IMetricsTypeService MetricsTypeService
 
 @inject IJSRuntime JS
@@ -201,29 +203,63 @@
     }
 
     /// <summary>
+    /// Gets issue metrics
+    /// </summary>
+    /// <param name="fromDateTime"></param>
+    /// <param name="metricsType"></param>
+    /// <returns></returns>
+    private async Task<Metrics> GetIssueMetrics(DateTimeOffset fromDateTime, MetricsType metricsType)
+    {
+        var filter = fromDateTime == DateTimeOffset.MinValue ?
+                          new IssueFilter() :
+                          new IssueFilter() { CreatedDateTimeFrom = fromDateTime };
+
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "CreatedUserId", "TypeId" }, true);
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId", "StatusId" }, true);
+        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId" }, true);
+        //var metrics = await IssueMetricService.GetIssueCountAsync(issueFilter, new List<string>() { "StatusId" }, true);
+
+        // Get metrics
+        var metrics = await IssueMetricService.GetIssueCountAsync(filter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
+
+        return metrics;
+    }
+
+    /// <summary>
+    /// Gets audit event metrics
+    /// </summary>
+    /// <param name="fromDateTime"></param>
+    /// <param name="metricsType"></param>
+    /// <returns></returns>
+    private async Task<Metrics> GetAuditEventMetrics(DateTimeOffset fromDateTime, MetricsType metricsType)
+    {
+        var filter = fromDateTime == DateTimeOffset.MinValue ?
+                          new AuditEventFilter() :
+                          new AuditEventFilter() { CreatedDateTimeFrom = fromDateTime };
+        
+        var metrics = await AuditEventMetricService.GetAuditEventCountAsync(filter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
+
+        return metrics;
+    }
+
+    /// <summary>
     /// Displays chart
     /// </summary>
-    /// <param name="metricsTypeId"></param>
-    /// <param name="fromDateTime"></param>
+    /// <param name="metricsTypeId">Metrics type</param>
+    /// <param name="fromDateTime">From date time for data</param>
+    /// <param name="chartTypeId">Chart type</param>
     /// <returns></returns>
     private async Task DisplayChartAsync(string metricsTypeId, DateTimeOffset fromDateTime, string chartTypeId)
     {
         var metricsType = MetricsTypes.First(mt => mt.Id == metricsTypeId);
 
-        // Set issue filter
-        var issueFilter = fromDateTime == DateTimeOffset.MinValue ?
-                        new IssueFilter() :
-                        new IssueFilter() { CreatedDateTimeFrom = fromDateTime };
-
-        //Metrics metrics = await MetricService.GetIssueAssignedCountByUserAndStatusMetricsAsync(issueFilter);
-
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "CreatedUserId", "TypeId" }, true);
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId", "StatusId" }, true);
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId" }, true);
-        var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "StatusId" }, true);
-
         // Get metrics
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
+        Metrics metrics = metricsType.EntityType switch
+        {
+            EntityTypes.AuditEvent => await GetAuditEventMetrics(fromDateTime, metricsType),
+            EntityTypes.IssueStatus => await GetIssueMetrics(fromDateTime, metricsType),
+            _ => throw new ArgumentException($"Cannot get metrics for {metricsType.EntityType}")
+        };
 
         // Get the dimensions        
         var dimensionNames = new List<List<string>>();

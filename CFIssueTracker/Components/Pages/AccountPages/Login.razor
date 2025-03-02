@@ -10,6 +10,7 @@
 @inject IAuditEventService AuditEventService
 @inject IAuditEventTypeService AuditEventTypeService
 @inject IPasswordResetService PasswordResetService
+@inject IRequestContextService RequestContextService
 @inject ISystemValueTypeService SystemValueTypeService
 @inject IUserService UserService
 
@@ -57,7 +58,7 @@
         if (user == null)
         {
             // Add audit event
-            await AddAuditEventLogInError(Model.Username);
+            await AddAuditEventLogInErrorAsync(Model.Username);
 
             ErrorMessage = "Invalid username or password";
         }
@@ -68,7 +69,7 @@
             if (passwordReset == null)
             {
                 // Add audit event
-                await AddAuditEventLogInSuccess(user.Id);
+                await AddAuditEventLogInSuccessAsync(user.Id);
 
                 // Create claims identity & principal
                 var claims = new List<Claim>()
@@ -90,7 +91,7 @@
         }
     }
 
-    private async Task AddAuditEventLogInSuccess(string userId)
+    private async Task AddAuditEventLogInSuccessAsync(string userId)
     {        
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.UserLogInSuccess);
         var systemValueTypeUserId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.UserId);
@@ -99,6 +100,7 @@
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
+                CreatedUserId = userId,
                 TypeId = auditEventType.Id,
                 Parameters = new List<AuditEventParameter>()
                     {
@@ -113,29 +115,26 @@
         await AuditEventService.AddAsync(auditEvent);
     }
 
-    private async Task AddAuditEventLogInError(string username)
+    private async Task AddAuditEventLogInErrorAsync(string username)
     {
         var auditEventType = await AuditEventTypeService.GetByNameAsync(AuditEventTypeNames.UserLogInError);
-        var systemValueTypeUserId = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.UserId);
-        var users = await UserService.GetAllAsync();
-
-        var user = users.FirstOrDefault(u => u.Email == username);
-
-        var auditEvent = new AuditEvent()
+        var systemValueTypeNotes = await SystemValueTypeService.GetByNameAsync(SystemValueTypeNames.Notes);        
+        
+         var auditEvent = new AuditEvent()
             {
                 Id = Guid.NewGuid().ToString(),
                 CreatedDateTime = DateTimeOffset.UtcNow,
-                TypeId = auditEventType.Id,
-                Parameters = user == null ? new List<AuditEventParameter>() :                
-                    new List<AuditEventParameter>()
+                CreatedUserId = RequestContextService.SystemUser.Id,  // User isn't authenticated
+                TypeId = auditEventType.Id,                
+                Parameters = new List<AuditEventParameter>()
                     {
                         new AuditEventParameter()
                         {
                             Id = Guid.NewGuid().ToString(),
-                            SystemValueTypeId = systemValueTypeUserId.Id,
-                            Value = user.Id
+                            SystemValueTypeId = systemValueTypeNotes.Id,
+                            Value = username
                         }
-                    }                
+                    }                    
             };
         await AuditEventService.AddAsync(auditEvent);
     }

@@ -18,6 +18,10 @@
         public static string ProjectUpdated = "Project updated";
         public static string ProjectComponentCreated = "Project component created";
         public static string ProjectComponentUpdated = "Project component updated";
+        public static string SentEmail = "Sent email";
+        public static string SentDatadog = "Sent Datadog";
+        public static string SentSlack = "Sent Slack";
+        public static string SentTeams = "Sent Teams";
         public static string UserCreated = "User created";
         public static string UserUpdated = "User updated";
         public static string UserLogInSuccess = "User logged in";
