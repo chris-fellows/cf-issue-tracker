@@ -1,0 +1,41 @@
+﻿@page "/tags"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using CFIssueTrackerCommon.Data
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@using CFIssueTracker.Data
+@using CFIssueTracker.Utilities
+@inject ITagService TagService
+
+@attribute [Authorize(Roles = "Administrator,User")]
+
+<PageTitle>Index</PageTitle>
+
+<h1>Tag List</h1>
+
+<p>
+    <a href="tags/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="@TagsQueryable">
+    <PropertyColumn Property="tag => tag.Name" />
+    
+    <TemplateColumn Context="tag">
+        <a href="@($"tags/edit?id={tag.Id}")">Edit</a> |
+        <a href="@($"tags/details?id={tag.Id}")">Details</a> |
+        <a href="@($"tags/delete?id={tag.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private CFIssueTrackerContext context = default!;
+
+    private IQueryable<Tag>? TagsQueryable;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        TagsQueryable = (await TagService.GetAllAsync()).AsQueryable();
+    }  
+}

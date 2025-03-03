@@ -22,7 +22,7 @@
     <PropertyColumn Property="issuestatus => issuestatus.Name" />
 
     <TemplateColumn Title="Color" Context="issuestatus">
-        <ColoredLabel BackColor="@(GetIssueStatusColor(@issuestatus))" Text="@issuestatus.Name" />
+        <input type="color" value="@GetIssueStatusColor(@issuestatus)" />
     </TemplateColumn>
 
     <TemplateColumn Context="issuestatus">

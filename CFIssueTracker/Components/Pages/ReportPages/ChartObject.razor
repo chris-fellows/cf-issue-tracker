@@ -210,6 +210,7 @@
     /// <returns></returns>
     private async Task<Metrics> GetIssueMetrics(DateTimeOffset fromDateTime, MetricsType metricsType)
     {
+        // Create filter
         var filter = fromDateTime == DateTimeOffset.MinValue ?
                           new IssueFilter() :
                           new IssueFilter() { CreatedDateTimeFrom = fromDateTime };
@@ -218,8 +219,7 @@
         //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId", "StatusId" }, true);
         //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId" }, true);
         //var metrics = await IssueMetricService.GetIssueCountAsync(issueFilter, new List<string>() { "StatusId" }, true);
-
-        // Get metrics
+        
         var metrics = await IssueMetricService.GetIssueCountAsync(filter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
 
         return metrics;
@@ -233,6 +233,7 @@
     /// <returns></returns>
     private async Task<Metrics> GetAuditEventMetrics(DateTimeOffset fromDateTime, MetricsType metricsType)
     {
+        // Create filter
         var filter = fromDateTime == DateTimeOffset.MinValue ?
                           new AuditEventFilter() :
                           new AuditEventFilter() { CreatedDateTimeFrom = fromDateTime };
@@ -257,7 +258,7 @@
         Metrics metrics = metricsType.EntityType switch
         {
             EntityTypes.AuditEvent => await GetAuditEventMetrics(fromDateTime, metricsType),
-            EntityTypes.IssueStatus => await GetIssueMetrics(fromDateTime, metricsType),
+            EntityTypes.Issue => await GetIssueMetrics(fromDateTime, metricsType),
             _ => throw new ArgumentException($"Cannot get metrics for {metricsType.EntityType}")
         };
 

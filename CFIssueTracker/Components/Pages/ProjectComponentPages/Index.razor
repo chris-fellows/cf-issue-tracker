@@ -5,6 +5,7 @@
 @using CFIssueTrackerCommon.Interfaces;
 @using CFIssueTrackerCommon.Models
 @using CFIssueTracker.Data
+@using CFIssueTracker.Utilities
 @inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IProjectComponentService ProjectComponentService
 @inject IProjectService ProjectService
@@ -22,6 +23,10 @@
 <QuickGrid Class="table" Items="ProjectComponentsQueryable">
     <PropertyColumn Title="Project" Property="projectcomponent => GetProjectName(projectcomponent)" />
     <PropertyColumn Title="Name" Property="projectcomponent => projectcomponent.Name" />
+
+    <TemplateColumn Title="Color" Context="projectcomponent">
+        <input type="color" value="@GetProjectComponentColor(@projectcomponent)" />
+    </TemplateColumn>
 
     <TemplateColumn Title="Image" Context="projectcomponent">
         <img class="entityimage" src="../images/project_components/@projectcomponent.ImageSource" />
@@ -55,6 +60,11 @@
         var project = Projects.FirstOrDefault(p => p.Id == projectComponent.ProjectId);
         if (project == null) return "";
         return project.Name;
+    }
+
+    private string GetProjectComponentColor(ProjectComponent projectComponent)
+    {
+        return HTMLUtilities.GetHTMLColor(projectComponent.Color);
     }
 
     // @implements IAsyncDisposable

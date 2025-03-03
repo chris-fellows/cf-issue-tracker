@@ -78,8 +78,14 @@ builder.Services.AddScoped<ISystemValueTypeService, EFSystemValueTypeService>();
 builder.Services.AddScoped<ITagService, EFTagService>();
 builder.Services.AddScoped<IUserService, EFUserService>();
 
+// Add system value display service
+builder.Services.AddScoped<ISystemValueDisplayService, SystemValueDisplayService>();
+
 // Add audit event processor (E.g. Create notifications)
 builder.Services.AddScoped<IAuditEventProcessorService, AuditEventProcessorService>();
+
+// Add file security checker (E.g. Prevent potentially malicious image files being uploaded)
+builder.Services.AddScoped<IFileSecurityCheckerService, FileSecurityCheckerService>();
 
 // Add email services
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -202,13 +208,19 @@ app.UseAntiforgery();   // CF Moved from above
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-/*
-// Populate seed data
 using (var scope = app.Services.CreateScope())
 {
+    // Check for data
+    var systemValueTypeService = scope.ServiceProvider.GetRequiredService<ISystemValueTypeService>();
+    var systemValuesTypes = systemValueTypeService.GetAll();
+    if (!systemValuesTypes.Any())
+    {
+        throw new ArgumentException("System contains no data");
+    }
+
+    // Enable this to load seed data
     //new SeedLoader().DeleteAsync(scope).Wait();
-    new SeedLoader().LoadAsync(scope, 200).Wait();
+    //new SeedLoader().LoadAsync(scope, 200).Wait();
 }
-*/
 
 app.Run();

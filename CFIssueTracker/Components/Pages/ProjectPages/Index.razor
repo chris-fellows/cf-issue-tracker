@@ -23,7 +23,7 @@
     <PropertyColumn Property="project => project.Name" />
 
     <TemplateColumn Title="Color" Context="project">
-        <ColoredLabel BackColor="@(GetProjectColor(@project))" Text="@project.Name" />
+        <input type="color" value="@GetProjectColor(@project)" />
     </TemplateColumn>
 
     <TemplateColumn Title="Image" Context="project">

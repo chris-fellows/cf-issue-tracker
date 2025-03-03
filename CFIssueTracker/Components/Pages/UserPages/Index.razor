@@ -39,12 +39,16 @@
 
 <p>
     <a href="users/create">Create New</a>
-    <button @onclick="DownloadCSVAsync">Download</button>
+    <button @onclick="DownloadCSVAsync" class="btn btn-primary">Download</button>
 </p>
 
 <QuickGrid Class="table" Items="@UsersQueryable">
     <PropertyColumn Property="user => user.Name" />
     <PropertyColumn Property="user => user.Email" />
+
+    <TemplateColumn Title="Color" Context="user">
+        <input type="color" value="@GetUserColor(@user)" />
+    </TemplateColumn>
 
     <TemplateColumn Title="Image" Context="user">
         <img class="entityimage" src="../images/users/@user.ImageSource" />

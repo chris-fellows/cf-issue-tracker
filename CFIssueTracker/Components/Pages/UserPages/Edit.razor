@@ -1,10 +1,15 @@
 ﻿@page "/users/edit"
 @using Microsoft.EntityFrameworkCore
 @using CFIssueTrackerCommon.Data
+@using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
-@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
+@using CFIssueTracker.Utilities
 @inject NavigationManager NavigationManager
+@inject IFileSecurityCheckerService FileSecurityCheckerService
+@inject IUserService UserService
 
+@rendermode InteractiveServer
+@attribute [StreamRendering]
 @attribute [Authorize(Roles = "Administrator")]
 
 <PageTitle>Edit</PageTitle>
@@ -40,6 +45,40 @@ else
                     <InputCheckbox id="active" @bind-Value="User.Active" class="form-check-input" />
                     <ValidationMessage For="() => User.Active" class="text-danger" />
                 </div>
+                <div class="mb-3">
+                    <label for="userrole" class="form-label">Role:</label>
+                    <ValidationMessage For="() => User.Role" class="text-danger" />
+
+                    <InputSelect @bind-Value="User.Role" class="form-control">
+                        @foreach (NameAndValue userRole in UserRoles)
+                        {
+                            @if (userRole.Value == User.Role)
+                            {
+                                <option selected value="@userRole.Value">@userRole.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@userRole.Value">@userRole.Name</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label for="usercolor" class="form-label">Color:</label>
+                    <input id="usercolor "type="color" @bind-value="User.Color"/>                    
+                    <ValidationMessage For="() => User.Color" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="userimage" class="form-label">Image:</label>
+                    <img id="userimage" src="@GetUserImageSource(User)" />
+                    <InputFile id="imagefile" OnChange="OnImageFileChangeAsync" />
+                    <ValidationMessage For="() => User.ImageSource" class="text-danger" />
+                </div>                
+
+                <input id="password" type="password" @bind-value="User.Password" hidden/>
+                <input id="salt" type="password" @bind-value="User.Salt" hidden/>
+
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
@@ -57,10 +96,18 @@ else
     [SupplyParameterFromForm]
     private User? User { get; set; }
 
+    private List<NameAndValue> UserRoles = new();
+
+    private string _newImageFile = String.Empty;
+
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        User ??= await context.User.FirstOrDefaultAsync(m => m.Id == Id);
+        //using var context = DbFactory.CreateDbContext();
+        //User ??= await context.User.FirstOrDefaultAsync(m => m.Id == Id);
+
+        UserRoles = UIUtilities.GetUserRoles();
+
+        User = await UserService.GetByIdAsync(Id);
 
         if (User is null)
         {
@@ -72,12 +119,27 @@ else
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateUser()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Attach(User!).State = EntityState.Modified;
+        //using var context = DbFactory.CreateDbContext();
+        //context.Attach(User!).State = EntityState.Modified;
 
         try
         {
-            await context.SaveChangesAsync();
+            // Save image as [UserId][Extension]
+            if (!String.IsNullOrEmpty(_newImageFile))
+            {
+                User.ImageSource = Path.GetFileName(_newImageFile);
+
+                var localFile = Path.Combine(ConfigUtilities.UserImageLocalFolder, User.ImageSource);
+                if (File.Exists(localFile))
+                {
+                    File.Delete(localFile);
+                }
+                File.Move(_newImageFile, localFile);
+                _newImageFile = "";
+            }
+
+            await UserService.UpdateAsync(User);
+            //await context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -96,7 +158,40 @@ else
 
     private bool UserExists(string id)
     {
-        using var context = DbFactory.CreateDbContext();
-        return context.User.Any(e => e.Id == id);
+        return UserService.GetById(id) != null;
+        //using var context = DbFactory.CreateDbContext();
+        //return context.User.Any(e => e.Id == id);
+    }
+
+    private string GetUserImageSource(User user)
+    {
+        return $"../images/users/{user.ImageSource}";
+    }
+
+    private async Task OnImageFileChangeAsync(InputFileChangeEventArgs eventArgs)
+    {
+        // Check file size
+        if (eventArgs.File.Size > ConfigUtilities.MaxUploadImageSize)
+        {
+            throw new ArgumentException("File is too big");
+        }        
+
+        // Save to local file
+        using (var stream = eventArgs.File.OpenReadStream())
+        {
+            _newImageFile = Path.Combine(ConfigUtilities.ImageTempFilesRootFolder, "users", $"{User.Id}{Path.GetExtension(eventArgs.File.Name)}");
+            using (var streamWriter = new FileStream(_newImageFile, FileMode.Create))
+            {
+                await stream.CopyToAsync(streamWriter);
+            }
+
+            // Check that file can be uploaded
+            var content = File.ReadAllBytes(_newImageFile);
+            if (!(await FileSecurityCheckerService.ValidateCanUploadImageAsync(content)))
+            {
+                File.Delete(_newImageFile);
+                _newImageFile = "";
+            }
+        }
     }
 }

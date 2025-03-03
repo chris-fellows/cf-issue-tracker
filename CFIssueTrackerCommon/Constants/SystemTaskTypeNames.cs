@@ -13,5 +13,7 @@
         public static string SendSlack = "Send Slack";
 
         public static string SendTeams = "Send Teams";
+
+        public static string TempFilesCleanup = "Temp Files Cleanup";
     }
 }

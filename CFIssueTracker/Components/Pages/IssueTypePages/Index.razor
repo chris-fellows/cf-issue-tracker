@@ -22,7 +22,7 @@
     <PropertyColumn Property="issuetype => issuetype.Name" />
 
     <TemplateColumn Title="Color" Context="issuetype">
-        <ColoredLabel BackColor="@(GetIssueTypeColor(@issuetype))" Text="@issuetype.Name" />
+        <input type="color" value="@GetIssueTypeColor(@issuetype)" />
     </TemplateColumn>
 
     <TemplateColumn Context="issuetype">

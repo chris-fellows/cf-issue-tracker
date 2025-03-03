@@ -1,5 +1,7 @@
-﻿using CFIssueTrackerCommon.Models;
+﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Models;
 using CFUtilities.Utilities;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Drawing.Printing;
 
 namespace CFIssueTracker.Utilities
@@ -14,7 +16,7 @@ namespace CFIssueTracker.Utilities
         /// </summary>
         public static string AnyId = Guid.Empty.ToString();
 
-        private const string _anyText = "Any";
+        private const string _anyText = "Any";      
 
         public static void AddAny(List<AuditEventType> auditEventTypes)
         {
@@ -109,5 +111,22 @@ namespace CFIssueTracker.Utilities
                 }
             };
         }        
+
+        public static List<NameAndValue> GetUserRoles()
+        {
+            return new List<NameAndValue>()
+            {
+                new NameAndValue()
+                {
+                    Name = UserRoleNames.Administrator,
+                    Value = UserRoleNames.Administrator
+                },
+                new NameAndValue()
+                {
+                    Name = UserRoleNames.User,
+                    Value = UserRoleNames.User
+                },
+            };
+        }
     }
 }

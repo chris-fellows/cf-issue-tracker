@@ -1,9 +1,13 @@
 ﻿@page "/projectcomponents/edit"
 @using Microsoft.EntityFrameworkCore
 @using CFIssueTrackerCommon.Data
+@using CFIssueTrackerCommon.Interfaces
 @using CFIssueTrackerCommon.Models
-@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
+@using CFIssueTracker.Utilities
+
 @inject NavigationManager NavigationManager
+@inject IFileSecurityCheckerService FileSecurityCheckerService
+@inject IProjectComponentService ProjectComponentService
 
 @attribute [Authorize(Roles = "Administrator")]
 
@@ -35,6 +39,17 @@ else
                     <InputText id="name" @bind-Value="ProjectComponent.Name" class="form-control" />
                     <ValidationMessage For="() => ProjectComponent.Name" class="text-danger" />
                 </div>
+                <div class="mb-3">
+                    <label for="usercolor" class="form-label">Color:</label>
+                    <input id="usercolor " type="color" @bind-value="ProjectComponent.Color" />
+                    <ValidationMessage For="() => ProjectComponent.Color" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="projectcomponentimage" class="form-label">Image:</label>
+                    <img id="projectcomponentimage" src="@GetProjectComponentImageSource(ProjectComponent)" />
+                    <InputFile id="imagefile" OnChange="OnImageFileChangeAsync" />
+                    <ValidationMessage For="() => ProjectComponent.ImageSource" class="text-danger" />
+                </div>
                 <button type="submit" class="btn btn-primary">Save</button>
             </EditForm>
         </div>
@@ -52,10 +67,13 @@ else
     [SupplyParameterFromForm]
     private ProjectComponent? ProjectComponent { get; set; }
 
+    private string _newImageFile = String.Empty;
+
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
-        ProjectComponent ??= await context.ProjectComponent.FirstOrDefaultAsync(m => m.Id == Id);
+        //using var context = DbFactory.CreateDbContext();
+        //ProjectComponent ??= await context.ProjectComponent.FirstOrDefaultAsync(m => m.Id == Id);
+        ProjectComponent = await ProjectComponentService.GetByIdAsync(Id);
 
         if (ProjectComponent is null)
         {
@@ -67,12 +85,27 @@ else
     // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateProjectComponent()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Attach(ProjectComponent!).State = EntityState.Modified;
+        //using var context = DbFactory.CreateDbContext();
+        //context.Attach(ProjectComponent!).State = EntityState.Modified;
 
         try
         {
-            await context.SaveChangesAsync();
+            // Save image as [ProjectComponent][Extension]
+            if (!String.IsNullOrEmpty(_newImageFile))
+            {
+                ProjectComponent.ImageSource = Path.GetFileName(_newImageFile);
+
+                var localFile = Path.Combine(ConfigUtilities.ProjectComponentImageLocalFolder, ProjectComponent.ImageSource);
+                if (File.Exists(localFile))
+                {
+                    File.Delete(localFile);
+                }
+                File.Move(_newImageFile, localFile);
+                _newImageFile = "";
+            }
+
+            await ProjectComponentService.UpdateAsync(ProjectComponent);
+            //await context.SaveChangesAsync();
         }
         catch (DbUpdateConcurrencyException)
         {
@@ -91,7 +124,40 @@ else
 
     private bool ProjectComponentExists(string id)
     {
-        using var context = DbFactory.CreateDbContext();
-        return context.ProjectComponent.Any(e => e.Id == id);
+        return ProjectComponentService.GetByIdAsync(id).Result != null;
+        //using var context = DbFactory.CreateDbContext();
+        //return context.ProjectComponent.Any(e => e.Id == id);
+    }
+
+    private string GetProjectComponentImageSource(ProjectComponent projectComponent)
+    {
+        return $"../images/project_components/{projectComponent.ImageSource}";
+    }
+
+    private async Task OnImageFileChangeAsync(InputFileChangeEventArgs eventArgs)
+    {
+        // Check file size
+        if (eventArgs.File.Size > ConfigUtilities.MaxUploadImageSize)
+        {
+            throw new ArgumentException("File is too big");
+        }
+
+        // Save to local file
+        using (var stream = eventArgs.File.OpenReadStream())
+        {
+            _newImageFile = Path.Combine(ConfigUtilities.ImageTempFilesRootFolder, "project_components", $"{ProjectComponent.Id}{Path.GetExtension(eventArgs.File.Name)}");
+            using (var streamWriter = new FileStream(_newImageFile, FileMode.Create))
+            {
+                await stream.CopyToAsync(streamWriter);
+            }
+
+            // Check that file can be uploaded
+            var content = File.ReadAllBytes(_newImageFile);
+            if (!(await FileSecurityCheckerService.ValidateCanUploadImageAsync(content)))
+            {
+                File.Delete(_newImageFile);
+                _newImageFile = "";
+            }
+        }
     }
 }
