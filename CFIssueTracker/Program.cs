@@ -159,22 +159,22 @@ builder.Services.AddSingleton<ISystemTaskList>((scope) =>
         new SystemTaskConfig()
         {
             SystemTaskName = SystemTaskTypeNames.SendDatadog,
-            ExecuteFrequency = TimeSpan.FromMinutes(1)
+            ExecuteFrequency = TimeSpan.FromMinutes(15)
         },
         new SystemTaskConfig()
         {
             SystemTaskName = SystemTaskTypeNames.SendEmail,
-            ExecuteFrequency = TimeSpan.FromMinutes(1)
+            ExecuteFrequency = TimeSpan.FromMinutes(15)
         },
         new SystemTaskConfig()
         {
             SystemTaskName = SystemTaskTypeNames.SendSlack,
-            ExecuteFrequency = TimeSpan.FromMinutes(1)
+            ExecuteFrequency = TimeSpan.FromMinutes(15)
         },
         new SystemTaskConfig()
         {
             SystemTaskName = SystemTaskTypeNames.SendTeams,
-            ExecuteFrequency = TimeSpan.FromMinutes(1)
+            ExecuteFrequency = TimeSpan.FromMinutes(15)
         }
     };
     systemTaskConfigs.ForEach(stc => stc.NextExecuteTime = DateTimeUtilities.GetNextTaskExecuteTimeFromFrequency(stc.ExecuteFrequency));

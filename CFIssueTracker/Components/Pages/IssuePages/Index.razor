@@ -152,7 +152,7 @@ else
 }
 
 @code {
-    private PaginationState Pagination = new PaginationState() { ItemsPerPage = 20 };
+    private PaginationState Pagination = new PaginationState() { ItemsPerPage = ConfigUtilities.ItemsPerListPage };
 
     private IQueryable<Issue>? IssuesQueryable;
 
@@ -161,34 +161,26 @@ else
     private bool IsBusy { get; set; } = false;    
 
 
-    private void RefreshIssues(bool notifyStateHasChanged)
+    private void RefreshIssues()
     {
         IsBusy = true;
 
         IssuesQueryable = IssueService.GetByFilter(GetIssueFilter())
                             .OrderBy(i => i.CreatedDateTime)
                             .AsQueryable();
-
-        //var count = IssuesQueryable.Count();
-
-        IsBusy = false;        
-
-        //if (notifyStateHasChanged) StateHasChanged();
+        
+        IsBusy = false;                
     }
 
-    private async Task RefreshIssuesAsync(bool notifyStateHasChanged)
+    private async Task RefreshIssuesAsync()
     {
         IsBusy = true;
-
-        //await Task.Delay(3000);
-
+        
         IssuesQueryable = (await IssueService.GetByFilterAsync(GetIssueFilter()))
                             .OrderBy(i => i.CreatedDateTime)
                             .AsQueryable();                            
 
         IsBusy = false;
-
-        //if (notifyStateHasChanged) StateHasChanged();
     }
 
     // Filter on created
@@ -201,7 +193,7 @@ else
             if (_filterCreatedDateRangeId != value)
             {
                 _filterCreatedDateRangeId = value;
-                RefreshIssues(true);
+                RefreshIssues();
                 //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
@@ -217,7 +209,7 @@ else
             if (_filterReference != value)
             {
                 _filterReference = value;
-                RefreshIssues(true);
+                RefreshIssues();
                 //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
@@ -233,7 +225,7 @@ else
             if (_filterAssignedUserId != value)
             {
                 _filterAssignedUserId = value;
-                RefreshIssues(true);
+                RefreshIssues();
                 //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
@@ -249,7 +241,7 @@ else
             if (_filterCreatedUserId != value)
             {
                 _filterCreatedUserId = value;
-                RefreshIssues(true);
+                RefreshIssues();
                 //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
@@ -265,7 +257,7 @@ else
             if (_filterProjectId != value)
             {
                 _filterProjectId = value;
-                RefreshIssues(true);
+                RefreshIssues();
                 //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
@@ -281,21 +273,7 @@ else
             if (_filterIssueTypeId != value)
             {
                 _filterIssueTypeId = value;
-                RefreshIssues(true);
-
-                //RefreshIssuesAsync(false).ConfigureAwait(false);                
-
-                //RefreshIssuesAsync(true).Wait();  // Hangs
-
-                //RefreshIssues(true);
-
-                /*
-                RefreshIssuesAsync(true).ConfigureAwait(true);
-                int count = IssuesQueryable.Count();
-                int xxx = 1000;
-                */
-
-                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
+                RefreshIssues();             
             }
         }
     }
@@ -310,7 +288,7 @@ else
             if (_filterIssueStatusId != value)
             {
                 _filterIssueStatusId = value;
-                RefreshIssues(true);
+                RefreshIssues();
                 //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
             }
         }
@@ -342,7 +320,7 @@ else
         UIUtilities.AddAny(Projects);
         UIUtilities.AddAny(Users);
 
-        await RefreshIssuesAsync(false);        
+        await RefreshIssuesAsync();        
     } 
 
     private string GetIssueStatusColor(Issue issue)
@@ -427,8 +405,6 @@ else
             IsBusy = true;
             session.AddAction(() => IsBusy = false);
 
-            await Task.Delay(5000);
-
             // Get file stream
             var tempFile = Path.GetTempFileName();
             session.AddAction(() =>
@@ -459,7 +435,7 @@ else
         _filterIssueTypeId = UIUtilities.AnyId;
         _filterProjectId = UIUtilities.AnyId;
 
-        await RefreshIssuesAsync(true);
+        await RefreshIssuesAsync();
     }
 
     private IssueFilter GetIssueFilter()

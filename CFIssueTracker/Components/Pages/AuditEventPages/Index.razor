@@ -120,7 +120,7 @@ else
     private List<SystemValueType> SystemValueTypes = new();
     private List<User> Users = new();
 
-    private PaginationState Pagination = new PaginationState() { ItemsPerPage = 20 };
+    private PaginationState Pagination = new PaginationState() { ItemsPerPage = ConfigUtilities.ItemsPerListPage };
 
     private IQueryable<AuditEvent>? AuditEventsQueryable;
 

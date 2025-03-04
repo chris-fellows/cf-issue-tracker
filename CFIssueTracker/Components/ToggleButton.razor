@@ -1,0 +1,44 @@
+﻿@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+<style>
+    .togglebutton {
+        border: none;
+    }
+</style>
+<input type="button" class="togglebutton" style="background-color: @ButtonColor" @onclick="@(() => ToggleSelected())" value="@Text" />
+
+@code {
+    [Parameter]
+    public string Text { get; set; } = String.Empty;
+
+    private bool _selected;
+
+
+    [Parameter]
+    public bool Selected
+    {
+        get { return _selected;  }    
+        set
+        {
+            _selected = value;
+
+            ButtonColor = Selected ? SelectedColor : UnselectedColor;
+        }
+    }
+
+    [Parameter]
+    public string SelectedColor { get; set; } = String.Empty;
+
+    [Parameter]
+    public string UnselectedColor { get; set; } = String.Empty;
+
+    private string ButtonColor { get; set; } = String.Empty;
+
+    //private string Id = $"togglebutton-{Guid.NewGuid().ToString()}";
+
+    private void ToggleSelected()
+    {
+        Selected = !Selected;       
+    }
+}

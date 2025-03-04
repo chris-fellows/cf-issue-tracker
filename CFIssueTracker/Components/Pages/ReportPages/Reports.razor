@@ -16,6 +16,12 @@
 
 @rendermode InteractiveServer
 
+<style>
+    .chartobjectcontainer {
+        width: 100%;
+    }
+</style>
+
 <h3>Reports</h3>
 
 <label for="metricstype">Report:</label>
@@ -63,13 +69,15 @@
     }
 </InputSelect>
 
-<ChartObject MetricsTypeId="@MetricsTypeId" FromDateTime="@MetricsFilterFromDateTime" ChartTypeId="@ChartTypeId"></ChartObject>
+<div class="chartobjectcontainer">
+    <ChartObject MetricsTypeId="@MetricsTypeId" FromDateTime="@MetricsFilterFromDateTime" ChartTypeId="@ChartTypeId"></ChartObject>
+</div>
 
 @code {
     private List<MetricsType> MetricsTypes = new();
     private List<DateRangeFilter> MetricsFilters = new();
     private List<ChartType> ChartTypes = new();
-    private DateTimeOffset MetricsFilterFromDateTime = DateTimeOffset.MinValue;
+    private DateTimeOffset MetricsFilterFromDateTime = DateTimeOffset.MinValue;    
 
     private class ChartType
     {
@@ -158,10 +166,5 @@
         ChartTypeId = ChartTypes.First().Id;
         MetricsFilterId = MetricsFilters.First().Id;
         MetricsTypeId = MetricsTypes.First().Id;
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-         MetricsTypeId = MetricsTypes.First().Id;       
     }
 }

@@ -21,6 +21,8 @@
 @inject IUserService UserService
 @inject IRequestContextService RequestContextService
 
+@rendermode InteractiveServer
+@attribute [StreamRendering]
 @attribute [Authorize(Roles = "Administrator,User")]
 
 <PageTitle>Edit</PageTitle>
@@ -48,7 +50,7 @@ else
                 </div>
                 <div class="mb-3">
                     <label for="description" class="form-label">Description:</label>
-                    <InputText id="description" @bind-Value="Issue.Description" class="form-control" />
+                    <InputTextArea id="description" @bind-Value="Issue.Description" class="form-control" />
                     <ValidationMessage For="() => Issue.Description" class="text-danger" />
                 </div>
                 <div class="mb-3">
@@ -164,15 +166,13 @@ else
                         }
                     </InputSelect>
                 </div>           
-
-                Tags                
-                @if (Issue.Tags != null)
-                {
-                    @foreach (TagReference tagReference in Issue.Tags)
+                                     
+                <div class="mb-3">
+                    @foreach (SelectableItem selectableTag in SelectableTags)
                     {
-                        @(GetTagName(tagReference))                     
-                    }                
-                }
+                        <ToggleButton Text="@selectableTag.Name" Selected="@selectableTag.Selected" SelectedColor="Gray" UnselectedColor="Transparent"/>
+                    }
+                </div>
 
                 Tracking Users                
                 @if (Issue.TrackingUsers != null)
@@ -214,6 +214,8 @@ else
     //private List<IssueComment> IssueComments = new();
     private IssueCommentList IssueCommentList = new();
 
+    private List<SelectableItem> SelectableTags = new();
+
     protected override async Task OnParametersSetAsync()
     {
         IssueCommentList.List = await IssueCommentService.GetByIssueAsync(Issue.Id);    
@@ -225,6 +227,14 @@ else
         Projects = await ProjectService.GetAllAsync();
         Tags = await TagService.GetAllAsync();
         Users = await UserService.GetAllAsync();
+
+        // Set selectable tags
+        SelectableTags = Tags.Select(tag => new SelectableItem()
+        {
+                Id = tag.Id,
+                Name = tag.Name,
+                Selected = Issue.Tags != null && Issue.Tags.Any(it => it.TagId == tag.Id)
+        }).ToList();
 
         await base.OnParametersSetAsync();
     }

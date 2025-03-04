@@ -8,7 +8,6 @@
 @using CFIssueTracker.Data
 @using CFIssueTracker.Utilities
 @using CFUtilities
-@inject IDbContextFactory<CFIssueTrackerContext> DbFactory
 @inject IUserService UserService
 
 @using System.IO
@@ -42,48 +41,87 @@
     <button @onclick="DownloadCSVAsync" class="btn btn-primary">Download</button>
 </p>
 
-<QuickGrid Class="table" Items="@UsersQueryable">
-    <PropertyColumn Property="user => user.Name" />
-    <PropertyColumn Property="user => user.Email" />
 
-    <TemplateColumn Title="Color" Context="user">
-        <input type="color" value="@GetUserColor(@user)" />
-    </TemplateColumn>
+@if (UsersQueryable == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <QuickGrid Class="table" Items="@UsersQueryable" Pagination="@Pagination">
+        <PropertyColumn Property="user => user.Name" />
+        <PropertyColumn Property="user => user.Email" />
 
-    <TemplateColumn Title="Image" Context="user">
-        <img class="entityimage" src="../images/users/@user.ImageSource" />
-    </TemplateColumn>
+        <TemplateColumn Title="Color" Context="user">
+            <input type="color" value="@GetUserColor(@user)" />
+        </TemplateColumn>
 
-    <TemplateColumn Title="Active">
-        @if (context.Active)
-        {
-            <input type="checkbox" checked />
-        }
-        else
-        {
-            <input type="checkbox" />
-        }
-    </TemplateColumn>
-    
-    <TemplateColumn Context="user">
-        <a href="@($"users/edit?id={user.Id}")">Edit</a> |
-        <a href="@($"users/details?id={user.Id}")">Details</a> |
-        <a href="@($"users/delete?id={user.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
+        <TemplateColumn Title="Image" Context="user">
+            <img class="entityimage" src="../images/users/@user.ImageSource" />
+        </TemplateColumn>
+
+        <TemplateColumn Title="Active">
+            @if (context.Active)
+            {
+                <input type="checkbox" checked />
+            }
+            else
+            {
+                <input type="checkbox" />
+            }
+        </TemplateColumn>
+
+        <TemplateColumn Context="user">
+            <a href="@($"users/edit?id={user.Id}")">Edit</a> |
+            <a href="@($"users/details?id={user.Id}")">Details</a> |
+            <a href="@($"users/delete?id={user.Id}")">Delete</a>
+        </TemplateColumn>
+    </QuickGrid>
+
+    <Paginator State="@Pagination" />
+}
+
+<TabGroup>
+    <TabPage Id="1" Title="Tab 1">
+        <div>
+            Some text in tab 1
+        </div>
+    </TabPage>
+    <TabPage Id="2" Title="Tab 2">
+        <div>
+            Some text in tab 2
+        </div>
+    </TabPage>
+    <TabPage Id="3" Title="Tab 3">
+        <div>
+            Some text in tab 3
+        </div>
+    </TabPage>
+</TabGroup>
 
 @code {
-    //private CFIssueTrackerContext context = default!;
-
     private IQueryable<User>? UsersQueryable;
+
+    private PaginationState Pagination = new PaginationState() { ItemsPerPage = ConfigUtilities.ItemsPerListPage };
 
     private bool IsBusy { get; set; }
 
-    protected override void OnInitialized()
-    {
-        //context = DbFactory.CreateDbContext();
+    private string SelectedTabId { get; set; } = "2";
 
-        UsersQueryable = UserService.GetAll().AsQueryable();
+    protected override async Task OnInitializedAsync()
+    {
+        IsBusy = true;
+
+        await RefreshUsersAsync();
+    }
+
+    private async Task RefreshUsersAsync()
+    {
+        IsBusy = true;
+        
+        UsersQueryable = (await UserService.GetAllAsync()).AsQueryable();
+
+        IsBusy = false;        
     }
 
     private string GetUserColor(User user)

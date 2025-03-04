@@ -7,6 +7,11 @@
         /// </summary>
         public static long MaxUploadImageSize = 1024 * 300;
 
+        /// <summary>
+        /// Items per page on list pages (Audit Events, Issues etc0
+        /// </summary>
+        public static int ItemsPerListPage = 20;
+
         //public static string AuditEventTypesImageLocalFolder => Path.Combine(Environment.CurrentDirectory, "images", "audit_event_types");
         public static string AuditEventTypeImageLocalFolder => "D:\\Data\\Dev\\C#\\cf-issue-tracker\\CFIssueTracker\\wwwroot\\images\\audit_event_types";
 

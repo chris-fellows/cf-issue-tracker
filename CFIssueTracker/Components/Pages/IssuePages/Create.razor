@@ -41,7 +41,7 @@
             </div>        
             <div class="mb-3">
                 <label for="description" class="form-label">Description:</label>                
-                <InputText id="description" @bind-Value="Issue.Description" class="form-control" />
+                <InputTextArea id="description" @bind-Value="Issue.Description" class="form-control" />
                 <ValidationMessage For="() => Issue.Description" class="text-danger" />
             </div>
             <div class="mb-3">
@@ -159,16 +159,11 @@
             </div>
 
             <div class="mb-3">
-                <ul>
-                    @foreach (MyCheckboxOption tagOption in TagCheckboxOptions)
-                    {
-                        <li>
-                            <label for="@(tagOption.ClassId)" class="form-label">@tagOption.Tag.Name</label>
-                            <InputCheckbox id="@(tagOption.ClassId)" @bind-Value="@tagOption.Selected" />
-                        </li>
-                    }
-                </ul>
-            </div>
+                @foreach (SelectableItem selectableTag in SelectableTags)
+                {
+                    <ToggleButton Text="@selectableTag.Name" Selected="@selectableTag.Selected" SelectedColor="Gray" UnselectedColor="Transparent" />
+                }
+            </div>      
 
             <button type="submit" class="btn btn-primary">Create</button>                        
         </EditForm>
@@ -198,7 +193,8 @@
     //private string MySelectedUserId { get; set; } = String.Empty;
     //private int MySelectedInteger { get; set; } = 0;
 
-    private List<MyCheckboxOption> TagCheckboxOptions = new();
+    private List<SelectableItem> SelectableTags = new();
+
 
      /*
      *
@@ -222,56 +218,46 @@
      *
      */
 
-    private class MyCheckboxOption
-    {
-    public string ClassId { get; set; } = String.Empty;        
-    public Tag Tag { get; set; } = new Tag();
-    public bool Selected { get; set; }
-    }
-
     protected override async Task OnParametersSetAsync()
     {
-        _oldAssignedUserId = Issue.AssignedUserId;
+    _oldAssignedUserId = Issue.AssignedUserId;
 
-        // Load data
-        IssueStatuses = await IssueStatusService.GetAllAsync();
-        IssueTypes = await IssueTypeService.GetAllAsync();
-        ProjectComponents = await ProjectComponentService.GetAllAsync();
-        Projects = await ProjectService.GetAllAsync();
-        Tags = await TagService.GetAllAsync();
-        Users = await UserService.GetAllAsync();
+    // Load data
+    IssueStatuses = await IssueStatusService.GetAllAsync();
+    IssueTypes = await IssueTypeService.GetAllAsync();
+    ProjectComponents = await ProjectComponentService.GetAllAsync();
+    Projects = await ProjectService.GetAllAsync();
+    Tags = await TagService.GetAllAsync();
+    Users = await UserService.GetAllAsync();
 
-        // Initalise Issue to defaults
-        Issue.StatusId = IssueStatuses.First(i => i.Name == "New").Id;
-        Issue.TypeId = IssueTypes.First(i => i.Name == "Unknown").Id;
-        Issue.ProjectId = Projects.First().Id;
-        Issue.ProjectComponentId = ProjectComponents.First().Id;
-        Issue.CreatedUserId = Users.First().Id;
-        Issue.AssignedUserId = Users.First(u => u.Name == "System").Id;
+    // Initalise Issue to defaults
+    Issue.StatusId = IssueStatuses.First(i => i.Name == "New").Id;
+    Issue.TypeId = IssueTypes.First(i => i.Name == "Unknown").Id;
+    Issue.ProjectId = Projects.First().Id;
+    Issue.ProjectComponentId = ProjectComponents.First().Id;
+    Issue.CreatedUserId = Users.First().Id;
+    Issue.AssignedUserId = Users.First(u => u.Name == "System").Id;
 
-        TagCheckboxOptions = Tags.Select(tag =>
-        {
-            return new MyCheckboxOption()
-                {
-                    ClassId = $"tag-{tag.Id}",
-                    Selected = Issue.Tags != null && Issue.Tags.Any(t => t.TagId == tag.Id),
-                    Tag = tag
+    // Set selectable tags
+    SelectableTags = Tags.Select(tag => new SelectableItem()
+            {
+                Id = tag.Id,
+                Name = tag.Name,
+                Selected = Issue.Tags != null && Issue.Tags.Any(it => it.TagId == tag.Id)
+            }).ToList();
 
-                };
-        }).ToList();
-
-        await base.OnParametersSetAsync();
+    await base.OnParametersSetAsync();
     }   
 
     // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task AddIssue()
     {
-        var tags = TagCheckboxOptions.Where(i => i.Selected).ToList();
+        //var tagsSelected = SelectableTags.Where(t => t.Selected).ToList();
 
         Issue.Id = Guid.NewGuid().ToString();
         Issue.CreatedDateTime = DateTimeOffset.UtcNow;
         Issue.CreatedUserId = RequestContextService.UserId;
-
+        
         using var context = DbFactory.CreateDbContext();
         context.Issue.Add(Issue);
         await context.SaveChangesAsync();
@@ -284,7 +270,6 @@
         {
             await AddAuditEventIssueAssignedAsync(Issue.Id);
         }
-
 
         NavigationManager.NavigateTo("/issues");
     }   

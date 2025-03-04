@@ -34,6 +34,7 @@
     }]
     },
     options: {
+    responsive: true,
     scales: {
     y: {
     beginAtZero: true
@@ -78,7 +79,7 @@
     datasets: datasetsObject
     },            
     options: {
-    responsive: false,
+    responsive: true,
     legend: {
     position: 'right' // place legend on the right side of chart
     },
@@ -126,7 +127,7 @@
     datasets: datasetsObject
     },
     options: {
-    responsive: false,
+    responsive: true,
     legend: {
     position: 'right' // place legend on the right side of chart
     }         
@@ -139,9 +140,7 @@
     }
 
 </script>
-<div>
-    <canvas id="myChart"></canvas>
-</div>
+<canvas id="myChart"></canvas>
 
 @code {
     private string _metricsTypeId = String.Empty;
@@ -199,7 +198,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        MetricsTypes = MetricsTypeService.GetAll();        
+        //MetricsTypes = await MetricsTypeService.GetAllAsync();
     }
 
     /// <summary>
@@ -215,11 +214,6 @@
                           new IssueFilter() :
                           new IssueFilter() { CreatedDateTimeFrom = fromDateTime };
 
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "CreatedUserId", "TypeId" }, true);
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId", "StatusId" }, true);
-        //var metrics = await MetricService.GetIssueCountAsync(issueFilter, new List<string>() { "TagId" }, true);
-        //var metrics = await IssueMetricService.GetIssueCountAsync(issueFilter, new List<string>() { "StatusId" }, true);
-        
         var metrics = await IssueMetricService.GetIssueCountAsync(filter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
 
         return metrics;
@@ -237,7 +231,7 @@
         var filter = fromDateTime == DateTimeOffset.MinValue ?
                           new AuditEventFilter() :
                           new AuditEventFilter() { CreatedDateTimeFrom = fromDateTime };
-        
+
         var metrics = await AuditEventMetricService.GetAuditEventCountAsync(filter, metricsType.DimensionPropertyNames.Split(',').ToList(), true);
 
         return metrics;
@@ -252,7 +246,11 @@
     /// <returns></returns>
     private async Task DisplayChartAsync(string metricsTypeId, DateTimeOffset fromDateTime, string chartTypeId)
     {
-        var metricsType = MetricsTypes.First(mt => mt.Id == metricsTypeId);
+        if (!MetricsTypes.Any())
+        {
+            MetricsTypes = await MetricsTypeService.GetAllAsync();
+        }
+        var metricsType = MetricsTypes.FirstOrDefault(mt => mt.Id == metricsTypeId);        
 
         // Get metrics
         Metrics metrics = metricsType.EntityType switch
@@ -276,7 +274,7 @@
         if (dimensionNames.Count == 1)    // Single dimension
         {
             // Difference from multiple dimensions is that background colour is an array of colors
-            var chartDataDimension = new List<object>() { "My Chart" };
+            var chartDataDimension = new List<object>() { metricsType.Name };
             chartDataDimension.Add(metrics.Items.Select(m => $"rgba({metrics.DimensionColors[(string)m.Dimensions[0]]})").ToArray());
             chartDataDimension.AddRange(metrics.Items.Select(m => (object)m.Value).ToList());
 

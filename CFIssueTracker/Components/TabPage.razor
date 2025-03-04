@@ -1,0 +1,30 @@
+﻿@if (Parent != null && Parent.SelectedPage != null && Parent.SelectedPage.Id == Id)
+{
+    @ChildContent
+}
+
+@code {
+    [CascadingParameter]
+    public TabGroup? Parent { get; set; }
+
+    [Parameter]
+    public string Id { get; set; } = String.Empty;
+
+    [Parameter]
+    public string Title { get; set; } = String.Empty;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Parent == null)
+        {
+            throw new ArgumentNullException("Parent not set for tab page");
+        }
+
+        base.OnInitialized();
+
+        Parent.AddPage(this); 
+    }
+}
