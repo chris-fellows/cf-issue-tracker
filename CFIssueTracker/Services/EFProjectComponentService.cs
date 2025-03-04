@@ -5,89 +5,63 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EFProjectComponentService : IProjectComponentService
-    {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
-
-        public EFProjectComponentService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+    public class EFProjectComponentService : EFBaseService, IProjectComponentService
+    {        
+        public EFProjectComponentService(IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _dbFactory = dbFactory;
+            
         }
 
         public List<ProjectComponent> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.ProjectComponent.OrderBy(p => p.Name).ToList();
-            }
+        {            
+                return Context.ProjectComponent.OrderBy(p => p.Name).ToList();         
         }
 
         public async Task<List<ProjectComponent>> GetAllAsync()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return (await context.ProjectComponent.ToListAsync()).OrderBy(p => p.Name).ToList();
-            }
+        {            
+                return (await Context.ProjectComponent.ToListAsync()).OrderBy(p => p.Name).ToList();         
         }
 
         public async Task<ProjectComponent> AddAsync(ProjectComponent projectComponent)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.ProjectComponent.Add(projectComponent);
-                await context.SaveChangesAsync();
-                return projectComponent;
-            }
+        {            
+                Context.ProjectComponent.Add(projectComponent);
+                await Context.SaveChangesAsync();
+                return projectComponent;         
         }
 
 
         public async Task<ProjectComponent> UpdateAsync(ProjectComponent projectComponent)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.ProjectComponent.Update(projectComponent);
-                await context.SaveChangesAsync();
-                return projectComponent;
-            }
+        {            
+                Context.ProjectComponent.Update(projectComponent);
+                await Context.SaveChangesAsync();
+                return projectComponent;         
         }
 
         public async Task<ProjectComponent?> GetByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var projectComponent = await context.ProjectComponent.FirstOrDefaultAsync(i => i.Id == id);
-                return projectComponent;
-            }
+        {            
+                var projectComponent = await Context.ProjectComponent.FirstOrDefaultAsync(i => i.Id == id);
+                return projectComponent;         
         }
 
         public async Task<List<ProjectComponent>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.ProjectComponent.Where(i => ids.Contains(i.Id)).ToListAsync();
-            }
+        {            
+                return await Context.ProjectComponent.Where(i => ids.Contains(i.Id)).ToListAsync();         
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var projectComponent = await context.ProjectComponent.FirstOrDefaultAsync(i => i.Id == id);
+        {            
+                var projectComponent = await Context.ProjectComponent.FirstOrDefaultAsync(i => i.Id == id);
                 if (projectComponent != null)
                 {
-                    context.ProjectComponent.Remove(projectComponent);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.ProjectComponent.Remove(projectComponent);
+                    await Context.SaveChangesAsync();
+                }         
         }
 
         public async Task<ProjectComponent?> GetByNameAsync(string name)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var projectComponent = await context.ProjectComponent.FirstOrDefaultAsync(i => i.Name == name);
-                return projectComponent;
-            }
+        {            
+                var projectComponent = await Context.ProjectComponent.FirstOrDefaultAsync(i => i.Name == name);
+                return projectComponent;         
         }
     }
 }

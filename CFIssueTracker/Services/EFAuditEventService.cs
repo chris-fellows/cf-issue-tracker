@@ -7,100 +7,75 @@ using System.Buffers;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EFAuditEventService : IAuditEventService
+    public class EFAuditEventService : EFBaseService, IAuditEventService
     {
-        private readonly IAuditEventProcessorService _auditEventProcessorService;
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
+        private readonly IAuditEventProcessorService _auditEventProcessorService;        
 
         public EFAuditEventService(IAuditEventProcessorService auditEventProcessorService,
-                                IDbContextFactory<CFIssueTrackerContext> dbFactory)
+                                IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _auditEventProcessorService = auditEventProcessorService;
-            _dbFactory = dbFactory;
+            _auditEventProcessorService = auditEventProcessorService;            
         }
 
         public List<AuditEvent> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.AuditEvent
+        {                        
+                return Context.AuditEvent
                       .Include(i => i.Parameters)
-                      .ToList();
-            }
+                      .ToList();         
         }
 
         public async Task<List<AuditEvent>> GetAllAsync()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {                
-                return await context.AuditEvent
+        {            
+                return await Context.AuditEvent
                       .Include(i => i.Parameters)
-                      .ToListAsync();
-            }
+                      .ToListAsync();        
         }
 
         public async Task<AuditEvent> AddAsync(AuditEvent auditEvent)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.AuditEvent.Add(auditEvent);
-                await context.SaveChangesAsync();
+        {            
+                Context.AuditEvent.Add(auditEvent);
+                await Context.SaveChangesAsync();
                 
                 await _auditEventProcessorService.ProcessAsync(auditEvent);
 
-                return auditEvent;
-            }
+                return auditEvent;            
         }
 
         public async Task<AuditEvent> UpdateAsync(AuditEvent auditEvent)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.AuditEvent.Update(auditEvent);
-                await context.SaveChangesAsync();
-                return auditEvent;
-            }
+        {            
+                Context.AuditEvent.Update(auditEvent);
+                await Context.SaveChangesAsync();
+                return auditEvent;            
         }
 
         public async Task<AuditEvent?> GetByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var auditEvent = await context.AuditEvent
+        {            
+                var auditEvent = await Context.AuditEvent
                             .Include(i => i.Parameters)
                             .FirstOrDefaultAsync(i => i.Id == id);
-                return auditEvent;
-            }
+                return auditEvent;            
         }
 
         public async Task<List<AuditEvent>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.AuditEvent
+        {            
+                return await Context.AuditEvent
                             .Include(i => i.Parameters)
-                            .Where(i => ids.Contains(i.Id)).ToListAsync();                
-            }
+                            .Where(i => ids.Contains(i.Id)).ToListAsync();                            
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var auditEvent = await context.AuditEvent.FirstOrDefaultAsync(i => i.Id == id);
+        {            
+                var auditEvent = await Context.AuditEvent.FirstOrDefaultAsync(i => i.Id == id);
                 if (auditEvent != null)
                 {
-                    context.AuditEvent.Remove(auditEvent);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.AuditEvent.Remove(auditEvent);
+                    await Context.SaveChangesAsync();
+                }       
         }
 
         public async Task<List<AuditEvent>> GetByFilterAsync(AuditEventFilter filter)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var auditEvents = await context.AuditEvent
+        {            
+                var auditEvents = await Context.AuditEvent
                           .Include(i => i.Parameters)
                           .Where(i =>
                             (
@@ -154,15 +129,12 @@ namespace CFIssueTrackerCommon.Services
                     }
                 }
 
-                return auditEvents;
-            }
+                return auditEvents;            
         }
 
         public List<AuditEvent> GetByFilter(AuditEventFilter filter)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var auditEvents = context.AuditEvent
+        {            
+                var auditEvents = Context.AuditEvent
                           .Include(i => i.Parameters)
                           .Where(i =>
                             (
@@ -219,7 +191,6 @@ namespace CFIssueTrackerCommon.Services
                 }
 
                 return auditEvents;
-            }
-        }     
+            }        
     }
 }

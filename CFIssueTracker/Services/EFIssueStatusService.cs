@@ -5,91 +5,62 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EFIssueStatusService : IIssueStatusService
-    {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;        
-
-        public EFIssueStatusService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+    public class EFIssueStatusService : EFBaseService, IIssueStatusService
+    {        
+        public EFIssueStatusService(IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _dbFactory = dbFactory;            
+     
         }    
 
         public List<IssueStatus> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.IssueStatus.OrderBy(i => i.Name).ToList();
-            }
+        {            
+                return Context.IssueStatus.OrderBy(i => i.Name).ToList();         
         }
 
         public async Task<List<IssueStatus>> GetAllAsync()
-        {
-            //var context = GetContext();
-            //return await context.IssueStatus.ToListAsync();
-
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return (await context.IssueStatus.ToListAsync()).OrderBy(i => i.Name).ToList();
-            }
+        {            
+                return (await Context.IssueStatus.ToListAsync()).OrderBy(i => i.Name).ToList();            
         }
 
         public async Task<IssueStatus> AddAsync(IssueStatus issueStatus)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.IssueStatus.Add(issueStatus);
-                await context.SaveChangesAsync();
-                return issueStatus;
-            }
+        {            
+                Context.IssueStatus.Add(issueStatus);
+                await Context.SaveChangesAsync();
+                return issueStatus;         
         }
 
         public async Task<IssueStatus> UpdateAsync(IssueStatus issueStatus)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.IssueStatus.Update(issueStatus);
-                await context.SaveChangesAsync();
-                return issueStatus;
-            }
+        {            
+                Context.IssueStatus.Update(issueStatus);
+                await Context.SaveChangesAsync();
+                return issueStatus;         
         }
 
         public async Task<IssueStatus?> GetByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issueStatus = await context.IssueStatus.FirstOrDefaultAsync(i => i.Id == id);
-                return issueStatus;
-            }
+        {            
+                var issueStatus = await Context.IssueStatus.FirstOrDefaultAsync(i => i.Id == id);
+                return issueStatus;            
         }
 
         public async Task<List<IssueStatus>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.IssueStatus.Where(i => ids.Contains(i.Id)).ToListAsync();
-            }
+        {            
+                return await Context.IssueStatus.Where(i => ids.Contains(i.Id)).ToListAsync();         
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issueStatus = await context.IssueStatus.FirstOrDefaultAsync(i => i.Id == id);
+        {            
+                var issueStatus = await Context.IssueStatus.FirstOrDefaultAsync(i => i.Id == id);
                 if (issueStatus != null)
                 {
-                    context.IssueStatus.Remove(issueStatus);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.IssueStatus.Remove(issueStatus);
+                    await Context.SaveChangesAsync();
+                }         
         }
 
         public async Task<IssueStatus?> GetByNameAsync(string name)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issueStatus = await context.IssueStatus.FirstOrDefaultAsync(i => i.Name == name);
-                return issueStatus;
-            }
+        {            
+                var issueStatus = await Context.IssueStatus.FirstOrDefaultAsync(i => i.Name == name);
+                return issueStatus;         
         }
     }
 }

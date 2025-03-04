@@ -5,106 +5,81 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CFIssueTrackerCommon.Services
 {    
-    public class EFIssueService : IIssueService
-    {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
-
-        public EFIssueService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+    public class EFIssueService : EFBaseService, IIssueService
+    {        
+        public EFIssueService(IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _dbFactory = dbFactory;
+            
         }
 
         public List<Issue> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.Issue
+        {            
+                return Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers)
-                    .ToList();
-            }
+                    .ToList();         
         }
 
         public async Task<List<Issue>> GetAllAsync()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {                
-                return await context.Issue
+        {                 
+                return await Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers)
-                    .ToListAsync();
-            }
+                    .ToListAsync();         
         }
 
         public async Task<Issue> AddAsync(Issue issue)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.Issue.Add(issue);
-                await context.SaveChangesAsync();
-                return issue;
-            }
+        {            
+                Context.Issue.Add(issue);
+                await Context.SaveChangesAsync();
+                return issue;         
         }
 
         public async Task<Issue> UpdateAsync(Issue issue)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {                
-                context.Issue.Update(issue);
-                await context.SaveChangesAsync();
-                return issue;
-            }
+        {                  
+                Context.Issue.Update(issue);
+                await Context.SaveChangesAsync();
+                return issue;         
         }
 
         public async Task<Issue?> GetByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issue = await context.Issue
+        {            
+                var issue = await Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers)
                     .FirstOrDefaultAsync(i => i.Id == id);
-                return issue;
-            }
+                return issue;            
         }
 
         public async Task<List<Issue>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.Issue
+        {            
+                return await Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers)
-                    .Where(i => ids.Contains(i.Id)).ToListAsync();
-            }
+                    .Where(i => ids.Contains(i.Id)).ToListAsync();         
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issue = await context.Issue
+        {            
+                var issue = await Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers)
                     .FirstOrDefaultAsync(i => i.Id == id);
                 if (issue != null)
                 {
-                    context.Issue.Remove(issue);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.Issue.Remove(issue);
+                    await Context.SaveChangesAsync();
+                }        
         }
 
         public async Task<List<Issue>> GetByFilterAsync(IssueFilter filter)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issues = await context.Issue
+        {            
+                var issues = await Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers)
@@ -143,15 +118,12 @@ namespace CFIssueTrackerCommon.Services
                                 filter.IssueTypeIds.Contains(i.TypeId)
                             )
                         ).ToListAsync();
-                return issues;
-            }
+                return issues;           
         }
 
         public List<Issue> GetByFilter(IssueFilter filter)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issues = context.Issue
+        {            
+                var issues = Context.Issue
                     .Include(i => i.Documents)
                     .Include(i => i.Tags)
                     .Include(i => i.TrackingUsers).
@@ -190,8 +162,7 @@ namespace CFIssueTrackerCommon.Services
                                 filter.IssueTypeIds.Contains(i.TypeId)
                             )
                         ).ToList();
-                return issues;
-            }
+                return issues;            
         }
     }
 }

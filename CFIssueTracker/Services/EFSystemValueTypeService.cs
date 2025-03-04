@@ -11,97 +11,68 @@ using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Services
 {
-    public class EFSystemValueTypeService : ISystemValueTypeService
-    {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
-
-        public EFSystemValueTypeService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+    public class EFSystemValueTypeService : EFBaseService, ISystemValueTypeService
+    {       
+        public EFSystemValueTypeService(IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _dbFactory = dbFactory;
+            
         }
 
         public List<SystemValueType> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.SystemValueType.OrderBy(u => u.Name).ToList();
-            }
+        {            
+                return Context.SystemValueType.OrderBy(u => u.Name).ToList();            
         }
 
         public async Task<List<SystemValueType>> GetAllAsync()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return (await context.SystemValueType.ToListAsync()).OrderBy(u => u.Name).ToList();
-            }
+        {            
+                return (await Context.SystemValueType.ToListAsync()).OrderBy(u => u.Name).ToList();         
         }
 
         public async Task<SystemValueType> AddAsync(SystemValueType systemValueType)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.SystemValueType.Add(systemValueType);
-                await context.SaveChangesAsync();
-                return systemValueType;
-            }
+        {            
+                Context.SystemValueType.Add(systemValueType);
+                await Context.SaveChangesAsync();
+                return systemValueType;         
         }
 
         public async Task<SystemValueType> UpdateAsync(SystemValueType systemValueType)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.SystemValueType.Update(systemValueType);
-                await context.SaveChangesAsync();
-                return systemValueType;
-            }
+        {            
+                Context.SystemValueType.Update(systemValueType);
+                await Context.SaveChangesAsync();
+                return systemValueType;         
         }
 
         public async Task<SystemValueType?> GetByIdAsync(string id)
         {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var systemValueType = await context.SystemValueType.FirstOrDefaultAsync(i => i.Id == id);
-                return systemValueType;
-            }
+                var systemValueType = await Context.SystemValueType.FirstOrDefaultAsync(i => i.Id == id);
+                return systemValueType;         
         }
 
         public async Task<List<SystemValueType>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.SystemValueType.Where(i => ids.Contains(i.Id)).ToListAsync();
-            }
+        {            
+                return await Context.SystemValueType.Where(i => ids.Contains(i.Id)).ToListAsync();         
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var systemValueType = await context.SystemValueType.FirstOrDefaultAsync(i => i.Id == id);
+        {            
+                var systemValueType = await Context.SystemValueType.FirstOrDefaultAsync(i => i.Id == id);
                 if (systemValueType != null)
                 {
-                    context.SystemValueType.Remove(systemValueType);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.SystemValueType.Remove(systemValueType);
+                    await Context.SaveChangesAsync();
+                }                        
         }
 
         public SystemValueType? GetById(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var systemValueType = context.SystemValueType.FirstOrDefault(i => i.Id == id);
-                return systemValueType;
-            }
+        {            
+                var systemValueType = Context.SystemValueType.FirstOrDefault(i => i.Id == id);
+                return systemValueType;         
         }
 
         public async Task<SystemValueType?> GetByNameAsync(string name)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var systemValueType = await context.SystemValueType.FirstOrDefaultAsync(i => i.Name == name);
-                return systemValueType;
-            }
+        {            
+                var systemValueType = await Context.SystemValueType.FirstOrDefaultAsync(i => i.Name == name);
+                return systemValueType;         
         }
     }
 }

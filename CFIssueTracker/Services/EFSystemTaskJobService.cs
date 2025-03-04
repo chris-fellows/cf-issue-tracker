@@ -2,98 +2,75 @@
 using CFIssueTrackerCommon.Enums;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
+using CFIssueTrackerCommon.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CFIssueTracker.Services
 {
-    public class EFSystemTaskJobService : ISystemTaskJobService
-    {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
-
-        public EFSystemTaskJobService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+    public class EFSystemTaskJobService : EFBaseService, ISystemTaskJobService
+    {        
+        public EFSystemTaskJobService(IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _dbFactory = dbFactory;
+            
         }
 
         public List<SystemTaskJob> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.SystemTaskJob
+        {            
+                return Context.SystemTaskJob
                     .Include(i => i.Parameters)
-                    .OrderBy(p => p.CreatedDateTime).ToList();
-            }
+                    .OrderBy(p => p.CreatedDateTime).ToList();         
         }
 
         public async Task<List<SystemTaskJob>> GetAllAsync()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return (await context.SystemTaskJob
+        {            
+                return (await Context.SystemTaskJob
                     .Include(i => i.Parameters)
-                    .ToListAsync()).OrderBy(p => p.CreatedDateTime).ToList();
-            }
+                    .ToListAsync()).OrderBy(p => p.CreatedDateTime).ToList();         
         }
 
         public async Task<SystemTaskJob> AddAsync(SystemTaskJob systemTaskJob)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.SystemTaskJob.Add(systemTaskJob);
-                await context.SaveChangesAsync();
-                return systemTaskJob;
-            }
+        {            
+                Context.SystemTaskJob.Add(systemTaskJob);
+                await Context.SaveChangesAsync();
+                return systemTaskJob;         
         }
 
         public async Task<SystemTaskJob> UpdateAsync(SystemTaskJob systemTaskJob)
         {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.SystemTaskJob.Update(systemTaskJob);
-                await context.SaveChangesAsync();
-                return systemTaskJob;
-            }
+            
+                Context.SystemTaskJob.Update(systemTaskJob);
+                await Context.SaveChangesAsync();
+                return systemTaskJob;            
         }
 
         public async Task<SystemTaskJob?> GetByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var projectComponent = await context.SystemTaskJob
+        {            
+                var projectComponent = await Context.SystemTaskJob
                                 .Include(i => i.Parameters)
                                 .FirstOrDefaultAsync(i => i.Id == id);
-                return projectComponent;
-            }
+                return projectComponent;         
         }
 
         public async Task<List<SystemTaskJob>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.SystemTaskJob
+        {            
+                return await Context.SystemTaskJob
                             .Include(i => i.Parameters)
-                            .Where(i => ids.Contains(i.Id)).ToListAsync();
-            }
+                            .Where(i => ids.Contains(i.Id)).ToListAsync();         
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var systemTaskJob = await context.SystemTaskJob.FirstOrDefaultAsync(i => i.Id == id);
+        {            
+                var systemTaskJob = await Context.SystemTaskJob.FirstOrDefaultAsync(i => i.Id == id);
                 if (systemTaskJob != null)
                 {
-                    context.SystemTaskJob.Remove(systemTaskJob);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.SystemTaskJob.Remove(systemTaskJob);
+                    await Context.SaveChangesAsync();
+                }         
         }
 
         public async Task<List<SystemTaskJob>> GetByFilterAsync(SystemTaskJobFilter filter)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var systemTaskJobs = await context.SystemTaskJob
+        {            
+                var systemTaskJobs = await Context.SystemTaskJob
                             .Include(i => i.Parameters)
                             .Where(i =>
                             (
@@ -139,7 +116,6 @@ namespace CFIssueTracker.Services
                 }
 
                 return systemTaskJobs;
-            }
-        }
+        }        
     }
 }

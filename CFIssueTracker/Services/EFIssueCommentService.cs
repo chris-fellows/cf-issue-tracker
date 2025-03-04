@@ -1,91 +1,66 @@
 ﻿using CFIssueTrackerCommon.Data;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
+using CFIssueTrackerCommon.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CFIssueTracker.Services
 {
-    public class EFIssueCommentService : IIssueCommentService
-    {
-        private readonly IDbContextFactory<CFIssueTrackerContext> _dbFactory;
-
-        public EFIssueCommentService(IDbContextFactory<CFIssueTrackerContext> dbFactory)
+    public class EFIssueCommentService : EFBaseService, IIssueCommentService
+    {        
+        public EFIssueCommentService(IDbContextFactory<CFIssueTrackerContext> dbFactory) : base(dbFactory)
         {
-            _dbFactory = dbFactory;
+     
         }
 
         public List<IssueComment> GetAll()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return context.IssueComment.ToList();
-            }
+        {            
+                return Context.IssueComment.ToList();            
         }
 
         public async Task<List<IssueComment>> GetAllAsync()
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.IssueComment.ToListAsync();
-            }
+        {            
+                return await Context.IssueComment.ToListAsync();         
         }
 
         public async Task<IssueComment> AddAsync(IssueComment issueComment)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.IssueComment.Add(issueComment);
-                await context.SaveChangesAsync();
-                return issueComment;
-            }
+        {            
+                Context.IssueComment.Add(issueComment);
+                await Context.SaveChangesAsync();
+                return issueComment;            
         }
 
         public async Task<IssueComment> UpdateAsync(IssueComment issueComment)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                context.IssueComment.Update(issueComment);
-                await context.SaveChangesAsync();
-                return issueComment;
-            }
+        {            
+                Context.IssueComment.Update(issueComment);
+                await Context.SaveChangesAsync();
+                return issueComment;         
         }
 
         public async Task<IssueComment?> GetByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issueComment = await context.IssueComment.FirstOrDefaultAsync(i => i.Id == id);
-                return issueComment;
-            }
+        {            
+                var issueComment = await Context.IssueComment.FirstOrDefaultAsync(i => i.Id == id);
+                return issueComment;         
         }
 
         public async Task<List<IssueComment>> GetByIdsAsync(List<string> ids)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.IssueComment.Where(i => ids.Contains(i.Id)).ToListAsync();
-            }
+        {            
+                return await Context.IssueComment.Where(i => ids.Contains(i.Id)).ToListAsync();         
         }
 
         public async Task DeleteByIdAsync(string id)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                var issueComment = await context.IssueComment.FirstOrDefaultAsync(i => i.Id == id);
+        {            
+                var issueComment = await Context.IssueComment.FirstOrDefaultAsync(i => i.Id == id);
                 if (issueComment != null)
                 {
-                    context.IssueComment.Remove(issueComment);
-                    await context.SaveChangesAsync();
-                }
-            }
+                    Context.IssueComment.Remove(issueComment);
+                    await Context.SaveChangesAsync();
+                }         
         }
 
         public async Task<List<IssueComment>> GetByIssueAsync(string issueId)
-        {
-            using (var context = _dbFactory.CreateDbContext())
-            {
-                return await context.IssueComment.Where(c => c.IssueId == issueId).ToListAsync();
-            }
+        {            
+                return await Context.IssueComment.Where(c => c.IssueId == issueId).ToListAsync();         
         }
     }
 }
