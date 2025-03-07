@@ -1,4 +1,5 @@
-﻿using CFIssueTrackerCommon.SystemTask;
+﻿using CFIssueTrackerCommon.Interfaces;
+using CFIssueTrackerCommon.SystemTask;
 
 namespace CFIssueTracker.Services
 {
@@ -22,7 +23,7 @@ namespace CFIssueTracker.Services
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             System.Diagnostics.Debug.WriteLine($"System Task background service running");
-
+            
             while (!stoppingToken.IsCancellationRequested ||
                 _systemTaskList.SystemTaskActives.Any())
             {
@@ -42,8 +43,8 @@ namespace CFIssueTracker.Services
 
                 // Check completed
                 CheckCompleteSystemTasks();
-
-                await Task.Delay(5000);
+      
+                await Task.Delay(5000);                
             }
 
             System.Diagnostics.Debug.WriteLine($"System Task background service terminated");

@@ -1,42 +1,42 @@
 ﻿using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.EntityReader;
 using CFIssueTrackerCommon.Interfaces;
 using CFIssueTrackerCommon.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Packaging;
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CFIssueTrackerCommon.Services
 {
     public class AuditEventProcessorService : IAuditEventProcessorService
     {
         private readonly IAuditEventTypeService _auditEventTypeService;
+        private readonly IIssueService _issueService;
         private readonly INotificationGroupService _notificationGroupService;
         private readonly ISystemTaskJobService _systemTaskJobService;
         private readonly ISystemTaskStatusService _systemTaskStatusService;
         private readonly ISystemTaskTypeService _systemTaskTypeService;
         private readonly ISystemValueTypeService _systemValueTypeService;
+        private readonly IToastService _toastService;
         private readonly IUserService _userService;
 
         public AuditEventProcessorService(IAuditEventTypeService auditEventTypeService,
+                            IIssueService issueService,
                             INotificationGroupService notificationGroupService,
                             ISystemTaskJobService systemTaskJobService,
                             ISystemTaskStatusService systemTaskStatusService,
                             ISystemTaskTypeService systemTaskTypeService,
                             ISystemValueTypeService systemValueTypeService,
+                            IToastService toastService,
                             IUserService userService)
         {
             _auditEventTypeService = auditEventTypeService;
+            _issueService = issueService;
             _notificationGroupService = notificationGroupService;
             _systemTaskJobService = systemTaskJobService;
             _systemTaskStatusService = systemTaskStatusService;
             _systemTaskTypeService = systemTaskTypeService;
             _systemValueTypeService = systemValueTypeService;
+            _toastService = toastService;
             _userService = userService;
         }
 
@@ -54,6 +54,39 @@ namespace CFIssueTrackerCommon.Services
                 {
                     await ProcessEmail(auditEvent, auditEventType, emailNotificationConfig);
                 }
+            }
+
+            // Notify toast
+            await NotifyToastIfRequiredAsync(auditEvent, auditEventType);
+        }
+
+        /// <summary>
+        /// Creates a toast notification if required
+        /// 
+        /// TODO: Consider making this configurable
+        /// </summary>
+        /// <param name="auditEvent"></param>
+        /// <param name="auditEventType"></param>
+        /// <returns></returns>
+        private async Task NotifyToastIfRequiredAsync(AuditEvent auditEvent, AuditEventType auditEventType)
+        {
+            if (auditEventType.Name == AuditEventTypeNames.IssueCreated)
+            {
+                var systemValueTypeIssueId = await _systemValueTypeService.GetByNameAsync(SystemValueTypeNames.IssueId);
+                var parameter = auditEvent.Parameters.First(p => p.SystemValueTypeId == systemValueTypeIssueId.Id);
+                var issue = await _issueService.GetByIdAsync(parameter.Value);
+                var createdUser = await _userService.GetByIdAsync(issue.CreatedUserId);
+
+                _toastService.Information($"Issue {issue.Reference} has been created by {createdUser.Name}");
+            }
+            else if (auditEventType.Name == AuditEventTypeNames.IssueAssigned)
+            {
+                var systemValueTypeIssueId = await _systemValueTypeService.GetByNameAsync(SystemValueTypeNames.IssueId);
+                var parameter = auditEvent.Parameters.First(p => p.SystemValueTypeId == systemValueTypeIssueId.Id);
+                var issue = await _issueService.GetByIdAsync(parameter.Value);
+                var assignedUser = await _userService.GetByIdAsync(issue.AssignedUserId);
+
+                _toastService.Information($"Issue {issue.Reference} has been assigned to {assignedUser.Name}");
             }
         }
 

@@ -50,6 +50,9 @@ builder.Services.AddRazorComponents()
 // Add password service
 builder.Services.AddScoped<IPasswordService, PBKDF2PasswordService>();
 
+// Add toast service
+builder.Services.AddSingleton<IToastService, ToastService>();
+
 // Add email config from appsettings.json
 builder.Services.Configure<EmailConfig>(builder.Configuration.GetSection(nameof(EmailConfig)));
 builder.Services.AddSingleton<IEmailConfig>(sp => sp.GetRequiredService<IOptions<EmailConfig>>().Value);

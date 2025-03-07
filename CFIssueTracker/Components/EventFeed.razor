@@ -1,0 +1,109 @@
+﻿@using CFIssueTrackerCommon.Constants
+@using CFIssueTrackerCommon.Interfaces
+@using CFIssueTrackerCommon.Models
+@using Microsoft.AspNetCore.Components.QuickGrid
+@inject IAuditEventService AuditEventService
+@inject IAuditEventTypeService AuditEventTypeService
+@inject IIssueService IssueService
+@inject IProjectService ProjectService
+@inject ISystemValueDisplayService SystemValueDisplayService
+@inject ISystemValueTypeService SystemValueTypeService
+@inject IUserService UserService
+
+Latest events:
+@foreach (EventInfo eventinfo in EventInfosQueryable)
+{        
+    <div>@((MarkupString)@eventinfo.Text)</div>
+}
+@if (!EventInfosQueryable.Any())
+{
+    <div>No events</div>
+}
+
+@code {
+
+    private class EventInfo
+    {
+        public DateTimeOffset CreatedDateTime { get; set; }
+
+        public string Text { get; set; } = String.Empty;
+    }
+
+    private IQueryable<EventInfo> EventInfosQueryable = new List<EventInfo>().AsQueryable();
+
+    protected override async Task OnInitializedAsync()
+    {
+        EventInfosQueryable = await GetEventInfos(TimeSpan.FromHours(12000), 30);
+    }
+
+    /// <summary>
+    /// Gets event infos
+    /// </summary>
+    /// <returns></returns>
+    private async Task<IQueryable<EventInfo>> GetEventInfos(TimeSpan maxAge, int maxCount)
+    {
+        var auditEventTypes = await AuditEventTypeService.GetAllAsync();
+        var projects = await ProjectService.GetAllAsync();
+        var users = await UserService.GetAllAsync();
+
+        var eventTypeNames = new List<string>()
+        {
+            AuditEventTypeNames.IssueCreated,
+            //AuditEventTypeNames.IssueAssigned
+        };
+
+        // Get recent audit events
+        var auditEventFilter = new AuditEventFilter()
+            {
+                AuditEventTypeIds = auditEventTypes.Where(t => eventTypeNames.Contains(t.Name))
+                                                    .Select(t => t.Id).ToList(),
+                CreatedDateTimeFrom = DateTimeOffset.UtcNow.Subtract(maxAge)
+            };
+        var auditEvents = await AuditEventService.GetByFilterAsync(auditEventFilter);
+
+        var systemValueTypes = await SystemValueTypeService.GetAllAsync();
+
+        // Load issues for events that reference IssueId
+        var systemValueTypeIssueId = systemValueTypes.First(t => t.Name == SystemValueTypeNames.IssueId);
+        var issueIds = new List<string>();
+        foreach(var auditEvent in auditEvents)
+        {
+            var parameterIssueId = auditEvent.Parameters.FirstOrDefault(p => p.SystemValueTypeId == systemValueTypeIssueId.Id);
+            if (parameterIssueId != null &&
+                !issueIds.Contains(parameterIssueId.Value))
+            {
+                issueIds.Add(parameterIssueId.Value);
+            }
+        }
+
+        var issues = new List<Issue>();
+        if (issueIds.Any())
+        {
+            issues = await IssueService.GetByIdsAsync(issueIds);
+        }
+
+        // Create event info list
+        var eventInfos = auditEvents.OrderByDescending(e => e.CreatedDateTime)
+             .Take(maxCount)
+             .Select(e =>
+             {
+                 var auditEventType = auditEventTypes.First(t => t.Id == e.TypeId);
+                 var createdUser = users.First(u => u.Id == e.CreatedUserId);
+                 var parameterIssueId = e.Parameters.FirstOrDefault(p => p.SystemValueTypeId == systemValueTypeIssueId.Id);
+                 var issue = parameterIssueId == null ? null : issues.First(i => i.Id == parameterIssueId.Value);
+                 var project = issue == null ? null : projects.First(p => p.Id == issue.ProjectId);
+
+                 var eventInfo = new EventInfo()
+                 {
+                     CreatedDateTime = e.CreatedDateTime
+                 };
+                 if (auditEventType.Name == AuditEventTypeNames.IssueCreated)
+                 {
+                     eventInfo.Text = $"Issue <a href=\"issues/details?id={issue.Id}\">{issue.Reference}</a> for project {project.Name} created by {createdUser.Name} at {issue.CreatedDateTime.ToString()}";
+                 }           
+                 return eventInfo;                         
+             }).ToList();
+
+        return eventInfos.AsQueryable();
+    }
+}
