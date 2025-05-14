@@ -52,10 +52,8 @@
 
     <br/>
     <div style="display: inline-block">
-
-        <label for="reference">Reference:</label>
-        <InputText @bind-Value="@FilterReference"/>        
-
+        <SearchBar OnSearch="OnReferenceSearch" SearchPlaceholder="Reference..." />
+        
         <label for="projectid">Project:</label>
         <InputSelect @bind-Value="@FilterProjectId">
             @foreach (Project project in Projects)
@@ -140,7 +138,7 @@ else
         <TemplateColumn Title="Assigned User" Context="issue">
             <ImageAndText ImageSource="@(GetAssignedUserImageSource(issue))" Text="@(GetAssignedUserName(issue))" />
         </TemplateColumn>
-       
+
         <TemplateColumn Context="issue">
             <a href="@($"issues/edit?id={issue.Id}")">Edit</a> |
             <a href="@($"issues/details?id={issue.Id}")">Details</a> |
@@ -158,8 +156,14 @@ else
 
     private List<DateRangeFilter> CreatedDateRangeFilters = new();
 
-    private bool IsBusy { get; set; } = false;    
+    private bool IsBusy { get; set; } = false;        
 
+    private void OnReferenceSearch(object sender, object parameters)
+    {
+        FilterReference = (string)parameters;
+
+        StateHasChanged();
+    }
 
     private void RefreshIssues()
     {
@@ -168,14 +172,14 @@ else
         IssuesQueryable = IssueService.GetByFilter(GetIssueFilter())
                             .OrderBy(i => i.CreatedDateTime)
                             .AsQueryable();
-        
+
         IsBusy = false;                
     }
 
     private async Task RefreshIssuesAsync()
     {
         IsBusy = true;
-        
+
         IssuesQueryable = (await IssueService.GetByFilterAsync(GetIssueFilter()))
                             .OrderBy(i => i.CreatedDateTime)
                             .AsQueryable();                            
@@ -210,7 +214,7 @@ else
             {
                 _filterReference = value;
                 RefreshIssues();
-                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));
+                //Task.Factory.StartNew(() => RefreshIssuesAsync(true));                
             }
         }
     }
@@ -451,7 +455,8 @@ else
                 CreatedUserIds = FilterCreatedUserId == UIUtilities.AnyId ? null : new() { FilterCreatedUserId },
                 IssueStatusIds  = FilterIssueStatusId == UIUtilities.AnyId ? null : new() { FilterIssueStatusId },
                 IssueTypeIds  = FilterIssueTypeId == UIUtilities.AnyId ? null : new() { FilterIssueTypeId },
-                ProjectIds = FilterProjectId == UIUtilities.AnyId ? null : new() { FilterProjectId }                
+                ProjectIds = FilterProjectId == UIUtilities.AnyId ? null : new() { FilterProjectId },
+                ReferencePartial = String.IsNullOrEmpty(FilterReference) ? null : FilterReference
             };
         return issueFilter;
     }

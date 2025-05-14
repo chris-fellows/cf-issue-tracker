@@ -6,6 +6,11 @@
     public class IssueFilter
     {
         /// <summary>
+        /// Reference search
+        /// </summary>
+        public string? ReferencePartial { get; set; }
+
+        /// <summary>
         /// Assigned User Ids
         /// </summary>
         public List<string>? AssignedUserIds { get; set; }

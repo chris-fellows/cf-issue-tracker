@@ -1,0 +1,26 @@
+﻿<style>    
+   .myclass {
+       width:35px;
+       height:35px;
+   }
+</style>
+
+<div>    
+    <InputText @bind-Value="@SearchText" placeholder="@SearchPlaceholder" />    
+    <button class="myclass" type="submit" @onclick="@(() => SearchClicked())"><i class="fa fa-search"></i></button>
+</div>
+
+@code {
+    [Parameter]
+    public EventHandler<string>? OnSearch { get; set; }
+
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Search...";
+
+    private string SearchText { get; set; } = String.Empty;
+
+    private void SearchClicked()
+    {
+        if (OnSearch != null) OnSearch(this, SearchText);
+    }
+}

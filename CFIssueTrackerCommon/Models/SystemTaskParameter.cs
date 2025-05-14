@@ -30,7 +30,7 @@ namespace CFIssueTrackerCommon.Models
         [MaxLength(500)]
         public string Value { get; set; } = String.Empty;
         public SystemValue ToSystemValue()
-        {
+        {            
             return new SystemValue()
             {
                 TypeId = SystemValueTypeId,

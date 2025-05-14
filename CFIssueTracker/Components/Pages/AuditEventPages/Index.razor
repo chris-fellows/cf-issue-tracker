@@ -145,7 +145,7 @@ else
             if (_filterAuditEventTypeId != value)
             {
                 _filterAuditEventTypeId = value;
-                Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));                
+                RefreshAuditEvents();
             }
         }
     }
@@ -160,7 +160,7 @@ else
             if (_filterCreatedUserId != value)
             {
                 _filterCreatedUserId = value;
-                Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));                
+                RefreshAuditEvents();
             }
         }
     }
@@ -175,7 +175,7 @@ else
             if (_filterCreatedDateRangeId != value)
             {
                 _filterCreatedDateRangeId = value;
-                Task.Factory.StartNew(() => RefreshAuditEventsAsync(true));
+                RefreshAuditEvents();
             }
         }
     }
@@ -199,7 +199,7 @@ else
         // Add Any option
         UIUtilities.AddAny(AuditEventTypes);
 
-        await RefreshAuditEventsAsync(false);
+        RefreshAuditEvents();
     }
 
     private string GetAuditEventTypeName(AuditEvent auditEvent)
@@ -312,12 +312,12 @@ else
         return "";
     }
 
-    private async Task RefreshAuditEventsAsync(bool notifyStateHasChanged)
+    private void RefreshAuditEvents()
     {
         IsBusy = true;
 
         // Get audit events
-        AuditEventsQueryable = (await AuditEventService.GetByFilterAsync(GetAuditEventFilter()))
+        AuditEventsQueryable = (AuditEventService.GetByFilter(GetAuditEventFilter()))
                     .OrderBy(e => e.CreatedDateTime)
                     .AsQueryable();
 
@@ -354,7 +354,7 @@ else
         var issues = new List<Issue>();        
         if (issueIds.Any())
         {
-            issues = await IssueService.GetByIdsAsync(issueIds.ToList());
+            issues = IssueService.GetByIdsAsync(issueIds.ToList()).Result;
             foreach(var issue in issues)
             {
                 IssueReferenceById.Add(issue.Id, issue.Reference);
@@ -367,13 +367,13 @@ else
         if (issueCommentIds.Any())
         {
             // Load issue comments to get issues to load
-            var issueComments = await IssueCommentService.GetByIdsAsync(issueCommentIds.ToList());            
+            var issueComments = IssueCommentService.GetByIdsAsync(issueCommentIds.ToList()).Result;
 
             if (issueComments.Any())
             {                
                 // Load issues not loaded above
                 var issueIdsToLoad = issueComments.Select(c => c.IssueId).Distinct().Except(issueIds).ToList();
-                issues.AddRange(issueIdsToLoad.Any() ? await IssueService.GetByIdsAsync(issueIdsToLoad) : new());
+                issues.AddRange(issueIdsToLoad.Any() ? IssueService.GetByIdsAsync(issueIdsToLoad).Result : new());
 
                 // Add link between issue & issue comment
                 foreach (var issueComment in issueComments)
@@ -392,7 +392,7 @@ else
         UserImageSourceById.Clear();       
         if (userIds.Any())
         {
-            var users = await UserService.GetByIdsAsync(userIds.ToList());
+            var users = UserService.GetByIdsAsync(userIds.ToList()).Result;
             foreach (var user in users)
             {
                 UserNameById.Add(user.Id, user.Name);
@@ -402,7 +402,7 @@ else
 
         IsBusy = false;
 
-        if (notifyStateHasChanged) StateHasChanged();
+        //if (notifyStateHasChanged) StateHasChanged();
     }
 
     private AuditEventFilter GetAuditEventFilter()
@@ -450,9 +450,9 @@ else
     {
         _filterCreatedDateRangeId = CreatedDateRangeFilters.First().Id;
         _filterCreatedUserId = UIUtilities.AnyId;
-        _filterAuditEventTypeId = UIUtilities.AnyId;
+        _filterAuditEventTypeId = UIUtilities.AnyId;        
 
-        await RefreshAuditEventsAsync(true);
+        RefreshAuditEvents();
     }    
 
     //public async ValueTask DisposeAsync() => await context.DisposeAsync();

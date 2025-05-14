@@ -116,6 +116,10 @@ namespace CFIssueTrackerCommon.Services
                                 filter.IssueTypeIds == null ||
                                 !filter.IssueTypeIds.Any() ||
                                 filter.IssueTypeIds.Contains(i.TypeId)
+                            ) &&
+                            (
+                                String.IsNullOrEmpty(filter.ReferencePartial) ||
+                                i.Reference.Contains(filter.ReferencePartial)                                   
                             )
                         ).ToListAsync();
                 return issues;           
@@ -160,8 +164,14 @@ namespace CFIssueTrackerCommon.Services
                                 filter.IssueTypeIds == null ||
                                 !filter.IssueTypeIds.Any() ||
                                 filter.IssueTypeIds.Contains(i.TypeId)
+                            ) &&
+                            (
+                                String.IsNullOrEmpty(filter.ReferencePartial) ||
+                                i.Reference.Contains(filter.ReferencePartial)
+                                //EF.Functions.Contains(i.Reference, filter.ReferencePartial)                                
                             )
                         ).ToList();
+            
                 return issues;            
         }
     }

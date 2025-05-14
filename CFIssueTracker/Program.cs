@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Options;
 using CFIssueTrackerCommon.Constants;
+using CFIssueTrackerCommon.Hubs;
 
 const bool registerSeedDataLoad = true;
 const bool registerRequestInfoService = true;
@@ -141,6 +142,10 @@ if (registerSeedDataLoad)
 //builder.Services.AddKeyedScoped<IEntityWriter<Project>, CSVProjectWriter>("CSVProject");
 //builder.Services.AddKeyedScoped<IEntityWriter<User>, CSVUserWriter>("CSVUser");
 
+// Add publisher & subscriber for system event
+//builder.Services.AddSingleton<ISystemEventPublisherService, SystemEventPublisherService>();
+//builder.Services.AddSingleton<ISystemEventSubscriberService, SystemEventSubscriberService>();
+
 builder.Services.AddSingleton<ICache, MemoryCache>();
 
 // Set system task list
@@ -198,6 +203,14 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
     app.UseMigrationsEndPoint();
 }
+
+/*
+// CMD Added UseEndpoints
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<SystemEventHub>("/systemeventhub");
+});
+*/
 
 app.UseHttpsRedirection();
 
